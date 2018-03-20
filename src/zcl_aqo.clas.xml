@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZCL_AQO</CLSNAME>
+    <VERSION>1</VERSION>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Program options</DESCRIPT>
+    <EXPOSURE>2</EXPOSURE>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <TPOOL>
+    <item>
+     <ID>I</ID>
+     <KEY>DEL</KEY>
+     <ENTRY>Delete</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>IRR</KEY>
+     <ENTRY>Operation irreversible. Continue?</ENTRY>
+     <LENGTH>66</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>NEW</KEY>
+     <ENTRY>The settings will be overwritten. Continue?</ENTRY>
+     <LENGTH>86</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>SAV</KEY>
+     <ENTRY>Save</ENTRY>
+     <LENGTH>14</LENGTH>
+    </item>
+   </TPOOL>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>CONSTRUCTOR</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>CREATE_TYPE_DESCR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Create data by text</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>DELETE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Delete option</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>FIND_TABLE_FIELDNAME</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>2 times!</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>FROM_JSON</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>ADD SURROUNDING { DATA: ... }</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>GET_FIELD_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get as the reference</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>IS_DEV_MANDT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Is Dev 100</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>LOCK</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Lock option</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>MC_UTF8</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>SAP Character Set ID</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>MS_CLUSTER</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Saved options</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>MS_KEY</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Cluseter key</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>MS_LAST_CALL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Line of an ABAP Call Stack (With Program Positions)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>MT_ALL_FIELD</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>All fields</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>MT_FIELD_OPT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Main options table</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>READ</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Read data from cluster</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>SAVE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Save data to cluster</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>TO_JSON</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>DELETE SURROUNDING { DATA: ... }</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>TRANSPORT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Put in transport request</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>TS_CLST_KEY</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Cluseter key</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO</CLSNAME>
+     <CMPNAME>TT_FIELD_OPT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Main options table</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>
