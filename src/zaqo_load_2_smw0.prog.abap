@@ -2,6 +2,9 @@
 *&---------------------------------------------------------------------*
 REPORT zaqo_load_2_smw0.
 
+PARAMETERS:
+ p_path TYPE string OBLIGATORY.
+
 PERFORM start.
 
 FORM start.
@@ -21,7 +24,7 @@ FORM load USING iv_objid    TYPE wwwdata-objid
     lv_path TYPE text255,
     ls_key  TYPE wwwdatatab.
 
-  CONCATENATE 'c:\Users\IBM_ADMIN\IdeaProjects\aqo\' iv_rel_path INTO lv_path.
+  CONCATENATE p_path iv_rel_path INTO lv_path.
   ls_key-relid = 'MI'.
   ls_key-objid = iv_objid.
 
