@@ -2,9 +2,6 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt IMPLEMENTATION.
-  METHOD class_constructor.
-  ENDMETHOD.
-
   METHOD pbo.
     DATA:
       lo_cont TYPE REF TO cl_gui_custom_container.
@@ -159,7 +156,7 @@ CLASS lcl_opt IMPLEMENTATION.
     CHECK sy-subrc = 0.
 
     lv_size = lv_size_c.
-    rv_data = binary_to_string( it_table  = lt_w3mime
+    rv_data = zcl_aqo_util=>binary_to_string( it_table  = lt_w3mime
                                 iv_length = lv_size ).
   ENDMETHOD.
 
@@ -170,9 +167,9 @@ CLASS lcl_opt IMPLEMENTATION.
       lt_xdata TYPE w3mimetabtype.
 
     " cl_bcs_convert ?
-    lv_xstr = string_to_xstring( iv_data ).
+    lv_xstr = zcl_aqo_util=>string_to_xstring( iv_data ).
 
-    xstring_to_binary(
+    zcl_aqo_util=>xstring_to_binary(
      EXPORTING
       iv_xstring = lv_xstr
      IMPORTING
@@ -276,46 +273,6 @@ CLASS lcl_opt IMPLEMENTATION.
                             iv_param      = lv_param ). " As json object
   ENDMETHOD.
 
-  METHOD split_type.
-    DATA:
-      lo_type TYPE REF TO cl_abap_datadescr.
-
-    " Check is table and field name
-    CHECK iv_datatype CP '*-*'.
-
-    lo_type = zcl_aqo_util=>create_type_descr( iv_rollname = iv_datatype ).
-    CHECK lo_type IS NOT INITIAL.
-
-    " Drill down
-    SPLIT iv_datatype AT '-' INTO ev_table ev_field.
-  ENDMETHOD.
-
-  METHOD drill_down.
-    DATA:
-      lv_tab TYPE dd02v-tabname,
-      lv_fld TYPE d021s-fnam.
-
-    split_type(
-     EXPORTING
-       iv_datatype = iv_datatype
-     IMPORTING
-       ev_table    = lv_tab
-       ev_field    = lv_fld ).
-    CHECK lv_fld IS NOT INITIAL.
-
-    CALL FUNCTION 'RS_DD_STRU_EDIT'
-      EXPORTING
-        objname   = lv_tab
-        fname     = lv_fld
-        edit_mode = 'S'
-      EXCEPTIONS
-        OTHERS    = 5.
-
-    " Show as error
-    CHECK sy-subrc <> 0.
-    MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-  ENDMETHOD.
-
   METHOD value_request.
     DATA:
       lt_return    TYPE STANDARD TABLE OF ddshretval,
@@ -324,7 +281,7 @@ CLASS lcl_opt IMPLEMENTATION.
       lv_fieldname TYPE dfies-fieldname,
       lv_param     TYPE string.
 
-    split_type(
+    zcl_aqo_util=>split_type(
      EXPORTING
        iv_datatype = iv_datatype
      IMPORTING
@@ -365,7 +322,7 @@ CLASS lcl_opt IMPLEMENTATION.
     FIELD-SYMBOLS:
       <lt_range> TYPE STANDARD TABLE.
 
-    split_type(
+    zcl_aqo_util=>split_type(
      EXPORTING
        iv_datatype = iv_datatype
      IMPORTING
@@ -502,81 +459,15 @@ CLASS lcl_opt IMPLEMENTATION.
     mo_html_viewer->run_js( iv_function = 'call_back' iv_param = lv_param ).
   ENDMETHOD.
 
-  METHOD navigate_to.
-    CALL FUNCTION 'RS_TOOL_ACCESS'
-      EXPORTING
-        operation   = 'SHOW'
-        object_name = iv_include
-        object_type = 'REPS'
-        position    = iv_position
-      EXCEPTIONS
-        OTHERS      = 3.
-    CHECK sy-subrc <> 0.
-    MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-  ENDMETHOD.
-
   METHOD deep_scan.
-    TYPES:
-      BEGIN OF ts_usage.
-        INCLUDE TYPE wbcrossgt.
-    TYPES:
-      meth  TYPE string,
-      line  TYPE i,
-      found TYPE abap_bool,
-      END OF ts_usage.
     DATA:
-      lt_usage      TYPE STANDARD TABLE OF ts_usage,
-      ls_usage      TYPE REF TO ts_usage,
-      lv_len        TYPE i,
-      lv_class_name TYPE seoclskey,
-      lv_rem        TYPE string,
-      lo_clif       TYPE REF TO if_oo_clif_incl_naming,
-      lo_cldesc     TYPE REF TO if_oo_class_incl_naming,
-      lt_meth       TYPE seop_methods_w_include,
-      ls_meth       TYPE REF TO seop_method_w_include,
-      lv_param      TYPE string.
+      lt_usage TYPE zcl_aqo_util=>tt_usage,
+      lv_param TYPE string.
 
-    " Index for Global Types - Where-Used List Workbench
-    SELECT * INTO CORRESPONDING FIELDS OF TABLE lt_usage
-    FROM wbcrossgt
-    WHERE otype = 'ME'
-      AND name  = 'ZCL_AQO\ME:CONSTRUCTOR'.
-
-    LOOP AT lt_usage REFERENCE INTO ls_usage.
-      get_position(
-       EXPORTING
-         iv_include = ls_usage->include
-       IMPORTING
-         ev_line    = ls_usage->line
-         ev_found   = ls_usage->found ).
-
-      " Is class
-      lv_len = strlen( ls_usage->include ).
-      CHECK lv_len = 35.
-      lv_class_name = ls_usage->include(30).
-      SPLIT lv_class_name AT '=' INTO lv_class_name lv_rem.
-
-      " Try to get methods
-      cl_oo_include_naming=>get_instance_by_cifkey(
-        EXPORTING
-         cifkey = lv_class_name
-        RECEIVING
-         cifref = lo_clif
-        EXCEPTIONS
-          OTHERS = 1 ).
-      CHECK sy-subrc = 0.
-      lo_cldesc ?= lo_clif.
-
-      " Find name
-      lt_meth = lo_cldesc->get_all_method_includes( ).
-      READ TABLE lt_meth REFERENCE INTO ls_meth
-       WITH KEY incname = ls_usage->include.
-      CHECK sy-subrc = 0.
-
-      ls_usage->meth = ls_meth->cpdkey-cpdname.
-    ENDLOOP.
-
-    SORT lt_usage STABLE BY found DESCENDING.
+    " Get as table
+    lt_usage = zcl_aqo_util=>get_usage(
+     iv_object    = mo_opt->ms_key-object
+     iv_subobject = mo_opt->ms_key-subobject ).
 
     " Show result
     lv_param = zcl_aqo_util=>to_json( lt_usage ).
@@ -639,101 +530,6 @@ CLASS lcl_opt IMPLEMENTATION.
     CONCATENATE `"` iv_guid `", "` lv_ok `"` INTO lv_param.
     mo_html_viewer->run_js( iv_function = 'call_back'
                             iv_param    = lv_param ).
-  ENDMETHOD.
-
-  METHOD get_position.
-    DATA:
-      lt_report TYPE stringtab,
-      lt_result TYPE match_result_tab,
-      ls_result TYPE REF TO match_result,
-      lv_string TYPE string,
-      lv_from   TYPE i,
-      lv_index  TYPE syindex.
-
-    " Read whole text
-    READ REPORT iv_include INTO lt_report.
-
-    " First occurance
-    DO 2 TIMES.
-      CASE sy-index.
-        WHEN 1.
-          lv_string = mo_opt->ms_key-object.
-        WHEN 2.
-          lv_string = 'IV_OBJECT'.
-        WHEN OTHERS.
-      ENDCASE.
-
-      REPLACE ALL OCCURRENCES OF '$' IN lv_string WITH ''.
-      CONCATENATE '\b' lv_string '\b' INTO lv_string.
-      FIND FIRST OCCURRENCE OF REGEX lv_string IN TABLE lt_report IGNORING CASE RESULTS lt_result.
-
-      " Found or not
-      READ TABLE lt_result INDEX 1 REFERENCE INTO ls_result.
-      IF sy-subrc = 0.
-        EXIT.
-      ENDIF.
-    ENDDO.
-
-    " Second one
-    CHECK ls_result IS NOT INITIAL.
-    lv_from = ls_result->line - 4.
-    IF lv_from <= 0.
-      lv_from = 1.
-    ENDIF.
-
-    DO 2 TIMES.
-      lv_index = sy-index.
-      CASE lv_index.
-        WHEN 1.
-          lv_string = mo_opt->ms_key-subobject.
-        WHEN 2.
-          lv_string = 'IV_SUBOBJECT'.
-        WHEN OTHERS.
-      ENDCASE.
-
-      CONCATENATE '\b' lv_string '\b' INTO lv_string.
-      FIND FIRST OCCURRENCE OF REGEX lv_string IN TABLE lt_report FROM lv_from IGNORING CASE.
-      CHECK sy-subrc = 0.
-
-      ev_line = ls_result->line - 1.
-      IF lv_index = 1.
-        ev_found = abap_true.
-      ENDIF.
-      EXIT.
-    ENDDO.
-  ENDMETHOD.
-
-  METHOD binary_to_string.
-    CALL FUNCTION 'SCMS_BINARY_TO_STRING'
-      EXPORTING
-        input_length = iv_length
-        encoding     = '4110'
-      IMPORTING
-        text_buffer  = rv_string
-      TABLES
-        binary_tab   = it_table.
-  ENDMETHOD.
-
-  METHOD string_to_xstring.
-    " rv_xstring = cl_bcs_convert=>string_to_xstring( iv_string = iv_string iv_codepage = mc_utf8 ).
-    CALL FUNCTION 'SCMS_STRING_TO_XSTRING'
-      EXPORTING
-        text     = iv_string
-        encoding = '4110'
-      IMPORTING
-        buffer   = rv_xstring.
-  ENDMETHOD.
-
-  METHOD xstring_to_binary.
-    " et_table = cl_bcs_convert=>xstring_to_solix( iv_xstring ).
-    " ev_length = xstrlen( iv_xstring ).
-    CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
-      EXPORTING
-        buffer        = iv_xstring
-      IMPORTING
-        output_length = ev_length
-      TABLES
-        binary_tab    = et_table.
   ENDMETHOD.
 ENDCLASS.
 

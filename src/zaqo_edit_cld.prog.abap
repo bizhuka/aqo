@@ -43,8 +43,6 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
       mo_opt         TYPE REF TO zcl_aqo.
 
     CLASS-METHODS:
-      class_constructor,
-
       pbo,
 
       pai
@@ -67,17 +65,6 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
                   iv_subtype    TYPE c
                   iv_url        TYPE w3url
         RETURNING VALUE(rv_url) TYPE w3url,
-
-      split_type
-        IMPORTING
-          iv_datatype TYPE csequence
-        EXPORTING
-          ev_table    TYPE csequence
-          ev_field    TYPE csequence,
-
-      drill_down
-        IMPORTING
-          iv_datatype TYPE csequence,
 
       value_request
         IMPORTING
@@ -103,11 +90,6 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
           iv_mandt  TYPE symandt
           iv_guid   TYPE csequence,
 
-      navigate_to
-        IMPORTING
-          iv_include  TYPE csequence
-          iv_position TYPE i,
-
       deep_scan
         IMPORTING
           iv_guid TYPE csequence,
@@ -119,37 +101,10 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
           iv_favorite  TYPE csequence
           iv_guid      TYPE csequence,
 
-      get_position
-        IMPORTING
-          iv_include TYPE csequence
-        EXPORTING
-          ev_line    TYPE i
-          ev_found   TYPE abap_bool,
-
       load_from_smw0
         IMPORTING
                   iv_objid       TYPE wwwdata-objid
-        RETURNING VALUE(rv_data) TYPE string,
-
-      binary_to_string
-        IMPORTING
-          it_table         TYPE STANDARD TABLE
-          iv_length        TYPE i
-        RETURNING
-          VALUE(rv_string) TYPE string,
-
-      string_to_xstring
-        IMPORTING
-          iv_string         TYPE string
-        RETURNING
-          VALUE(rv_xstring) TYPE xstring,
-
-      xstring_to_binary
-        IMPORTING
-          iv_xstring TYPE xstring
-        EXPORTING
-          ev_length  TYPE i
-          et_table   TYPE w3mimetabtype.
+        RETURNING VALUE(rv_data) TYPE string.
 ENDCLASS.
 
 DATA:

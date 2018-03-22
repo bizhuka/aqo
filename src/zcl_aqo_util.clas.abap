@@ -5,7 +5,21 @@ class ZCL_AQO_UTIL definition
 
 public section.
 
-  constants MC_UTF8 type CPCODEPAGE value '4110' ##NO_TEXT.
+  types:
+    BEGIN OF ts_usage,
+        index   TYPE syindex,
+        include TYPE wbcrossgt-include,
+        meth    TYPE seocpdname,
+        uname   TYPE syuname, "wbcrossgt-uname,
+        udate   TYPE sydatum, "wbcrossgt-udate,
+        uzeit   TYPE syuzeit, "wbcrossgt-uzeit,
+        line    TYPE i,
+        found   TYPE xsdboolean,
+      END OF ts_usage .
+  types:
+    tt_usage TYPE STANDARD TABLE OF ts_usage WITH DEFAULT KEY .
+
+  constants MC_UTF8 type ABAP_ENCODING value '4110' ##NO_TEXT.
 
   class-methods CREATE_TYPE_DESCR
     importing
@@ -23,12 +37,22 @@ public section.
       value(RO_STRUCT) type ref to CL_ABAP_STRUCTDESCR
     exceptions
       UNKNOWN_TYPE .
+  class-methods CREATE_FIELD_CATALOG
+    importing
+      value(IR_STRUC) type ref to DATA optional
+      !IO_STRUC type ref to CL_ABAP_STRUCTDESCR optional
+      !IV_SORT type ABAP_BOOL optional
+    exporting
+      !ET_FIELDCAT type LVC_T_FCAT
+    changing
+      !CT_TABLE type STANDARD TABLE optional .
   class-methods FIND_TABLE_FIELDNAME
     importing
       !IV_NAME type CSEQUENCE
     changing
       !CV_ROLLNAME type CSEQUENCE
-      !CV_TEXT type CSEQUENCE optional .
+      !CV_TEXT type CSEQUENCE optional
+      !CT_UNIQUE type ZCL_AQO=>TT_UNIQUE .
   class-methods TO_JSON
     importing
       !IM_DATA type ANY
@@ -43,13 +67,138 @@ public section.
   class-methods IS_DEV_MANDT
     returning
       value(RV_EDITABLE) type ABAP_BOOL .
+  class-methods SPLIT_TYPE
+    importing
+      !IV_DATATYPE type CSEQUENCE
+    exporting
+      !EV_TABLE type CSEQUENCE
+      !EV_FIELD type CSEQUENCE .
+  class-methods DRILL_DOWN
+    importing
+      !IV_DATATYPE type CSEQUENCE
+    exporting
+      !EV_TABLE type CSEQUENCE
+      !EV_FIELD type CSEQUENCE .
+  class-methods NAVIGATE_TO
+    importing
+      !IV_INCLUDE type CSEQUENCE
+      !IV_POSITION type I .
+  class-methods GET_USAGE
+    importing
+      !IV_OBJECT type ZTAQO_DATA-OBJECT
+      !IV_SUBOBJECT type ZTAQO_DATA-SUBOBJECT
+    returning
+      value(RT_USAGE) type TT_USAGE .
+  class-methods BINARY_TO_STRING
+    importing
+      !IT_TABLE type STANDARD TABLE
+      !IV_LENGTH type I
+    returning
+      value(RV_STRING) type STRING .
+  class-methods STRING_TO_XSTRING
+    importing
+      !IV_STRING type STRING
+    returning
+      value(RV_XSTRING) type XSTRING .
+  class-methods XSTRING_TO_BINARY
+    importing
+      !IV_XSTRING type XSTRING
+    exporting
+      !EV_LENGTH type I
+      !ET_TABLE type W3MIMETABTYPE .
+  class-methods XSTRING_TO_STRING
+    importing
+      !IV_XSTRING type XSTRING
+    returning
+      value(RV_STRING) type STRING .
 protected section.
 private section.
+
+  class-methods GET_POSITION
+    importing
+      !IV_INCLUDE type CSEQUENCE
+      !IV_OBJECT type ZTAQO_DATA-OBJECT
+      !IV_SUBOBJECT type ZTAQO_DATA-SUBOBJECT
+    exporting
+      !EV_LINE type I
+      !EV_FOUND type ABAP_BOOL .
 ENDCLASS.
 
 
 
 CLASS ZCL_AQO_UTIL IMPLEMENTATION.
+
+
+METHOD binary_to_string.
+  CALL FUNCTION 'SCMS_BINARY_TO_STRING'
+    EXPORTING
+      input_length = iv_length
+      encoding     = mc_utf8
+    IMPORTING
+      text_buffer  = rv_string
+    TABLES
+      binary_tab   = it_table.
+ENDMETHOD.
+
+
+METHOD create_field_catalog.
+  DATA:
+    lr_table        TYPE REF TO data,
+    lr_salv         TYPE REF TO cl_salv_table,
+    lr_columns      TYPE REF TO cl_salv_columns_table,
+    lr_aggregations TYPE REF TO cl_salv_aggregations.
+  FIELD-SYMBOLS:
+    <ls_data>     TYPE any,
+    <lt_table>    TYPE STANDARD TABLE,
+    <ls_fieldcat> LIKE LINE OF et_fieldcat.
+
+  " №1 - Based on structure description
+  IF io_struc IS NOT INITIAL.
+    CREATE DATA ir_struc TYPE HANDLE io_struc.
+  ENDIF.
+
+  " №2 - Based on standard table
+  IF ct_table IS SUPPLIED.
+    ASSIGN ct_table TO <lt_table>.
+  ELSEIF ir_struc IS NOT INITIAL.
+    " №3 - Based on structure reference
+    ASSIGN ir_struc->* TO <ls_data>.
+
+    " Create table
+    CREATE DATA lr_table LIKE STANDARD TABLE OF <ls_data>.
+    ASSIGN lr_table->* TO <lt_table>.
+  ENDIF.
+
+  " Fields catalog
+  TRY.
+      cl_salv_table=>factory(
+       IMPORTING
+         r_salv_table   = lr_salv
+       CHANGING
+         t_table        = <lt_table>  ).
+
+      lr_columns      = lr_salv->get_columns( ).
+      lr_aggregations = lr_salv->get_aggregations( ).
+      et_fieldcat = cl_salv_controller_metadata=>get_lvc_fieldcatalog(
+        r_columns      = lr_columns
+        r_aggregations = lr_aggregations ).
+
+      IF iv_sort = abap_true.
+        SORT et_fieldcat BY fieldname.
+      ENDIF.
+
+      LOOP AT et_fieldcat ASSIGNING <ls_fieldcat>.
+        IF <ls_fieldcat>-coltext IS INITIAL.
+          <ls_fieldcat>-coltext = <ls_fieldcat>-reptext.
+        ENDIF.
+
+        IF <ls_fieldcat>-coltext IS INITIAL.
+          <ls_fieldcat>-coltext = <ls_fieldcat>-scrtext_l.
+        ENDIF.
+      ENDLOOP.
+    CATCH cx_salv_error.                                "#EC NO_HANDLER
+  ENDTRY.
+ENDMETHOD.
 
 
 METHOD create_structure.
@@ -216,7 +365,34 @@ METHOD CREATE_TYPE_DESCR.
 ENDMETHOD.
 
 
-METHOD FIND_TABLE_FIELDNAME.
+METHOD drill_down.
+  DATA:
+    lv_tab TYPE dd02v-tabname,
+    lv_fld TYPE d021s-fnam.
+
+  split_type(
+   EXPORTING
+     iv_datatype = iv_datatype
+   IMPORTING
+     ev_table    = lv_tab
+     ev_field    = lv_fld ).
+  CHECK lv_fld IS NOT INITIAL.
+
+  CALL FUNCTION 'RS_DD_STRU_EDIT'
+    EXPORTING
+      objname   = lv_tab
+      fname     = lv_fld
+      edit_mode = 'S'
+    EXCEPTIONS
+      OTHERS    = 5.
+
+  " Show as error
+  CHECK sy-subrc <> 0.
+  MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDMETHOD.
+
+
+METHOD find_table_fieldname.
   TYPES:
     BEGIN OF ts_dd03l,
       tabname    TYPE dd03l-tabname,
@@ -261,7 +437,12 @@ METHOD FIND_TABLE_FIELDNAME.
     lo_type = create_type_descr( iv_rollname = lv_tabfld ).
     CHECK lo_type IS NOT INITIAL.
 
-*    CHECK is_ok_table_fieldname( iv_name = iv_name lv_rollname = lv_tabfld ) = abap_true.
+    " Get next item
+*    IF ct_unique IS SUPPLIED.
+      READ TABLE ct_unique TRANSPORTING NO FIELDS
+       WITH TABLE KEY table_line = lv_tabfld.
+      CHECK sy-subrc <> 0.
+*    ENDIF.
     cv_rollname = lv_tabfld.
 
     DO 1 TIMES.
@@ -319,6 +500,131 @@ METHOD FROM_JSON.
 ENDMETHOD.
 
 
+METHOD get_position.
+  DATA:
+    lt_report TYPE stringtab,
+    lt_result TYPE match_result_tab,
+    ls_result TYPE REF TO match_result,
+    lv_string TYPE string,
+    lv_from   TYPE i,
+    lv_index  TYPE syindex.
+
+  " Read whole text
+  READ REPORT iv_include INTO lt_report.
+
+  " First occurance
+  DO 2 TIMES.
+    CASE sy-index.
+      WHEN 1.
+        lv_string = iv_object.
+      WHEN 2.
+        lv_string = 'IV_OBJECT'.
+      WHEN OTHERS.
+    ENDCASE.
+
+    REPLACE ALL OCCURRENCES OF '$' IN lv_string WITH ''.
+    CONCATENATE '\b' lv_string '\b' INTO lv_string.
+    FIND FIRST OCCURRENCE OF REGEX lv_string IN TABLE lt_report IGNORING CASE RESULTS lt_result.
+
+    " Found or not
+    READ TABLE lt_result INDEX 1 REFERENCE INTO ls_result.
+    IF sy-subrc = 0.
+      EXIT.
+    ENDIF.
+  ENDDO.
+
+  " Second one
+  CHECK ls_result IS NOT INITIAL.
+  lv_from = ls_result->line - 4.
+  IF lv_from <= 0.
+    lv_from = 1.
+  ENDIF.
+
+  DO 2 TIMES.
+    lv_index = sy-index.
+    CASE lv_index.
+      WHEN 1.
+        lv_string = iv_subobject.
+      WHEN 2.
+        lv_string = 'IV_SUBOBJECT'.
+      WHEN OTHERS.
+    ENDCASE.
+
+    CONCATENATE '\b' lv_string '\b' INTO lv_string.
+    FIND FIRST OCCURRENCE OF REGEX lv_string IN TABLE lt_report FROM lv_from IGNORING CASE.
+    CHECK sy-subrc = 0.
+
+    ev_line = ls_result->line - 1.
+    IF lv_index = 1.
+      ev_found = abap_true.
+    ENDIF.
+    EXIT.
+  ENDDO.
+ENDMETHOD.
+
+
+METHOD get_usage.
+  DATA:
+    ls_usage      TYPE REF TO ts_usage,
+    lv_len        TYPE i,
+    lv_class_name TYPE seoclskey,
+    lv_rem        TYPE string,
+    lo_clif       TYPE REF TO if_oo_clif_incl_naming,
+    lo_cldesc     TYPE REF TO if_oo_class_incl_naming,
+    lt_meth       TYPE seop_methods_w_include,
+    ls_meth       TYPE REF TO seop_method_w_include.
+
+  " Index for Global Types - Where-Used List Workbench
+  SELECT * INTO CORRESPONDING FIELDS OF TABLE rt_usage
+  FROM wbcrossgt
+  WHERE otype = 'ME'
+    AND name  = 'ZCL_AQO\ME:CONSTRUCTOR'.
+
+  LOOP AT rt_usage REFERENCE INTO ls_usage.
+    get_position(
+     EXPORTING
+       iv_include   = ls_usage->include
+       iv_object    = iv_object
+       iv_subobject = iv_subobject
+     IMPORTING
+       ev_line      = ls_usage->line
+       ev_found     = ls_usage->found ).
+
+    " Is class
+    lv_len = strlen( ls_usage->include ).
+    CHECK lv_len = 35.
+    lv_class_name = ls_usage->include(30).
+    SPLIT lv_class_name AT '=' INTO lv_class_name lv_rem.
+
+    " Try to get methods
+    cl_oo_include_naming=>get_instance_by_cifkey(
+      EXPORTING
+       cifkey = lv_class_name
+      RECEIVING
+       cifref = lo_clif
+      EXCEPTIONS
+        OTHERS = 1 ).
+    CHECK sy-subrc = 0.
+    lo_cldesc ?= lo_clif.
+
+    " Find name
+    lt_meth = lo_cldesc->get_all_method_includes( ).
+    READ TABLE lt_meth REFERENCE INTO ls_meth
+     WITH KEY incname = ls_usage->include.
+    CHECK sy-subrc = 0.
+
+    ls_usage->meth = ls_meth->cpdkey-cpdname.
+  ENDLOOP.
+
+  SORT rt_usage STABLE BY found DESCENDING.
+
+  " Unique number
+  LOOP AT RT_USAGE REFERENCE INTO ls_usage.
+    ls_usage->index = sy-tabix.
+  ENDLOOP.
+ENDMETHOD.
+
+
 METHOD IS_DEV_MANDT.
   DATA:
     lv_cccoractiv TYPE t000-cccoractiv.
@@ -333,7 +639,47 @@ METHOD IS_DEV_MANDT.
 ENDMETHOD.
 
 
-METHOD TO_JSON.
+METHOD navigate_to.
+  CALL FUNCTION 'RS_TOOL_ACCESS'
+    EXPORTING
+      operation   = 'SHOW'
+      object_name = iv_include
+      object_type = 'REPS'
+      position    = iv_position
+    EXCEPTIONS
+      OTHERS      = 3.
+  CHECK sy-subrc <> 0.
+  MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDMETHOD.
+
+
+METHOD split_type.
+  DATA:
+    lo_type TYPE REF TO cl_abap_datadescr.
+
+  " Check is table and field name
+  CHECK iv_datatype CP '*-*'.
+
+  lo_type = zcl_aqo_util=>create_type_descr( iv_rollname = iv_datatype ).
+  CHECK lo_type IS NOT INITIAL.
+
+  " Drill down
+  SPLIT iv_datatype AT '-' INTO ev_table ev_field.
+ENDMETHOD.
+
+
+METHOD string_to_xstring.
+  " rv_xstring = cl_bcs_convert=>string_to_xstring( iv_string = iv_string iv_codepage = mc_utf8 ).
+  CALL FUNCTION 'SCMS_STRING_TO_XSTRING'
+    EXPORTING
+      text     = iv_string
+      encoding = mc_utf8
+    IMPORTING
+      buffer   = rv_xstring.
+ENDMETHOD.
+
+
+METHOD to_json.
   DATA:
     lo_writer TYPE REF TO cl_sxml_string_writer,
     lv_xtring TYPE xstring.
@@ -347,7 +693,7 @@ METHOD TO_JSON.
   lv_xtring = lo_writer->get_output( ).
 
   " downgrad ?
-  rv_json = cl_bcs_convert=>xstring_to_string( iv_xstr = lv_xtring iv_cp = mc_utf8 ).
+  rv_json = zcl_aqo_util=>xstring_to_string( lv_xtring ).
 
 *  " delete surroundin DATA
 *  IF iv_pure = abap_true.
@@ -366,5 +712,32 @@ METHOD TO_JSON.
 *
 *  CHECK iv_prefix IS SUPPLIED.
 *  CONCATENATE iv_prefix rv_json INTO rv_json RESPECTING BLANKS.
+ENDMETHOD.
+
+
+METHOD xstring_to_binary.
+  " et_table = cl_bcs_convert=>xstring_to_solix( iv_xstring ).
+  " ev_length = xstrlen( iv_xstring ).
+  CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+    EXPORTING
+      buffer        = iv_xstring
+    IMPORTING
+      output_length = ev_length
+    TABLES
+      binary_tab    = et_table.
+ENDMETHOD.
+
+
+METHOD xstring_to_string.
+  DATA:
+    lo_conv  TYPE REF TO cl_abap_conv_in_ce.
+
+  lo_conv = cl_abap_conv_in_ce=>create(
+   encoding = mc_utf8
+   input    = iv_xstring ).
+
+  lo_conv->read(
+   IMPORTING
+    data =  rv_string ).
 ENDMETHOD.
 ENDCLASS.

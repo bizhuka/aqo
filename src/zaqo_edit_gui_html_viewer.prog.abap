@@ -86,7 +86,7 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
         LEAVE TO SCREEN 0.
 
       WHEN 'DRILL_DOWN'.
-        lcl_opt=>drill_down( lv_datatype ).
+        zcl_aqo_util=>drill_down( lv_datatype ).
 
       WHEN 'VALUE_REQUEST'.
         lcl_opt=>value_request( iv_datatype = lv_datatype
@@ -116,7 +116,7 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
         lcl_opt=>delete_option( lv_guid ).
 
       WHEN 'NAVIGATE_TO'.
-        lcl_opt=>navigate_to(
+        zcl_aqo_util=>navigate_to(
          iv_include  = lv_include
          iv_position = lv_line ).
 
@@ -132,7 +132,6 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
 
     ENDCASE.
   ENDMETHOD.
-
 
   METHOD parse_fields.
     DATA:

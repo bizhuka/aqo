@@ -31,10 +31,12 @@ public section.
         subcomps    TYPE string,
     END OF ts_comp .
   types:
+    tt_comp TYPE STANDARD TABLE OF ts_comp WITH DEFAULT KEY .
+  types:
     BEGIN OF ts_field_opt,
         value       TYPE string,
         is_old      TYPE XSDBOOLEAN,
-        edit        TYPE XSDBOOLEAN.
+        edit        TYPE ZDAQO_EDITABLE.
 
         INCLUDE TYPE ts_comp AS comp.
     TYPES:
@@ -42,10 +44,13 @@ public section.
   types:
     tt_field_opt TYPE STANDARD TABLE OF ts_field_opt WITH DEFAULT KEY
           WITH NON-UNIQUE SORTED KEY name COMPONENTS name .
+  types:
+    tt_unique TYPE SORTED TABLE OF STRING WITH UNIQUE KEY TABLE_LINE .
 
   constants MC_KIND_PARAMETER type RSSCR_KIND value 'P' ##NO_TEXT.
   constants MC_KIND_SELECT_OPTION type RSSCR_KIND value 'S' ##NO_TEXT.
   constants MC_KIND_TABLE type RSSCR_KIND value 'T' ##NO_TEXT.
+  constants MC_KIND_MEMO type RSSCR_KIND value 'M' ##NO_TEXT.
   data MS_CLUSTER type ZTAQO_DATA read-only .
   data MS_KEY type TS_CLST_KEY read-only .
 
@@ -99,8 +104,9 @@ private section.
   data MR_DATA type ref to DATA .
   data MO_DATA type ref to OBJECT .
   data MT_ALL_FIELD type TTFIELDNAME .
+  data MT_UNQ_NAME type TT_UNIQUE .
 
-  class-methods CONSTRUCT_NEW_COMP
+  methods CONSTRUCT_NEW_COMP
     importing
       !IV_FIELD_NAME type LVC_FNAME
       !IM_DATA type ANY
@@ -295,7 +301,8 @@ METHOD construct_new_comp.
     lv_cnt          TYPE i,
     lr_row          TYPE REF TO data,
     lo_type         TYPE REF TO cl_abap_typedescr,
-    lt_subcomp      TYPE STANDARD TABLE OF ts_comp.
+    lt_subcomp      TYPE STANDARD TABLE OF ts_comp,
+    lv_name         TYPE string.
   FIELD-SYMBOLS:
     <ls_comp_tab> TYPE abap_compdescr,
     <ls_row>      TYPE any,
@@ -311,7 +318,7 @@ METHOD construct_new_comp.
     rs_comp-rollname = lo_type->get_relative_name( ).
   ENDIF.
 
-  " Ordinary parameter or memo ?
+  " Is parameter
   IF rs_comp-sys_type <> cl_abap_typedescr=>typekind_table.
     rs_comp-kind = zcl_aqo=>mc_kind_parameter.
     CASE rs_comp-sys_type.
@@ -319,6 +326,7 @@ METHOD construct_new_comp.
       WHEN cl_abap_typedescr=>typekind_string.
         rs_comp-ui_type  = 'memo'.
         rs_comp-rollname = 'STRINGVAL'.
+        rs_comp-kind     = zcl_aqo=>mc_kind_memo.
 
         " Date
       WHEN cl_abap_typedescr=>typekind_date.
@@ -431,7 +439,13 @@ METHOD construct_new_comp.
       iv_name        = rs_comp-name
      CHANGING
       cv_rollname    = rs_comp-rollname
-      cv_text        = rs_comp-text ).
+      cv_text        = rs_comp-text
+      ct_unique      = mt_unq_name ).
+
+    IF rs_comp-rollname CP '*-*'.
+      lv_name = rs_comp-rollname.
+      INSERT lv_name INTO TABLE mt_unq_name.
+    ENDIF.
   ENDDO.
 
 *  IF rs_comp-kind <> zcl_aqo=>mc_kind_table AND
