@@ -95,7 +95,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
     " Favorite first
     SORT lt_json BY fav DESCENDING object subobject.
-    lv_json = to_json( im_data = lt_json ).
+    lv_json = zcl_aqo_util=>to_json( im_data = lt_json ).
 
 *    zcl_aok_util=>download(
 *     im_content  = lv_json
@@ -234,7 +234,7 @@ CLASS lcl_opt IMPLEMENTATION.
     mo_opt->read( ).
 
     " In prod just edit text
-    ls_json-dev_mandt = zcl_aqo=>is_dev_mandt( ).
+    ls_json-dev_mandt = zcl_aqo_util=>is_dev_mandt( ).
     IF ls_json-dev_mandt = abap_true.
       ls_json-tech_visible = abap_true.
       ls_json-edit_visible = abap_false.
@@ -262,7 +262,7 @@ CLASS lcl_opt IMPLEMENTATION.
     " Where used
     ls_json-last_call = mo_opt->ms_last_call.
 
-    lv_param = to_json( im_data = ls_json ).
+    lv_param = zcl_aqo_util=>to_json( im_data = ls_json ).
 
 *    zcl_aok_util=>download(
 *     im_content  = lv_param
@@ -283,7 +283,7 @@ CLASS lcl_opt IMPLEMENTATION.
     " Check is table and field name
     CHECK iv_datatype CP '*-*'.
 
-    lo_type = mo_opt->create_type_descr( iv_rollname = iv_datatype ).
+    lo_type = zcl_aqo_util=>create_type_descr( iv_rollname = iv_datatype ).
     CHECK lo_type IS NOT INITIAL.
 
     " Drill down
@@ -374,7 +374,7 @@ CLASS lcl_opt IMPLEMENTATION.
     CHECK ls_tabfld-fieldname IS NOT INITIAL.
 
     " 1 field
-    lo_type = zcl_aqo=>create_type_descr( iv_rollname = iv_datatype ).
+    lo_type = zcl_aqo_util=>create_type_descr( iv_rollname = iv_datatype ).
     IF sy-subrc <> 0.
       MESSAGE s016(zaqo_mes) WITH iv_datatype DISPLAY LIKE 'E'.
       RETURN.
@@ -382,14 +382,14 @@ CLASS lcl_opt IMPLEMENTATION.
 
     " Table of range
     lo_type = cl_abap_tabledescr=>create(
-      p_line_type = zcl_aqo=>create_structure( io_range = lo_type ) ).
+      p_line_type = zcl_aqo_util=>create_structure( io_range = lo_type ) ).
 
     " Create table and assigned it
     CREATE DATA lr_range TYPE HANDLE lo_type.
     ASSIGN lr_range->* TO <lt_range>.
 
     " Try to convert
-    zcl_aqo=>from_json(
+    zcl_aqo_util=>from_json(
      EXPORTING
        iv_json = iv_ranges
      IMPORTING
@@ -412,7 +412,7 @@ CLASS lcl_opt IMPLEMENTATION.
         OTHERS        = 1.
     CHECK sy-subrc = 0.
 
-    lv_param = zcl_aqo=>to_json( im_data = <lt_range> ).
+    lv_param = zcl_aqo_util=>to_json( im_data = <lt_range> ).
     CONCATENATE `"` iv_guid `", ` lv_param INTO lv_param.
     mo_html_viewer->run_js( iv_function  = 'call_back'
                             iv_param     = lv_param ).
@@ -429,7 +429,7 @@ CLASS lcl_opt IMPLEMENTATION.
       <ls_fld_opt> LIKE LINE OF lt_fld_opt.
 
     " Try to convert
-    zcl_aqo=>from_json(
+    zcl_aqo_util=>from_json(
      EXPORTING
        iv_json = iv_option
      IMPORTING
@@ -450,7 +450,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
       " Check type
       IF ( <ls_fld_opt>-kind = mc_kind_parameter OR <ls_fld_opt>-kind = mc_kind_select_option ) AND
-         zcl_aqo=>create_type_descr( iv_rollname = <ls_fld_opt>-rollname ) IS INITIAL.
+         zcl_aqo_util=>create_type_descr( iv_rollname = <ls_fld_opt>-rollname ) IS INITIAL.
         MESSAGE e007(zaqo_mes) WITH <ls_fld_opt>-name.
       ENDIF.
     ENDLOOP.
@@ -579,7 +579,7 @@ CLASS lcl_opt IMPLEMENTATION.
     SORT lt_usage STABLE BY found DESCENDING.
 
     " Show result
-    lv_param = to_json( lt_usage ).
+    lv_param = zcl_aqo_util=>to_json( lt_usage ).
     CONCATENATE `"` iv_guid `", ` lv_param INTO lv_param.
     mo_html_viewer->run_js( iv_function   = 'call_back'
                             iv_param      = lv_param ).

@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZCL_AQO_UTIL</CLSNAME>
+    <VERSION>1</VERSION>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Utils</DESCRIPT>
+    <EXPOSURE>2</EXPOSURE>
+    <STATE>1</STATE>
+    <CLSFINAL>X</CLSFINAL>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_UTIL</CLSNAME>
+     <CMPNAME>CREATE_TYPE_DESCR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Create data by text</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_UTIL</CLSNAME>
+     <CMPNAME>FIND_TABLE_FIELDNAME</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>2 times!</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_UTIL</CLSNAME>
+     <CMPNAME>FROM_JSON</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>ADD SURROUNDING { DATA: ... }</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_UTIL</CLSNAME>
+     <CMPNAME>IS_DEV_MANDT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Is Dev 100</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_UTIL</CLSNAME>
+     <CMPNAME>MC_UTF8</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>SAP Character Set ID</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_UTIL</CLSNAME>
+     <CMPNAME>TO_JSON</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>DELETE SURROUNDING { DATA: ... }</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

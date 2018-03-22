@@ -77,8 +77,8 @@ CLASS lcl_main IMPLEMENTATION.
       CHECK lt_empty_field IS NOT INITIAL.
 
       " Or something like theat SY-SYSID <> 'DEV'
-      IF zcl_aqo=>is_dev_mandt( ) <> abap_true.
-        MESSAGE 'Настройки не найдены!'(t01) TYPE 'S' DISPLAY LIKE 'E'.
+      IF zcl_aqo_util=>is_dev_mandt( ) <> abap_true.
+        MESSAGE 'Attention! No options are detected'(t01) TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
       ENDIF.
 
