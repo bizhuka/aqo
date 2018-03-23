@@ -243,6 +243,7 @@ METHOD constructor.
       APPEND ls_comp->name TO mt_all_field.
     ENDLOOP.
   ENDIF.
+**********************************************************************
 
   " Make old again
   LOOP AT mt_field_opt REFERENCE INTO lr_field_opt WHERE is_old = abap_true.

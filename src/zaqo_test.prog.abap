@@ -1,6 +1,5 @@
 REPORT zaqo_test.
 
-
 CLASS lcl_main DEFINITION FINAL.
   PUBLIC SECTION.
     TYPES:
