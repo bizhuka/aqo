@@ -1898,6 +1898,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>UI5</KEY>
+     <ENTRY>SAP UI5</ENTRY>
+     <LENGTH>17</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>WUL</KEY>
      <ENTRY>Where-Used List</ENTRY>
      <LENGTH>25</LENGTH>
@@ -1996,6 +2002,12 @@
        <KEY>TIT</KEY>
        <ENTRY>Параметры ведения</ENTRY>
        <LENGTH>22</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>UI5</KEY>
+       <ENTRY>SAP UI5</ENTRY>
+       <LENGTH>17</LENGTH>
       </item>
       <item>
        <ID>I</ID>

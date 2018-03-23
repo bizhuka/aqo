@@ -32,6 +32,14 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL FRIENDS
           VALUE(rv_editable) TYPE abap_bool,
 
       save REDEFINITION.
+
+    CLASS-METHODS:
+      pbo,
+
+      pai
+       CHANGING
+         cv_cmd TYPE syucomm.
+
 ENDCLASS.                    "LCL_MAIN DEFINITION
 
 *----------------------------------------------------------------------*

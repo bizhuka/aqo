@@ -9,6 +9,9 @@ CLASS lcl_table_alv        DEFINITION DEFERRED.
 CLASS lcl_string_memo      DEFINITION DEFERRED.
 CLASS lcl_where_used       DEFINITION DEFERRED.
 
+TABLES:
+  sscrfields.
+
 TYPE-POOLS:
   icon.
 

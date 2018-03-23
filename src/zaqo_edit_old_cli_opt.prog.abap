@@ -2,10 +2,26 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt IMPLEMENTATION.
+  METHOD pbo.
+    DATA:
+      ls_button TYPE smp_dyntxt.
 
-*  METHOD pai.
-**    s
-*  endmethod.
+    ls_button-icon_id     = icon_refresh.
+    ls_button-icon_text   = TEXT-ui5.
+    sscrfields-functxt_01 = ls_button.
+  ENDMETHOD.
+
+  METHOD pai.
+    " Switch to NEW ui
+    CHECK cv_cmd = 'FC01'.
+    CLEAR cv_cmd.
+
+    " Start new one
+    zcl_aqo_util=>edit_transaction(
+     iv_object    = p_object
+     iv_subobject = p_sub_ob
+     iv_new_ui    = abap_true ).
+  ENDMETHOD.
 
   METHOD constructor.
     DATA:
@@ -43,7 +59,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
       CASE ls_fld_opt->kind.
         WHEN zcl_aqo=>mc_kind_parameter.
-            ls_fld_opt->icon = icon_equal_green.
+          ls_fld_opt->icon = icon_equal_green.
 
         WHEN zcl_aqo=>mc_kind_select_option.
           ls_fld_opt->icon = icon_interval_include_green.

@@ -82,6 +82,11 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
          iv_subobject = lv_subobject
          iv_guid      = lv_guid ).
 
+      WHEN 'CALL_OLD_UI'.
+        lcl_opt=>call_old_ui(
+         iv_object    = lv_object
+         iv_subobject = lv_subobject ).
+
       WHEN 'DO_CLOSE'.
         LEAVE TO SCREEN 0.
 

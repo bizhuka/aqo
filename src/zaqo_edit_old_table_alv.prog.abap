@@ -269,7 +269,7 @@ CLASS lcl_table_alv IMPLEMENTATION.
           MESSAGE s004(zaqo_mes).
           LEAVE TO SCREEN 0.
         ELSE.
-          MESSAGE s005(zaqo_mes) DISPLAY LIKE 'E'.
+          MESSAGE s005(zaqo_mes) WITH ms_fld_opt->name DISPLAY LIKE 'E'.
         ENDIF.
 
       WHEN 'CANCEL'.

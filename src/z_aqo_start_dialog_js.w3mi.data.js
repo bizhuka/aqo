@@ -163,9 +163,12 @@ function getStartDialog() {
             i18nModel.loadData('json/i18n_en.json');
         } else
             call_sap("GET_OPTIONS", {
-                onBack: function (data, i18n) {
+                onBack: function (data, i18n, params) {
                     oOptModel.setData(data);
                     i18nModel.setData(i18n);
+                    // If passed
+                    getStartInput("OBJECT").setValue(params.DATA.OBJECT);
+                    getStartInput("SUBOBJECT").setValue(params.DATA.SUBOBJECT);
                 }
             });
 
@@ -184,6 +187,7 @@ function getStartDialog() {
                     ]
                 })
             ],
+
             buttons: [
                 new sap.m.Button({
                     icon: "sap-icon://accept",
@@ -202,6 +206,16 @@ function getStartDialog() {
                             $.getJSON('json/opt.json', function (data) {
                                 sap.ui.getCore().show_option(data);
                             });
+                    }
+                }),
+
+                new sap.m.Button({
+                    icon : "sap-icon://synchronize",
+                    press: function () {
+                        call_sap("CALL_OLD_UI", {
+                            object: getStartInput("OBJECT").getValue(),
+                            subobject: getStartInput("SUBOBJECT").getValue()
+                        });
                     }
                 }),
 

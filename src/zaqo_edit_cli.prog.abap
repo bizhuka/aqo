@@ -2,6 +2,67 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt IMPLEMENTATION.
+  METHOD initialization.
+    DATA:
+      lo_opt     TYPE REF TO zcl_aqo,
+      ls_own_opt TYPE REF TO ts_own_opt,
+      lv_new_ui  TYPE abap_bool,
+      lv_index   TYPE sytabix.
+
+    " Read own options
+    read_own_opt(
+     IMPORTING
+       eo_opt     = lo_opt
+       es_own_opt = ls_own_opt ).
+
+    " old ui ?
+    READ TABLE ls_own_opt->old_ui TRANSPORTING NO FIELDS
+     WITH TABLE KEY uname = sy-uname.
+    CHECK sy-subrc = 0.
+    lv_index = sy-tabix.
+
+    " If forced to use
+    zcl_aqo_util=>edit_transaction(
+     IMPORTING
+      ev_object    = ms_srtat_param-object
+      ev_subobject = ms_srtat_param-subobject
+      ev_new_ui    = lv_new_ui ).
+
+    IF lv_new_ui = abap_true.
+      DELETE ls_own_opt->old_ui INDEX lv_index.
+      save_own_opt( lo_opt ).
+      RETURN.
+    ENDIF.
+
+    " Use old one
+    SUBMIT zaqo_edit_old VIA SELECTION-SCREEN. " AND RETURN.
+  ENDMETHOD.
+
+  METHOD read_own_opt.
+
+    CREATE:
+      DATA   es_own_opt,
+      OBJECT eo_opt EXPORTING
+        iv_object    = mc_own_object
+        iv_subobject = mc_own_subobject
+        ir_data      = es_own_opt.
+
+    " Saved only 1 time
+    IF eo_opt->read( ) IS NOT INITIAL.
+      eo_opt->save( iv_confirm = abap_false iv_message = abap_false ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD save_own_opt.
+    CHECK io_opt->lock( ) = abap_true.
+    io_opt->save( iv_confirm = abap_false iv_message = abap_false ).
+
+    CHECK io_opt->lock( iv_unlock = abap_true ) = abap_true.
+
+    " All ok
+    rv_ok = abap_true.
+  ENDMETHOD.
+
   METHOD pbo.
     DATA:
       lo_cont TYPE REF TO cl_gui_custom_container.
@@ -44,8 +105,8 @@ CLASS lcl_opt IMPLEMENTATION.
         object    TYPE ztaqo_data-object,
         subobject TYPE ztaqo_data-subobject,
         uname     TYPE ztaqo_data-uname,
-        udate     TYPE char8, "ZTAQO_DATA-udate, for search without delemeters
-        utime     TYPE char6, "ZTAQO_DATA-utime, for search without delemeters
+        udate     TYPE char8, "ZTAQO_DATA-udate, for search without delimeters
+        utime     TYPE char6, "ZTAQO_DATA-utime, for search without delimeters
         fav       TYPE xsdboolean,
       END OF ts_json.
     DATA:
@@ -57,26 +118,20 @@ CLASS lcl_opt IMPLEMENTATION.
       lv_objid   TYPE wwwdata-objid,
       lv_i18n    TYPE string,
       ls_own_opt TYPE REF TO ts_own_opt,
-      lo_opt     TYPE REF TO zcl_aqo.
+      lv_param   TYPE string.
+
+    " Read own options
+    read_own_opt(
+     IMPORTING
+       es_own_opt = ls_own_opt ).
 
     " Saved options
     SELECT DISTINCT object subobject uname udate utime INTO CORRESPONDING FIELDS OF TABLE lt_cluster
     FROM ztaqo_data.
 
-    CREATE:
-      DATA   ls_own_opt,
-      OBJECT lo_opt EXPORTING
-        iv_object    = '$TMP'
-        iv_subobject = 'ZAQO_EDIT'
-        ir_data      = ls_own_opt.
-
-    IF lo_opt->read( ) IS NOT INITIAL.
-      lo_opt->save( iv_confirm = abap_false ).
-    ENDIF.
-
     " Manual convert date and time
-    LOOP AT lt_cluster REFERENCE INTO ls_cluster WHERE object    <> lo_opt->ms_cluster-object OR
-                                                       subobject <> lo_opt->ms_cluster-subobject.
+    LOOP AT lt_cluster REFERENCE INTO ls_cluster WHERE object    <> mc_own_object
+                                                    OR subobject <> mc_own_subobject.
       CLEAR ls_json.
       MOVE-CORRESPONDING ls_cluster->* TO ls_json.
 
@@ -118,9 +173,13 @@ CLASS lcl_opt IMPLEMENTATION.
       ENDIF.
     ENDDO.
 
-    CONCATENATE `"` iv_guid `", ` lv_json `, ` lv_i18n INTO lv_json.
+    " Pass values
+    lv_param = zcl_aqo_util=>to_json( im_data = ms_srtat_param ).
+
+    " Whole command
+    CONCATENATE `"` iv_guid `", ` lv_json `, ` lv_i18n `, ` lv_param INTO lv_param.
     mo_html_viewer->run_js( iv_function   = 'call_back'
-                            iv_param      = lv_json ).
+                            iv_param      = lv_param ).
   ENDMETHOD.
 
   METHOD load_from_smw0.
@@ -271,6 +330,31 @@ CLASS lcl_opt IMPLEMENTATION.
     CONCATENATE `"` iv_guid `", ` lv_param INTO lv_param.
     mo_html_viewer->run_js( iv_function   = 'call_back'
                             iv_param      = lv_param ). " As json object
+  ENDMETHOD.
+
+  METHOD call_old_ui.
+    DATA:
+      ls_own_opt TYPE REF TO ts_own_opt,
+      lo_opt     TYPE REF TO zcl_aqo,
+      ls_uname   TYPE ts_uname.
+
+    read_own_opt(
+     IMPORTING
+       eo_opt     = lo_opt
+       es_own_opt = ls_own_opt ).
+
+    " Switch to old UI
+    ls_uname-uname = sy-uname.
+    INSERT ls_uname INTO TABLE ls_own_opt->old_ui.
+
+    " Save opt
+    save_own_opt( lo_opt ).
+
+    " And start another transaction
+    zcl_aqo_util=>edit_transaction(
+     iv_object    = iv_object
+     iv_subobject = iv_subobject
+     iv_new_ui    = abap_false ).
   ENDMETHOD.
 
   METHOD value_request.
@@ -478,29 +562,24 @@ CLASS lcl_opt IMPLEMENTATION.
 
   METHOD set_favorite.
     DATA:
-      ls_own_opt TYPE REF TO ts_own_opt,
-      lo_opt     TYPE REF TO zcl_aqo,
       ls_fav     TYPE ts_fav,
       lv_ok      TYPE string,
-      lv_param   TYPE string.
+      lv_param   TYPE string,
+      lo_opt     TYPE REF TO zcl_aqo,
+      ls_own_opt TYPE REF TO ts_own_opt.
+
+    " Read own options
+    read_own_opt(
+     IMPORTING
+       eo_opt     = lo_opt
+       es_own_opt = ls_own_opt ).
 
     ls_fav-uname     = sy-uname.
     ls_fav-object    = iv_object.
     ls_fav-subobject = iv_subobject.
 
-    CREATE:
-      DATA   ls_own_opt,
-      OBJECT lo_opt EXPORTING
-        iv_object    = '$TMP'
-        iv_subobject = 'ZAQO_EDIT'
-        ir_data      = ls_own_opt.
-
     lv_ok = 'false'.
     DO 1 TIMES.
-      CHECK lo_opt->read( ) IS INITIAL.
-
-      CHECK lo_opt->lock( ) = abap_true.
-
       IF iv_favorite = 'true'.
         INSERT ls_fav INTO TABLE ls_own_opt->fav.
       ELSE.
@@ -508,10 +587,9 @@ CLASS lcl_opt IMPLEMENTATION.
                                  AND object    = ls_fav-object
                                  AND subobject = ls_fav-subobject.
       ENDIF.
-      lo_opt->save( iv_confirm = abap_false iv_message = abap_false ).
 
-      CHECK lo_opt->lock( iv_unlock = abap_true ) = abap_true.
-
+      " Write back
+      CHECK save_own_opt( lo_opt ) = abap_true.
       lv_ok = 'true'.
     ENDDO.
 

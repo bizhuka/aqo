@@ -27,6 +27,13 @@ ENDCLASS.
 CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
   PUBLIC SECTION.
 
+***************************************
+    " Current program options
+***************************************
+    CONSTANTS:
+      mc_own_object    TYPE ztaqo_data-object    VALUE '$TMP',
+      mc_own_subobject TYPE ztaqo_data-subobject VALUE 'ZAQO_EDIT'.
+
     TYPES:
       BEGIN OF ts_fav,
         uname     TYPE syuname,
@@ -34,15 +41,39 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
         subobject TYPE ztaqo_data-subobject,
       END OF ts_fav,
 
+      BEGIN OF ts_uname,
+        uname TYPE syuname,
+      END OF ts_uname,
+
       BEGIN OF ts_own_opt,
-        fav TYPE SORTED TABLE OF ts_fav WITH UNIQUE KEY uname object subobject,
-      END OF ts_own_opt.
+        fav    TYPE SORTED TABLE OF ts_fav   WITH UNIQUE KEY uname object subobject,
+        old_ui TYPE SORTED TABLE OF ts_uname WITH UNIQUE KEY uname, " Only structures
+      END OF ts_own_opt,
+***************************************
+
+      BEGIN OF ts_srtat_param,
+        object    TYPE ztaqo_data-object,
+        subobject TYPE ztaqo_data-subobject,
+      END OF ts_srtat_param.
 
     CLASS-DATA:
+      ms_srtat_param TYPE ts_srtat_param,
       mo_html_viewer TYPE REF TO lcl_gui_html_viewer,
       mo_opt         TYPE REF TO zcl_aqo.
 
     CLASS-METHODS:
+      initialization,
+
+      read_own_opt
+        EXPORTING
+          eo_opt     TYPE REF TO zcl_aqo
+          es_own_opt TYPE REF TO ts_own_opt,
+
+      save_own_opt
+        IMPORTING
+                  io_opt       TYPE REF TO zcl_aqo
+        RETURNING VALUE(rv_ok) TYPE abap_bool,
+
       pbo,
 
       pai
@@ -58,6 +89,11 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
           iv_object    TYPE csequence
           iv_subobject TYPE csequence
           iv_guid      TYPE csequence,
+
+      call_old_ui
+        IMPORTING
+          iv_object    TYPE csequence
+          iv_subobject TYPE csequence,
 
       load_data
         IMPORTING

@@ -199,38 +199,38 @@ FORM sel_screen_pai TABLES ct_seldyn STRUCTURE rsseldyn
    CHANGING
      cv_cmd         = <ls_sscrfields>-ucomm ).
 ENDFORM.                    "SEL_SCREEN_PAI
-
-*&---------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-
-FORM sel_screen_at_scr TABLES ct_seldyn STRUCTURE rsseldyn
-                       USING  is_fldnum TYPE rsdsfldnum.    "#EC CALLED
-
-*  lcl_scr_free_sel=>get_instance( )->at_selection_screen_on(
-*   is_fldnum = is_fldnum
-*   it_seldyn = ct_seldyn[] ).
-ENDFORM.
-
-*&---------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-FORM sel_screen_f1
-  USING  is_fldnum TYPE rsdsfldnum.                         "#EC CALLED
-
-*  lcl_scr_free_sel=>get_instance( )->on_f1(
-*   is_fldnum = is_fldnum ).
-ENDFORM.
-
-*&---------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-FORM sel_screen_f4
-  USING  is_fldnum TYPE rsdsfldnum
-         is_f4info TYPE rsdsf4info
-         iv_value  TYPE any.                                "#EC CALLED
-
-*  lcl_scr_free_sel=>get_instance( )->on_f4(
-*   EXPORTING
-*    is_fldnum = is_fldnum
-*    is_f4info = is_f4info
-*   CHANGING
-*    cv_value  = iv_value ).
-ENDFORM.
+*
+**&---------------------------------------------------------------------*
+**----------------------------------------------------------------------*
+*
+*FORM sel_screen_at_scr TABLES ct_seldyn STRUCTURE rsseldyn
+*                       USING  is_fldnum TYPE rsdsfldnum.    "#EC CALLED
+*
+**  lcl_scr_free_sel=>get_instance( )->at_selection_screen_on(
+**   is_fldnum = is_fldnum
+**   it_seldyn = ct_seldyn[] ).
+*ENDFORM.
+*
+**&---------------------------------------------------------------------*
+**----------------------------------------------------------------------*
+*FORM sel_screen_f1
+*  USING  is_fldnum TYPE rsdsfldnum.                         "#EC CALLED
+*
+**  lcl_scr_free_sel=>get_instance( )->on_f1(
+**   is_fldnum = is_fldnum ).
+*ENDFORM.
+*
+**&---------------------------------------------------------------------*
+**----------------------------------------------------------------------*
+*FORM sel_screen_f4
+*  USING  is_fldnum TYPE rsdsfldnum
+*         is_f4info TYPE rsdsf4info
+*         iv_value  TYPE any.                                "#EC CALLED
+*
+**  lcl_scr_free_sel=>get_instance( )->on_f4(
+**   EXPORTING
+**    is_fldnum = is_fldnum
+**    is_f4info = is_f4info
+**   CHANGING
+**    cv_value  = iv_value ).
+*ENDFORM.

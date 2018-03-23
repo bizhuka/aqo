@@ -89,6 +89,15 @@ public section.
       !IV_SUBOBJECT type ZTAQO_DATA-SUBOBJECT
     returning
       value(RT_USAGE) type TT_USAGE .
+  class-methods EDIT_TRANSACTION
+    importing
+      !IV_OBJECT type CSEQUENCE optional
+      !IV_SUBOBJECT type CSEQUENCE optional
+      !IV_NEW_UI type ABAP_BOOL optional
+    exporting
+      !EV_OBJECT type CSEQUENCE
+      !EV_SUBOBJECT type CSEQUENCE
+      !EV_NEW_UI type ABAP_BOOL .
   class-methods BINARY_TO_STRING
     importing
       !IT_TABLE type STANDARD TABLE
@@ -389,6 +398,33 @@ METHOD drill_down.
   " Show as error
   CHECK sy-subrc <> 0.
   MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDMETHOD.
+
+
+METHOD edit_transaction.
+
+  " Just return parameters
+  IF ev_object IS REQUESTED.
+    GET PARAMETER ID:
+     'ZAQO_OBJECT'    FIELD ev_object,
+     'ZAQO_SUBOBJECT' FIELD ev_subobject,
+     'ZAQO_NEW_UI'    FIELD ev_new_ui.
+
+    RETURN.
+  ENDIF.
+
+  " Set transaction
+  SET PARAMETER ID:
+   'ZAQO_OBJECT'    FIELD iv_object,
+   'ZAQO_SUBOBJECT' FIELD iv_subobject,
+   'ZAQO_NEW_UI'    FIELD iv_new_ui.
+
+  " CALL TRANSACTION '' AND SKIP FIRST SCREEN.
+  IF iv_new_ui = abap_true.
+    SUBMIT zaqo_edit VIA SELECTION-SCREEN. " AND RETURN.
+  ELSE.
+    SUBMIT zaqo_edit_old VIA SELECTION-SCREEN. " AND RETURN.
+  ENDIF.
 ENDMETHOD.
 
 

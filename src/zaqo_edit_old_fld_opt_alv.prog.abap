@@ -520,20 +520,20 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
     ls_event->prog  = sy-cprog.
     ls_event->form  = 'SEL_SCREEN_PAI'.
 
-    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
-    ls_event->event = 'S'. " AT SELECTION-SCREEN ON selopt
-    ls_event->prog  = sy-cprog.
-    ls_event->form  = 'SEL_SCREEN_AT_SCR'.
-
-    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
-    ls_event->event = '1'. " F1
-    ls_event->prog  = sy-cprog.
-    ls_event->form  = 'SEL_SCREEN_F1'.
-
-    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
-    ls_event->event = '4'. " F4
-    ls_event->prog  = sy-cprog.
-    ls_event->form  = 'SEL_SCREEN_F4'.
+*    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
+*    ls_event->event = 'S'. " AT SELECTION-SCREEN ON selopt
+*    ls_event->prog  = sy-cprog.
+*    ls_event->form  = 'SEL_SCREEN_AT_SCR'.
+*
+*    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
+*    ls_event->event = '1'. " F1
+*    ls_event->prog  = sy-cprog.
+*    ls_event->form  = 'SEL_SCREEN_F1'.
+*
+*    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
+*    ls_event->event = '4'. " F4
+*    ls_event->prog  = sy-cprog.
+*    ls_event->form  = 'SEL_SCREEN_F4'.
 
     APPEND INITIAL LINE TO ls_restrict-opt_list_tab REFERENCE INTO ls_list_tab.
     ls_list_tab->name       = 'JUST_EQ'.
