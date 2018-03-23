@@ -54,9 +54,13 @@ CLASS lcl_opt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD save_own_opt.
+    " Lock
     CHECK io_opt->lock( ) = abap_true.
+
+    " Save
     io_opt->save( iv_confirm = abap_false iv_message = abap_false ).
 
+    " Unlock
     CHECK io_opt->lock( iv_unlock = abap_true ) = abap_true.
 
     " All ok
