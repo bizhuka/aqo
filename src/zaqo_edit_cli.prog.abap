@@ -9,6 +9,13 @@ CLASS lcl_opt IMPLEMENTATION.
       lv_new_ui  TYPE abap_bool,
       lv_index   TYPE sytabix.
 
+    " If forced to use
+    zcl_aqo_util=>edit_transaction(
+     IMPORTING
+      ev_object    = ms_srtat_param-object
+      ev_subobject = ms_srtat_param-subobject
+      ev_new_ui    = lv_new_ui ).
+
     " Read own options
     read_own_opt(
      IMPORTING
@@ -20,13 +27,6 @@ CLASS lcl_opt IMPLEMENTATION.
      WITH TABLE KEY uname = sy-uname.
     CHECK sy-subrc = 0.
     lv_index = sy-tabix.
-
-    " If forced to use
-    zcl_aqo_util=>edit_transaction(
-     IMPORTING
-      ev_object    = ms_srtat_param-object
-      ev_subobject = ms_srtat_param-subobject
-      ev_new_ui    = lv_new_ui ).
 
     IF lv_new_ui = abap_true.
       DELETE ls_own_opt->old_ui INDEX lv_index.

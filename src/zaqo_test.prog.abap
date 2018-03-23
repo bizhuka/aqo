@@ -19,7 +19,7 @@ CLASS lcl_main DEFINITION FINAL.
         msg_count     TYPE syst-tabix,        " INT4
         due_date      TYPE syst-datum,        " D
         due_time      TYPE syst-uzeit,        " T
-        datetime      TYPE xsddatetime_local, " datetime
+        " datetime      TYPE xsddatetime_local, " datetime NO component in OLD UI
         sum           TYPE bscurr,            " P with sign
         allowed_bukrs TYPE RANGE OF bukrs,    " Range
         blocked_bukrs TYPE RANGE OF bukrs,     " Range
@@ -139,8 +139,8 @@ CLASS lcl_main IMPLEMENTATION.
         WHEN 'DUE_TIME'.
           cs_opt-due_time     = sy-uzeit.
 
-        WHEN 'DATETIME'.
-          CONCATENATE sy-datum sy-uzeit INTO cs_opt-datetime.
+*        WHEN 'DATETIME'.
+*          CONCATENATE sy-datum sy-uzeit INTO cs_opt-datetime.
 
         WHEN 'SUM'.
           cs_opt-sum          = '-9999999999.99' ##literal.

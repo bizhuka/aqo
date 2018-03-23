@@ -133,7 +133,8 @@ METHOD constructor.
     lt_friend    TYPE abap_frndtypes_tab,
     lt_callstack TYPE abap_callstack,
     ls_last_call TYPE REF TO abap_callstack_line,
-    lv_name      TYPE string.
+    lv_name      TYPE string,
+    lr_field_opt TYPE REF TO zcl_aqo=>ts_field_opt.
 
   " Key fields
   ms_key-object    = iv_object.
@@ -242,6 +243,11 @@ METHOD constructor.
       APPEND ls_comp->name TO mt_all_field.
     ENDLOOP.
   ENDIF.
+
+  " Make old again
+  LOOP AT mt_field_opt REFERENCE INTO lr_field_opt WHERE is_old = abap_true.
+    DELETE mt_all_field WHERE table_line = lr_field_opt->name.
+  ENDLOOP.
 
 **********************************************************************
   " Where-Used List
