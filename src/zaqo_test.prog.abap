@@ -58,7 +58,7 @@ CLASS lcl_main IMPLEMENTATION.
     DATA:
       lv_ref TYPE REF TO data.
 
-    GET REFERENCE OF mr_opt INTO lv_ref.
+    GET REFERENCE OF mr_opt INTO lv_ref.        " ! Ref to data
     CREATE OBJECT mo_opt
       EXPORTING
         iv_object    = '$TMP'                   " Better use package or program
@@ -75,7 +75,7 @@ CLASS lcl_main IMPLEMENTATION.
       lt_empty_field = mo_opt->read( ).
       CHECK lt_empty_field IS NOT INITIAL.
 
-      " Or something like theat SY-SYSID <> 'DEV'
+      " Or something like that SY-SYSID <> 'DEV'
       IF zcl_aqo_util=>is_dev_mandt( ) <> abap_true.
         MESSAGE 'Attention! No options are detected'(t01) TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
@@ -118,6 +118,7 @@ CLASS lcl_main IMPLEMENTATION.
           <ls_bukrs>-high   = '5000'.
 
         WHEN 'ALT_LAND_TEXT'.
+          " Alternative texts for reports
           SELECT land1 landx50 AS land_txt INTO CORRESPONDING FIELDS OF TABLE cs_opt-alt_land_text
           FROM t005t
           WHERE spras = sy-langu.
