@@ -83,7 +83,7 @@ public section.
   methods SAVE
     importing
       !IV_MANDT type SYMANDT default SY-MANDT
-      !IV_DELETE_PREV type ABAP_BOOL default ABAP_FALSE
+      !IV_DELETE_OLD type ABAP_BOOL default ABAP_FALSE
       !IV_USE_ME_DATA type ABAP_BOOL default ABAP_TRUE
       !IV_CONFIRM type ABAP_BOOL default ABAP_TRUE
       !IV_MESSAGE type ABAP_BOOL default ABAP_TRUE .
@@ -743,7 +743,7 @@ METHOD save.
     CHECK sy-subrc <> 0.
 
     " Check
-    IF iv_delete_prev = abap_true.
+    IF iv_delete_old = abap_true.
       DELETE mt_field_opt INDEX lv_tabix.
     ELSE.
       " Obsolete

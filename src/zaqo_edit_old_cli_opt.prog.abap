@@ -30,8 +30,9 @@ CLASS lcl_opt IMPLEMENTATION.
 
     super->constructor(
       EXPORTING
-       iv_object    = p_object
-       iv_subobject = p_sub_ob
+       iv_object         = p_object
+       iv_subobject      = p_sub_ob
+       iv_save_last_call = abap_false
       EXCEPTIONS
        OTHERS       = 1 ).
     IF sy-subrc <> 0.
