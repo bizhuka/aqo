@@ -93,13 +93,18 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
       CASE ls_fieldcat->fieldname.
         WHEN 'NAME' OR 'KIND'.
 
-        WHEN 'TEXT' OR 'ROLLNAME'.
+        WHEN 'TEXT'.
           ls_fieldcat->edit     = go_opt->is_editable( ).
+          ls_fieldcat->col_pos  = 11.
 
         WHEN 'EDIT'.
           ls_fieldcat->edit     = abap_true.
           ls_fieldcat->checkbox = abap_true.
           ls_fieldcat->col_pos  = 12.
+
+        WHEN 'ROLLNAME'.
+          ls_fieldcat->edit     = go_opt->is_editable( ).
+          ls_fieldcat->col_pos  = 13.
 
         WHEN 'ICON'.
           lv_column_text = '---'.
@@ -525,21 +530,6 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
     ls_event->prog  = sy-cprog.
     ls_event->form  = 'SEL_SCREEN_PAI'.
 
-*    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
-*    ls_event->event = 'S'. " AT SELECTION-SCREEN ON selopt
-*    ls_event->prog  = sy-cprog.
-*    ls_event->form  = 'SEL_SCREEN_AT_SCR'.
-*
-*    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
-*    ls_event->event = '1'. " F1
-*    ls_event->prog  = sy-cprog.
-*    ls_event->form  = 'SEL_SCREEN_F1'.
-*
-*    APPEND INITIAL LINE TO lt_event REFERENCE INTO ls_event.
-*    ls_event->event = '4'. " F4
-*    ls_event->prog  = sy-cprog.
-*    ls_event->form  = 'SEL_SCREEN_F4'.
-
     APPEND INITIAL LINE TO ls_restrict-opt_list_tab REFERENCE INTO ls_list_tab.
     ls_list_tab->name       = 'JUST_EQ'.
     ls_list_tab->options-eq = abap_true.
@@ -879,8 +869,6 @@ ENDCLASS.
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pbo_0100 OUTPUT.
-  DATA:
-    go_fld_opt_alv TYPE REF TO lcl_fld_opt_alv.
   go_fld_opt_alv = lcl_fld_opt_alv=>get_instance( ).
   go_fld_opt_alv->pbo( ).
 ENDMODULE.

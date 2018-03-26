@@ -9,7 +9,7 @@ CLASS lcl_opt IMPLEMENTATION.
     " Make like obligatory
     LOOP AT SCREEN.
       CHECK screen-group1 = 'OBL'.
-      screen-required = '2'.
+      screen-required = '2'. " recommended
       MODIFY SCREEN.
     ENDLOOP.
 

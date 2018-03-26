@@ -154,8 +154,6 @@ ENDCLASS.
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pbo_0300 OUTPUT.
-  DATA:
-    go_table_comp_alv TYPE REF TO lcl_table_comp_alv.
   go_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
   go_table_comp_alv->pbo( ).
 ENDMODULE.

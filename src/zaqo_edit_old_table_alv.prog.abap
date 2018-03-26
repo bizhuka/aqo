@@ -314,8 +314,6 @@ ENDCLASS.                    "lcl_table_alv IMPLEMENTATION
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pbo_0200 OUTPUT.
-  DATA:
-    go_table_alv TYPE REF TO lcl_table_alv.
   go_table_alv = lcl_table_alv=>get_instance( ).
   go_table_alv->pbo( ).
 ENDMODULE.

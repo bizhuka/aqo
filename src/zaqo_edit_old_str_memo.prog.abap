@@ -120,8 +120,6 @@ ENDCLASS.                    "IMPLEMENTATION
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pbo_0400 OUTPUT.
-  DATA:
-    go_string_memo TYPE REF TO lcl_string_memo.
   go_string_memo = lcl_string_memo=>get_instance( ).
   go_string_memo->pbo( ).
 ENDMODULE.

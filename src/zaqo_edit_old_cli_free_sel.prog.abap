@@ -32,11 +32,11 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
         lv_edit = abap_false.
       ENDIF.
 
-      if ls_fld_opt->kind = zcl_aqo_util=>mc_kind_table OR
+      IF ls_fld_opt->kind = zcl_aqo_util=>mc_kind_table OR
          ls_fld_opt->kind = zcl_aqo_util=>mc_kind_memo.
-          IF ls_screen-group3 = 'LOW' OR ls_screen-group3 = 'TOT' OR ls_screen-group3 = 'HGH'.
-            lv_show = abap_false.
-          ENDIF.
+        IF ls_screen-group3 = 'LOW' OR ls_screen-group3 = 'TOT' OR ls_screen-group3 = 'HGH'.
+          lv_show = abap_false.
+        ENDIF.
       ENDIF.
 
       " Hide elements
@@ -171,7 +171,7 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
 *      ENDTRY.
 *    ENDIF.
 *  ENDMETHOD.
-ENDCLASS.                    "lcl_free_sel IMPLEMENTATION
+ENDCLASS.
 
 
 *&---------------------------------------------------------------------*
@@ -186,7 +186,7 @@ FORM sel_screen_pbo TABLES ct_seldyn STRUCTURE rsseldyn
   lo_scr_free_sel->pbo(
    it_seldyn    = ct_seldyn[]
    it_dsfldnum  = ct_fldnum[] ).
-ENDFORM.                    "SEL_SCREEN_PBO
+ENDFORM.
 
 *&---------------------------------------------------------------------*
 *----------------------------------------------------------------------*
@@ -209,39 +209,4 @@ FORM sel_screen_pai TABLES ct_seldyn STRUCTURE rsseldyn
      it_dsfldnum  = ct_fldnum[]
    CHANGING
      cv_cmd         = <ls_sscrfields>-ucomm ).
-ENDFORM.                    "SEL_SCREEN_PAI
-*
-**&---------------------------------------------------------------------*
-**----------------------------------------------------------------------*
-*
-*FORM sel_screen_at_scr TABLES ct_seldyn STRUCTURE rsseldyn
-*                       USING  is_fldnum TYPE rsdsfldnum.    "#EC CALLED
-*
-**  lcl_scr_free_sel=>get_instance( )->at_selection_screen_on(
-**   is_fldnum = is_fldnum
-**   it_seldyn = ct_seldyn[] ).
-*ENDFORM.
-*
-**&---------------------------------------------------------------------*
-**----------------------------------------------------------------------*
-*FORM sel_screen_f1
-*  USING  is_fldnum TYPE rsdsfldnum.                         "#EC CALLED
-*
-**  lcl_scr_free_sel=>get_instance( )->on_f1(
-**   is_fldnum = is_fldnum ).
-*ENDFORM.
-*
-**&---------------------------------------------------------------------*
-**----------------------------------------------------------------------*
-*FORM sel_screen_f4
-*  USING  is_fldnum TYPE rsdsfldnum
-*         is_f4info TYPE rsdsf4info
-*         iv_value  TYPE any.                                "#EC CALLED
-*
-**  lcl_scr_free_sel=>get_instance( )->on_f4(
-**   EXPORTING
-**    is_fldnum = is_fldnum
-**    is_f4info = is_f4info
-**   CHANGING
-**    cv_value  = iv_value ).
-*ENDFORM.
+ENDFORM.

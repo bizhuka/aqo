@@ -19,9 +19,15 @@ TYPE-POOLS:
 
 DATA:
   " OK_CODE 4 screens
-  gv_ok_code    TYPE syucomm,
-  go_opt        TYPE REF TO lcl_opt,
-  go_where_used type REF TO lcl_where_used.
+  gv_ok_code        TYPE syucomm,
+  go_opt            TYPE REF TO lcl_opt,
+
+  " TODO static ?
+  go_table_comp_alv TYPE REF TO lcl_table_comp_alv,
+  go_fld_opt_alv    TYPE REF TO lcl_fld_opt_alv,
+  go_string_memo    TYPE REF TO lcl_string_memo,
+  go_table_alv      TYPE REF TO lcl_table_alv,
+  go_where_used     TYPE REF TO lcl_where_used.
 
 TYPES:
   tt_rsdsfldnum TYPE STANDARD TABLE OF rsdsfldnum.

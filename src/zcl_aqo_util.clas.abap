@@ -58,6 +58,7 @@ public section.
   constants MC_KIND_TABLE type RSSCR_KIND value 'T' ##NO_TEXT.
   constants MC_KIND_MEMO type RSSCR_KIND value 'M' ##NO_TEXT.
 
+  class-methods CLASS_CONSTRUCTOR .
   class-methods CREATE_TYPE_DESCR
     importing
       !IV_ROLLNAME type CSEQUENCE optional
@@ -160,6 +161,8 @@ public section.
 protected section.
 private section.
 
+  class-data MT_XSDBOOLEAN type STRINGTAB .
+
   class-methods GET_POSITION
     importing
       !IV_INCLUDE type CSEQUENCE
@@ -168,11 +171,250 @@ private section.
     exporting
       !EV_LINE type I
       !EV_FOUND type ABAP_BOOL .
+  class-methods ABAP_2_JSON
+    importing
+      !IM_DATA type DATA
+      !IV_NAME type STRING optional
+    returning
+      value(RV_JSON) type STRING .
 ENDCLASS.
 
 
 
 CLASS ZCL_AQO_UTIL IMPLEMENTATION.
+
+
+METHOD abap_2_json.
+  CONSTANTS:
+    c_comma TYPE c VALUE ',',
+    c_colon TYPE c VALUE ':',
+    c_quote TYPE c VALUE '"'.
+
+  DATA:
+    dont_quote     TYPE xfeld,
+    json_fragments TYPE TABLE OF string,
+    rec_rv_json    TYPE string,
+    "s_type          TYPE c,
+    "l_type          TYPE c,
+    l_comps        TYPE i,
+    l_lines        TYPE i,
+    l_index        TYPE i,
+    l_value        TYPE string,
+    l_name         TYPE string,
+    l_strudescr    TYPE REF TO cl_abap_structdescr,
+    lo_type        TYPE REF TO cl_abap_typedescr,
+    lo_subtype     TYPE REF TO cl_abap_typedescr.
+
+  FIELD-SYMBOLS:
+    <abap_data> TYPE any,
+    <itab>      TYPE ANY TABLE,
+    <stru>      TYPE ANY TABLE,
+    <comp>      TYPE any,
+    <abapcomp>  TYPE abap_compdescr.
+
+
+  DEFINE get_scalar_value.
+    " &1 : assigned var
+    " &2 : abap data
+    " &3 : abap type
+    &1 = &2.
+****************************************************
+* Adapt some basic ABAP types (pending inclusion of all basic abap types?)
+* Feel free to customize this for your needs
+    CASE &3->type_kind.
+*       1. ABAP numeric types
+      WHEN 'I'. " Integer
+        CONDENSE &1.
+        IF sign( &1 ) < 0.
+          SHIFT &1 BY 1 PLACES RIGHT CIRCULAR.
+        ENDIF.
+        dont_quote = 'X'.
+
+      WHEN 'F'. " Float
+        CONDENSE &1.
+        dont_quote = 'X'.
+
+      WHEN 'P'. " Packed number (used in quantities or currency, for example)
+        CONDENSE &1.
+        IF sign( &1 ) < 0.
+          SHIFT &1 BY 1 PLACES RIGHT CIRCULAR.
+        ENDIF.
+        dont_quote = 'X'.
+
+      WHEN 'X'. " Hexadecimal
+        CONDENSE &1.
+        CONCATENATE '0x' &1 INTO &1.
+*        dont_quote = 'X'.
+*        "Quote it, as JSON doesn't support Hex or Octal as native types.
+
+*       2. ABAP char types
+      WHEN 'D'. " Date type
+        CONCATENATE &1(4) '-' &1+4(2) '-' &1+6(2) INTO &1.
+
+      WHEN 'T'. " Time representation
+        CONCATENATE &1(2) ':' &1+2(2) ':' &1+4(2) INTO &1.
+
+      WHEN 'N'. " Numeric text field
+*           condense &1.
+
+      WHEN 'C' OR 'g'. " Char sequences and Strings
+        READ TABLE mt_xsdboolean TRANSPORTING NO FIELDS BINARY SEARCH
+         WITH KEY table_line = &3->absolute_name.
+        IF sy-subrc = 0.
+          dont_quote = 'X'.
+          IF &2 = abap_true.
+            &1 = 'true'.
+          ELSE.
+            &1 = 'false'.
+          ENDIF.
+        ELSE.
+          " Put safe chars
+          REPLACE ALL OCCURRENCES OF '\' IN &1 WITH '\\' .
+          REPLACE ALL OCCURRENCES OF '"' IN &1 WITH '\"' .
+          REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>cr_lf IN &1 WITH '\r\n' .
+          REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>newline IN &1 WITH '\n' .
+          REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>horizontal_tab IN &1 WITH '\t' .
+          REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>backspace IN &1 WITH '\b' .
+          REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>form_feed IN &1 WITH '\f' .
+        ENDIF.
+
+      WHEN 'y'.  " XSTRING
+* Put the XSTRING in Base64
+        &1 = cl_http_utility=>encode_x_base64( &2 ).
+
+      WHEN OTHERS.
+* Don't hesitate to add and modify scalar abap types to suit your taste.
+
+    ENDCASE.
+** End of scalar data preparing.
+
+* Enclose value in quotes (or not)
+    IF dont_quote NE 'X'.
+      CONCATENATE c_quote &1 c_quote INTO &1.
+    ENDIF.
+
+    CLEAR dont_quote.
+
+  END-OF-DEFINITION.
+
+
+***************************************************
+*  Prepare field names, JSON does quote names!!   *
+*  You must be strict in what you produce.        *
+***************************************************
+  IF iv_name IS NOT INITIAL.
+    CONCATENATE c_quote iv_name c_quote c_colon INTO rec_rv_json.
+    APPEND rec_rv_json TO json_fragments.
+    CLEAR rec_rv_json.
+  ENDIF.
+
+**
+* Get ABAP data type
+  lo_type = cl_abap_typedescr=>describe_by_data( im_data ).
+  " DESCRIBE FIELD im_data TYPE l_type COMPONENTS l_comps.
+
+***************************************************
+*  Get rid of data references
+***************************************************
+  IF lo_type->type_kind EQ cl_abap_typedescr=>typekind_dref.
+    ASSIGN im_data->* TO <abap_data>.
+    lo_type = cl_abap_typedescr=>describe_by_data( <abap_data> ).
+
+    IF sy-subrc NE 0.
+      APPEND '{}' TO json_fragments.
+      CONCATENATE LINES OF json_fragments INTO rv_json.
+      EXIT.
+    ENDIF.
+  ELSE.
+    ASSIGN im_data TO <abap_data>.
+  ENDIF.
+
+* Get ABAP data type again and start
+  " DESCRIBE FIELD <abap_data> TYPE l_type COMPONENTS l_comps.
+
+  TRY.
+      l_strudescr ?= lo_type.
+    CATCH cx_sy_move_cast_error.
+      CLEAR l_strudescr.
+  ENDTRY.
+
+***************************************************
+*  Tables
+***************************************************
+  IF lo_type->type_kind EQ cl_abap_typedescr=>typekind_table.
+* '[' JSON table opening bracket
+    APPEND '[' TO json_fragments.
+    ASSIGN <abap_data> TO <itab>.
+    l_lines = lines( <itab> ).
+    LOOP AT <itab> ASSIGNING <comp>.
+      ADD 1 TO l_index.
+*> Recursive call for each table row:
+      rec_rv_json = abap_2_json( im_data = <comp> ).
+      APPEND rec_rv_json TO json_fragments.
+      CLEAR rec_rv_json.
+      IF l_index < l_lines.
+        APPEND c_comma TO json_fragments.
+      ENDIF.
+    ENDLOOP.
+    APPEND ']' TO json_fragments.
+* ']' JSON table closing bracket
+
+
+***************************************************
+*  Structures
+***************************************************
+  ELSE.
+    IF l_strudescr IS NOT INITIAL. " lo_class->absolute_name = '\CLASS=CL_ABAP_STRUCTDESCR'. " l_comps IS NOT INITIAL.
+* '{' JSON object opening curly brace
+      APPEND '{' TO json_fragments.
+      " l_strudescr ?=  lo_type. " cl_abap_typedescr=>describe_by_data( <abap_data> ).
+      l_comps = lines( l_strudescr->components ).
+      LOOP AT l_strudescr->components ASSIGNING <abapcomp>.
+        l_index = sy-tabix .
+        ASSIGN COMPONENT <abapcomp>-name OF STRUCTURE <abap_data> TO <comp>.
+        l_name = <abapcomp>-name.
+** ABAP names are usually in caps, set upcase to avoid the conversion to lower case.
+        " DESCRIBE FIELD <comp> TYPE s_type.
+        lo_subtype = cl_abap_typedescr=>describe_by_data( <comp> ).
+        IF lo_subtype->type_kind EQ cl_abap_typedescr=>typekind_table   OR lo_subtype->type_kind EQ cl_abap_typedescr=>typekind_dref OR
+           lo_subtype->type_kind EQ cl_abap_typedescr=>typekind_struct1 OR lo_subtype->type_kind EQ cl_abap_typedescr=>typekind_struct2.
+*> Recursive call for non-scalars:
+          rec_rv_json = abap_2_json( im_data = <comp> iv_name = l_name ).
+        ELSE.
+          IF lo_subtype->type_kind EQ cl_abap_typedescr=>typekind_oref OR lo_subtype->type_kind EQ cl_abap_typedescr=>typekind_iref.
+            rec_rv_json = '"REF UNSUPPORTED"'.
+          ELSE.
+            get_scalar_value rec_rv_json <comp> lo_subtype.
+          ENDIF.
+          CONCATENATE c_quote l_name c_quote c_colon rec_rv_json INTO rec_rv_json.
+        ENDIF.
+        APPEND rec_rv_json TO json_fragments.
+        CLEAR rec_rv_json. CLEAR l_name.
+        IF l_index < l_comps.
+          APPEND c_comma TO json_fragments.
+        ENDIF.
+      ENDLOOP.
+      APPEND '}' TO json_fragments.
+* '}' JSON object closing curly brace
+
+****************************************************
+*                  - Scalars -                     *
+****************************************************
+    ELSE.
+      get_scalar_value l_value <abap_data> lo_type.
+      APPEND l_value TO json_fragments.
+
+    ENDIF.
+* End of structure/scalar IF block.
+***********************************
+
+  ENDIF.
+* End of main IF block.
+**********************
+
+* Use a loop in older releases that don't support concatenate lines.
+  CONCATENATE LINES OF json_fragments INTO rv_json.
+ENDMETHOD.
 
 
 METHOD binary_to_string.
@@ -184,6 +426,25 @@ METHOD binary_to_string.
       text_buffer  = rv_string
     TABLES
       binary_tab   = it_table.
+ENDMETHOD.
+
+
+METHOD class_constructor.
+  DATA:
+    lv_type TYPE REF TO string.
+
+  " Get all boolean types
+  SELECT rollname INTO TABLE mt_xsdboolean
+  FROM dd04l
+  WHERE domname = 'XSDBOOLEAN' AND as4local = 'A'.
+
+  " Add text for speed
+  LOOP AT mt_xsdboolean REFERENCE INTO lv_type.
+    CONCATENATE '\TYPE=' lv_type->* INTO lv_type->*.
+  ENDLOOP.
+
+  " Is standard table
+  SORT mt_xsdboolean BY table_line.
 ENDMETHOD.
 
 
@@ -234,6 +495,7 @@ METHOD create_field_catalog.
       ENDIF.
 
       LOOP AT et_fieldcat ASSIGNING <ls_fieldcat>.
+        <ls_fieldcat>-col_pos = sy-tabix.
         IF <ls_fieldcat>-coltext IS INITIAL.
           <ls_fieldcat>-coltext = <ls_fieldcat>-reptext.
         ENDIF.
@@ -547,7 +809,7 @@ METHOD find_table_fieldname.
 ENDMETHOD.
 
 
-METHOD FROM_JSON.
+METHOD from_json.
   DATA:
     lo_error TYPE REF TO cx_root. "cx_transformation_error.
 
@@ -757,20 +1019,28 @@ ENDMETHOD.
 
 
 METHOD to_json.
-  DATA:
-    lo_writer TYPE REF TO cl_sxml_string_writer,
-    lv_xtring TYPE xstring.
+*  DATA:
+*    lo_writer TYPE REF TO cl_sxml_string_writer,
+*    lv_xtring TYPE xstring.
+*
+*  " IF lo_writer IS INITIAL. ELSE lo_writer->initialize( ).
+*  lo_writer = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ). " TODO !!
+*
+*  CALL TRANSFORMATION id SOURCE data = im_data
+*                         RESULT XML lo_writer.
+*
+*  lv_xtring = lo_writer->get_output( ).
+*
+*  " downgrad ?
+*  DATA(lv_json) = zcl_aqo_util=>xstring_to_string( lv_xtring ).
 
-  " IF lo_writer IS INITIAL. ELSE lo_writer->initialize( ).
-  lo_writer = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ). " TODO !!
+  rv_json = abap_2_json( im_data = im_data iv_name = 'DATA' ).
+  CONCATENATE `{` rv_json `}` INTO rv_json.
 
-  CALL TRANSFORMATION id SOURCE data = im_data
-                         RESULT XML lo_writer.
+*  IF lv_json <> rv_json.
+*    BREAK-POINT.
+*  ENDIF.
 
-  lv_xtring = lo_writer->get_output( ).
-
-  " downgrad ?
-  rv_json = zcl_aqo_util=>xstring_to_string( lv_xtring ).
 
 *  " delete surroundin DATA
 *  IF iv_pure = abap_true.
