@@ -3,8 +3,8 @@
 
 " Options
 SELECTION-SCREEN BEGIN OF BLOCK bl_main WITH FRAME.
-PARAMETERS : p_object TYPE zsaqo_search_help-object     OBLIGATORY MEMORY ID zaqo_object,
-             p_sub_ob TYPE zsaqo_search_help-subobject  OBLIGATORY MEMORY ID zaqo_subobject.
+PARAMETERS : p_object TYPE zsaqo_search_help-object     MODIF ID obl MEMORY ID zaqo_object,
+             p_sub_ob TYPE zsaqo_search_help-subobject  MODIF ID obl MEMORY ID zaqo_subobject.
 SELECTION-SCREEN END OF BLOCK bl_main.
 
 
@@ -22,14 +22,15 @@ PARAMETERS:
 SELECTION-SCREEN END OF BLOCK bl_where_used.
 SELECTION-SCREEN END OF SCREEN 1010.
 
-selection-screen function key 1.
+SELECTION-SCREEN FUNCTION KEY 1.
 
 AT SELECTION-SCREEN OUTPUT.
   CASE sy-dynnr.
     WHEN 1000.
       lcl_opt=>pbo( ).
     WHEN 1010.
-      lcl_where_used=>get_instance( )->pbo( ).
+      go_where_used = lcl_where_used=>get_instance( ).
+      go_where_used->pbo( ).
   ENDCASE.
 
 AT SELECTION-SCREEN.
@@ -40,7 +41,8 @@ AT SELECTION-SCREEN.
          cv_cmd = sy-ucomm ).
 
     WHEN 1010.
-      lcl_where_used=>get_instance( )->pai(
+      go_where_used = lcl_where_used=>get_instance( ).
+      go_where_used->pai(
        CHANGING
          cv_cmd = sy-ucomm ).
   ENDCASE.

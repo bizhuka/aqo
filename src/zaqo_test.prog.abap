@@ -143,7 +143,7 @@ CLASS lcl_main IMPLEMENTATION.
 *          CONCATENATE sy-datum sy-uzeit INTO cs_opt-datetime.
 
         WHEN 'SUM'.
-          cs_opt-sum          = '-9999999999.99' ##literal.
+          cs_opt-sum          = '-9999999999.99'.
 
         WHEN 'EDIT_MASK'.
           cs_opt-edit_mask    = '*MA"SK'.
@@ -165,7 +165,7 @@ CLASS lcl_main IMPLEMENTATION.
           FROM t002.
 
         WHEN 'SOME_TEXT'.
-          cs_opt-some_text = `Very very very very " very very \" very very very very very very very very very long text` ##no_text.
+          cs_opt-some_text = `Very very very very " very very \" very very very very very very very very very long text`.
 
         WHEN OTHERS.
           MESSAGE e012(zcl_aqo) WITH lv_field RAISING unknown_field.

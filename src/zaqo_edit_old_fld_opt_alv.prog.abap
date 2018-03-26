@@ -109,7 +109,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
 
           " Have 'T' or 'M'
           LOOP AT go_opt->mt_fld_opt TRANSPORTING NO FIELDS
-            WHERE kind = zcl_aqo=>mc_kind_table OR kind = zcl_aqo=>mc_kind_memo.
+            WHERE kind = zcl_aqo_util=>mc_kind_table OR kind = zcl_aqo_util=>mc_kind_memo.
             EXIT.
           ENDLOOP.
 
@@ -283,7 +283,9 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
 
   METHOD on_hotspot_click.
     DATA:
-      ls_fld_opt  TYPE REF TO lcl_opt=>ts_fld_opt.
+      ls_fld_opt        TYPE REF TO lcl_opt=>ts_fld_opt,
+      lo_table_comp_alv TYPE REF TO lcl_table_comp_alv,
+      lo_string_memo    TYPE REF TO lcl_string_memo.
 
     " Current item
     READ TABLE go_opt->mt_fld_opt REFERENCE INTO ls_fld_opt INDEX es_row_no-row_id.
@@ -291,18 +293,21 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
 
     CASE e_column_id.
       WHEN 'ICON'.
-        IF ls_fld_opt->kind = zcl_aqo=>mc_kind_table.
-          lcl_table_comp_alv=>get_instance( )->call_screen( ls_fld_opt ).
+        IF ls_fld_opt->kind = zcl_aqo_util=>mc_kind_table.
+          lo_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
+          lo_table_comp_alv->call_screen( ls_fld_opt ).
         ENDIF.
 
       WHEN 'VALUE_BUTTON'.
         " Only for tables
         CASE ls_fld_opt->kind.
-          WHEN zcl_aqo=>mc_kind_table.
-            lcl_table_alv=>get_instance( )->call_screen( ls_fld_opt ).
+          WHEN zcl_aqo_util=>mc_kind_table.
+            lo_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
+            lo_table_comp_alv->call_screen( ls_fld_opt ).
 
-          WHEN zcl_aqo=>mc_kind_memo.
-            lcl_string_memo=>get_instance( )->call_screen( ls_fld_opt ).
+          WHEN zcl_aqo_util=>mc_kind_memo.
+            lo_string_memo = lcl_string_memo=>get_instance( ).
+            lo_string_memo->call_screen( ls_fld_opt ).
         ENDCASE.
     ENDCASE.
   ENDMETHOD.
@@ -379,7 +384,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
       ls_fld_opt TYPE REF TO lcl_opt=>ts_fld_opt,
       lv_row     TYPE i,
       lv_unq     TYPE string,
-      lt_unq     TYPE zcl_aqo=>tt_unique.
+      lt_unq     TYPE zcl_aqo_util=>tt_unique.
 
     LOOP AT go_opt->mt_fld_opt REFERENCE INTO ls_fld_opt.
       lv_row = sy-tabix.
@@ -396,8 +401,8 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
       ENDIF.
 
       DO 1 TIMES.
-        IF   ls_fld_opt->kind = zcl_aqo=>mc_kind_table
-          OR ls_fld_opt->kind = zcl_aqo=>mc_kind_memo.
+        IF   ls_fld_opt->kind = zcl_aqo_util=>mc_kind_table
+          OR ls_fld_opt->kind = zcl_aqo_util=>mc_kind_memo.
           " lv_unq = ls_fld_opt->tab_rollname.
           CONTINUE.
         ELSE.
@@ -501,9 +506,9 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
       ls_range_sub1  TYPE REF TO rsds_frange,
       ls_range_sub2  TYPE REF TO rsdsselopt,
       lv_tabfld      TYPE string,
-      lv_name        TYPE zcl_aqo=>ts_field_opt-rollname,
+      lv_name        TYPE zcl_aqo_util=>ts_field_opt-rollname,
       lr_data        TYPE REF TO data,
-      lt_unique      TYPE zcl_aqo=>tt_unique.
+      lt_unique      TYPE zcl_aqo_util=>tt_unique.
     FIELD-SYMBOLS:
       <lt_val> TYPE STANDARD TABLE,
       <ls_val> TYPE any,
@@ -552,7 +557,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
       ls_scr_fld_txt-text     = ls_fld_opt->text.
 
       " Find for table
-      IF ls_fld_opt->kind = zcl_aqo=>mc_kind_table OR ls_fld_opt->kind = zcl_aqo=>mc_kind_memo.
+      IF ls_fld_opt->kind = zcl_aqo_util=>mc_kind_table OR ls_fld_opt->kind = zcl_aqo_util=>mc_kind_memo.
         lv_tabfld = 'SYINDEX'.
         zcl_aqo_util=>find_table_fieldname(
          EXPORTING
@@ -569,13 +574,13 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
         lv_tabfld = ls_fld_opt->rollname.
 
         CASE ls_fld_opt->kind.
-          WHEN zcl_aqo=>mc_kind_parameter.
+          WHEN zcl_aqo_util=>mc_kind_parameter.
             " Parameter
             ls_scr_fld_opt-sg_main       = 'I'.
             ls_scr_fld_opt-sg_addy       = 'N'.
             ls_scr_fld_opt-op_main       = 'JUST_EQ'.
 
-          WHEN zcl_aqo=>mc_kind_select_option.
+          WHEN zcl_aqo_util=>mc_kind_select_option.
             " Option
             ls_scr_fld_opt-sg_main       = '*'.
             ls_scr_fld_opt-sg_addy       = ' '.
@@ -636,8 +641,8 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
 ************************
       " Values
 ************************
-      CHECK ls_fld_opt->kind = zcl_aqo=>mc_kind_select_option OR
-            ls_fld_opt->kind = zcl_aqo=>mc_kind_parameter.
+      CHECK ls_fld_opt->kind = zcl_aqo_util=>mc_kind_select_option OR
+            ls_fld_opt->kind = zcl_aqo_util=>mc_kind_parameter.
 
       APPEND INITIAL LINE TO lt_range REFERENCE INTO ls_range.
       ls_range->tablename = ls_scr_fld-tablename.
@@ -647,7 +652,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
 
       lr_data = go_opt->get_field_data( ls_fld_opt->name ).
       CASE ls_fld_opt->kind.
-        WHEN zcl_aqo=>mc_kind_select_option.
+        WHEN zcl_aqo_util=>mc_kind_select_option.
           ASSIGN lr_data->* TO <lt_val>.
 
           LOOP AT <lt_val> ASSIGNING <ls_val>.
@@ -658,7 +663,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
             ls_range_sub2->high   = get_text_value( is_data = <ls_val> iv_field = 'HIGH' ).
           ENDLOOP.
 
-        WHEN zcl_aqo=>mc_kind_parameter.
+        WHEN zcl_aqo_util=>mc_kind_parameter.
           ASSIGN lr_data->* TO <lv_val>.
           " No need if empty
           CHECK sy-subrc = 0 AND <lv_val> IS NOT INITIAL.
@@ -759,7 +764,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
         lr_data = go_opt->get_field_data( ls_fld_opt->name ).
         CASE ls_fld_opt->kind.
             " Write back a parameter
-          WHEN zcl_aqo=>mc_kind_parameter.
+          WHEN zcl_aqo_util=>mc_kind_parameter.
             ASSIGN lr_data->* TO <lv_val>.
             CHECK sy-subrc = 0.
 
@@ -771,7 +776,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
             <lv_val> = ls_range_sub2->low.
 
             " Write back a range
-          WHEN zcl_aqo=>mc_kind_select_option.
+          WHEN zcl_aqo_util=>mc_kind_select_option.
             ASSIGN lr_data->* TO <lt_val>.
             CHECK sy-subrc = 0.
 
@@ -863,7 +868,10 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD find_ref.
-    lcl_where_used=>get_instance( )->call_screen( ).
+    DATA:
+      lo_where_used TYPE REF TO lcl_where_used.
+    lo_where_used = lcl_where_used=>get_instance( ).
+    lo_where_used->call_screen( ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -871,13 +879,17 @@ ENDCLASS.
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pbo_0100 OUTPUT.
-  lcl_fld_opt_alv=>get_instance( )->pbo( ).
+  DATA:
+    go_fld_opt_alv TYPE REF TO lcl_fld_opt_alv.
+  go_fld_opt_alv = lcl_fld_opt_alv=>get_instance( ).
+  go_fld_opt_alv->pbo( ).
 ENDMODULE.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pai_0100 INPUT.
-  lcl_fld_opt_alv=>get_instance( )->pai(
+  go_fld_opt_alv = lcl_fld_opt_alv=>get_instance( ).
+  go_fld_opt_alv->pai(
    CHANGING
      cv_cmd = gv_ok_code ).
 ENDMODULE.

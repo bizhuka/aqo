@@ -118,12 +118,6 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Cluseter key</DESCRIPT>
     </SEOCOMPOTX>
-    <SEOCOMPOTX>
-     <CLSNAME>ZCL_AQO</CLSNAME>
-     <CMPNAME>TT_FIELD_OPT</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Main options table</DESCRIPT>
-    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

@@ -69,7 +69,8 @@ CLASS lcl_opt IMPLEMENTATION.
 
   METHOD pbo.
     DATA:
-      lo_cont TYPE REF TO cl_gui_custom_container.
+      lo_cont TYPE REF TO cl_gui_custom_container,
+      lv_data TYPE string.
 
     SET PF-STATUS 'ST_MAIN'.
     SET TITLEBAR 'ST_TITLE'.
@@ -84,19 +85,23 @@ CLASS lcl_opt IMPLEMENTATION.
       mo_html_viewer EXPORTING
         io_parent = lo_cont. " cl_gui_container=>screen0.
 
-    load_data( iv_data    = load_from_smw0( 'Z_AQO_UTIL_JS' )
+    lv_data = load_from_smw0( 'Z_AQO_UTIL_JS' ).
+    load_data( iv_data    = lv_data
                iv_subtype = 'javascript'
                iv_url     = 'util.js' ).
 
-    load_data( iv_data    = load_from_smw0( 'Z_AQO_START_DIALOG_JS' )
+    lv_data = load_from_smw0( 'Z_AQO_START_DIALOG_JS' ).
+    load_data( iv_data    = lv_data
                iv_subtype = 'javascript'
                iv_url     = 'start_dialog.js' ).
 
-    load_data( iv_data    = load_from_smw0( 'Z_AQO_USAGE_JS' )
+    lv_data = load_from_smw0( 'Z_AQO_USAGE_JS' ).
+    load_data( iv_data    = lv_data
                iv_subtype = 'javascript'
                iv_url     = 'usage.js' ).
 
-    load_data( iv_data    = load_from_smw0( 'Z_AQO_INDEX_HTML' )
+    lv_data = load_from_smw0( 'Z_AQO_INDEX_HTML' ).
+    load_data( iv_data    = lv_data
                iv_subtype = 'html'
                iv_url     = 'index.html' ).
 
@@ -406,7 +411,8 @@ CLASS lcl_opt IMPLEMENTATION.
       lo_type   TYPE REF TO cl_abap_datadescr,
       lr_range  TYPE REF TO data,
       lv_ok     TYPE abap_bool,
-      lv_param  TYPE string.
+      lv_param  TYPE string,
+      lo_struc  TYPE REF TO cl_abap_structdescr.
     FIELD-SYMBOLS:
       <lt_range> TYPE STANDARD TABLE.
 
@@ -426,8 +432,9 @@ CLASS lcl_opt IMPLEMENTATION.
     ENDIF.
 
     " Table of range
+    lo_struc = zcl_aqo_util=>create_structure( io_range = lo_type ).
     lo_type = cl_abap_tabledescr=>create(
-      p_line_type = zcl_aqo_util=>create_structure( io_range = lo_type ) ).
+      p_line_type = lo_struc ).
 
     " Create table and assigned it
     CREATE DATA lr_range TYPE HANDLE lo_type.
@@ -494,7 +501,8 @@ CLASS lcl_opt IMPLEMENTATION.
       TRANSLATE <ls_fld_opt>-rollname TO UPPER CASE.
 
       " Check type
-      IF ( <ls_fld_opt>-kind = mc_kind_parameter OR <ls_fld_opt>-kind = mc_kind_select_option ) AND
+      IF ( <ls_fld_opt>-kind = zcl_aqo_util=>mc_kind_parameter
+        OR <ls_fld_opt>-kind = zcl_aqo_util=>mc_kind_select_option ) AND
          zcl_aqo_util=>create_type_descr( iv_rollname = <ls_fld_opt>-rollname ) IS INITIAL.
         MESSAGE e007(zaqo_mes) WITH <ls_fld_opt>-name.
       ENDIF.
@@ -518,10 +526,10 @@ CLASS lcl_opt IMPLEMENTATION.
     " Show messages
     LOOP AT lt_empty_field INTO lv_field.
       READ TABLE lt_fld_opt ASSIGNING <ls_fld_opt>
-       WITH TABLE KEY name COMPONENTS name = lv_field.
+       WITH KEY name = lv_field.
       CHECK sy-subrc = 0.
 
-      IF <ls_fld_opt>-kind = mc_kind_table.
+      IF <ls_fld_opt>-kind = zcl_aqo_util=>mc_kind_table.
         MESSAGE e005(zaqo_mes) WITH <ls_fld_opt>-text.
       ELSE.
         MESSAGE e018(zaqo_mes) WITH <ls_fld_opt>-text.
@@ -599,13 +607,13 @@ CLASS lcl_opt IMPLEMENTATION.
 
     " Show own messages
     IF lv_ok <> 'true'.
-      MESSAGE TEXT-m01 TYPE 'S' DISPLAY LIKE 'E'.
+      MESSAGE text-m01 TYPE 'S' DISPLAY LIKE 'E'.
     ELSE.
       CASE iv_favorite.
         WHEN 'true'.
-          MESSAGE TEXT-m02 TYPE 'S'.
+          MESSAGE text-m02 TYPE 'S'.
         WHEN 'false'.
-          MESSAGE TEXT-m03 TYPE 'S'.
+          MESSAGE text-m03 TYPE 'S'.
       ENDCASE.
     ENDIF.
 

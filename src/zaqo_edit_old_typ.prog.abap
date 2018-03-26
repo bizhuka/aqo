@@ -13,12 +13,15 @@ TABLES:
   sscrfields.
 
 TYPE-POOLS:
-  icon.
+  abap,
+  icon,
+  sscr.
 
 DATA:
   " OK_CODE 4 screens
-  gv_ok_code TYPE syucomm,
-  go_opt     TYPE REF TO lcl_opt.
+  gv_ok_code    TYPE syucomm,
+  go_opt        TYPE REF TO lcl_opt,
+  go_where_used type REF TO lcl_where_used.
 
 TYPES:
   tt_rsdsfldnum TYPE STANDARD TABLE OF rsdsfldnum.

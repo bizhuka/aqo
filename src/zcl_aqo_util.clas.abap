@@ -4,7 +4,38 @@ class ZCL_AQO_UTIL definition
   create public .
 
 public section.
+  type-pools ABAP .
 
+  types:
+    BEGIN OF ts_comp,
+        name        TYPE fieldname,
+        sys_type    TYPE abap_typekind, " SYSTEM
+        kind        TYPE rsscr_kind,    " P S T
+        ui_type     TYPE string,        " Only for KIND = P
+        length      TYPE i,             " Only for KIND = P
+        decimals    TYPE i,             " Only for KIND = P
+        " For editing in ALV
+        rollname    TYPE string,
+        text        TYPE DESCR_40,
+        " Table description
+        table_kind  TYPE abap_tablekind,
+        unique      TYPE abap_bool,
+        key         TYPE abap_keydescr_tab,
+        key_defkind TYPE abap_keydefkind,
+        subcomps    TYPE string,
+    END OF ts_comp .
+  types:
+    tt_comp TYPE STANDARD TABLE OF ts_comp WITH DEFAULT KEY .
+  types:
+    BEGIN OF ts_field_opt,
+        value       TYPE string,
+        is_old      TYPE XSDBOOLEAN,
+        edit        TYPE ZDAQO_EDITABLE.
+        INCLUDE TYPE ts_comp AS comp.
+    TYPES:
+    END OF ts_field_opt .
+  types:
+    tt_field_opt TYPE STANDARD TABLE OF ts_field_opt WITH DEFAULT KEY .
   types:
     BEGIN OF ts_usage,
         index   TYPE syindex,
@@ -18,13 +49,19 @@ public section.
       END OF ts_usage .
   types:
     tt_usage TYPE STANDARD TABLE OF ts_usage WITH DEFAULT KEY .
+  types:
+    tt_unique TYPE SORTED TABLE OF STRING WITH UNIQUE KEY TABLE_LINE .
 
   constants MC_UTF8 type ABAP_ENCODING value '4110' ##NO_TEXT.
+  constants MC_KIND_PARAMETER type RSSCR_KIND value 'P' ##NO_TEXT.
+  constants MC_KIND_SELECT_OPTION type RSSCR_KIND value 'S' ##NO_TEXT.
+  constants MC_KIND_TABLE type RSSCR_KIND value 'T' ##NO_TEXT.
+  constants MC_KIND_MEMO type RSSCR_KIND value 'M' ##NO_TEXT.
 
   class-methods CREATE_TYPE_DESCR
     importing
       !IV_ROLLNAME type CSEQUENCE optional
-      !IS_COMP type ZCL_AQO=>TS_COMP optional
+      !IS_COMP type TS_COMP optional
       value(IR_TYPE) type ref to DATA optional
     returning
       value(RO_TYPE) type ref to CL_ABAP_DATADESCR .
@@ -32,7 +69,7 @@ public section.
     importing
       !IO_RANGE type ref to CL_ABAP_DATADESCR optional
       !IV_COMPS type STRING optional
-      !IT_FIELD_OPT type ZCL_AQO=>TT_FIELD_OPT optional
+      !IT_FIELD_OPT type TT_FIELD_OPT optional
     returning
       value(RO_STRUCT) type ref to CL_ABAP_STRUCTDESCR
     exceptions
@@ -52,7 +89,7 @@ public section.
     changing
       !CV_ROLLNAME type CSEQUENCE
       !CV_TEXT type CSEQUENCE optional
-      !CT_UNIQUE type ZCL_AQO=>TT_UNIQUE .
+      !CT_UNIQUE type TT_UNIQUE .
   class-methods TO_JSON
     importing
       !IM_DATA type ANY
@@ -215,12 +252,12 @@ METHOD create_structure.
     lv_field   TYPE REF TO fieldname,
     lo_type    TYPE REF TO cl_abap_datadescr,
     lt_comp    TYPE abap_component_tab,
-    lt_subcomp TYPE STANDARD TABLE OF zcl_aqo=>ts_comp,
+    lt_subcomp TYPE STANDARD TABLE OF ts_comp,
     lr_type    TYPE REF TO data,
     lv_ok      TYPE abap_bool.
   FIELD-SYMBOLS:
-    <ls_field_opt> TYPE zcl_aqo=>ts_field_opt,
-    <ls_subfield>  TYPE zcl_aqo=>ts_comp,
+    <ls_field_opt> TYPE ts_field_opt,
+    <ls_subfield>  TYPE ts_comp,
     <ls_comp>      LIKE LINE OF lt_comp.
 
   " №2 For select-options
@@ -260,7 +297,7 @@ METHOD create_structure.
       CLEAR lo_type.
 
       " For tables speed 2
-      IF <ls_subfield>-kind = zcl_aqo=>mc_kind_parameter.
+      IF <ls_subfield>-kind = zcl_aqo_util=>mc_kind_parameter.
         lo_type = create_type_descr( iv_rollname = <ls_subfield>-rollname ).
       ENDIF.
 
@@ -311,6 +348,9 @@ ENDMETHOD.
 
 
 METHOD CREATE_TYPE_DESCR.
+  DATA:
+    lo_line TYPE REF TO CL_ABAP_DATADESCR.
+
   " No type
   CLEAR ro_type.
 
@@ -334,15 +374,16 @@ METHOD CREATE_TYPE_DESCR.
     ro_type = create_type_descr( iv_rollname = is_comp-rollname ).
     CASE is_comp-kind.
         " P
-      WHEN zcl_aqo=>mc_kind_parameter.
+      WHEN zcl_aqo_util=>mc_kind_parameter.
 
         " S
-      WHEN zcl_aqo=>mc_kind_select_option.
+      WHEN zcl_aqo_util=>mc_kind_select_option.
         " Call №2 recursion
-        ro_type = cl_abap_tabledescr=>create( p_line_type = create_structure( io_range = ro_type ) ).
+        lo_line = create_structure( io_range = ro_type ).
+        ro_type = cl_abap_tabledescr=>create( p_line_type = lo_line ).
 
         " T
-      WHEN zcl_aqo=>mc_kind_table.
+      WHEN zcl_aqo_util=>mc_kind_table.
         " Call №3 recursion
         IF ro_type IS INITIAL.
           ro_type = create_structure( iv_comps = is_comp-subcomps ).
@@ -368,7 +409,7 @@ METHOD CREATE_TYPE_DESCR.
 
       " №2 - Based on incoming reference
       ro_type ?= cl_abap_datadescr=>describe_by_data_ref( ir_type ).
-    CATCH cx_root ##CATCH_ALL.
+    CATCH cx_root.
       CLEAR ro_type.
   ENDTRY.
 ENDMETHOD.
@@ -450,7 +491,7 @@ METHOD find_table_fieldname.
   CHECK cv_rollname IS NOT INITIAL.
   lv_rollname = cv_rollname.
 
-  SELECT d~tabname d~fieldname d~shlporigin INTO CORRESPONDING FIELDS OF TABLE lt_dd03l ##TOO_MANY_ITAB_FIELDS
+  SELECT d~tabname d~fieldname d~shlporigin INTO CORRESPONDING FIELDS OF TABLE lt_dd03l
   FROM dd03l AS d UP TO 100 ROWS
   WHERE d~rollname = lv_rollname AND d~as4local = 'A' AND d~tabname NOT LIKE '/%' AND d~depth = 0.
 
@@ -721,7 +762,7 @@ METHOD to_json.
     lv_xtring TYPE xstring.
 
   " IF lo_writer IS INITIAL. ELSE lo_writer->initialize( ).
-  lo_writer = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ).
+  lo_writer = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ). " TODO !!
 
   CALL TRANSFORMATION id SOURCE data = im_data
                          RESULT XML lo_writer.

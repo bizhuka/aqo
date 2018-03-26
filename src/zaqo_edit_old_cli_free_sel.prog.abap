@@ -32,8 +32,8 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
         lv_edit = abap_false.
       ENDIF.
 
-      if ls_fld_opt->kind = zcl_aqo=>mc_kind_table OR
-         ls_fld_opt->kind = zcl_aqo=>mc_kind_memo.
+      if ls_fld_opt->kind = zcl_aqo_util=>mc_kind_table OR
+         ls_fld_opt->kind = zcl_aqo_util=>mc_kind_memo.
           IF ls_screen-group3 = 'LOW' OR ls_screen-group3 = 'TOT' OR ls_screen-group3 = 'HGH'.
             lv_show = abap_false.
           ENDIF.
@@ -75,8 +75,10 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
 
   METHOD pai.
     DATA:
-      lv_grp_n   TYPE numc3,
-      ls_fld_opt TYPE REF TO lcl_opt=>ts_fld_opt.
+      lv_grp_n       TYPE numc3,
+      ls_fld_opt     TYPE REF TO lcl_opt=>ts_fld_opt,
+      lo_table_alv   TYPE REF TO lcl_table_alv,
+      lo_string_memo TYPE REF TO lcl_string_memo.
 
     " Only push button of range
     CHECK cv_cmd(1) = '%'.
@@ -93,11 +95,13 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
 
     " Only for tables
     CASE ls_fld_opt->kind.
-      WHEN zcl_aqo=>mc_kind_table.
-        lcl_table_alv=>get_instance( )->call_screen( ls_fld_opt ).
+      WHEN zcl_aqo_util=>mc_kind_table.
+        lo_table_alv = lcl_table_alv=>get_instance( ).
+        lo_table_alv->call_screen( ls_fld_opt ).
 
-      WHEN zcl_aqo=>mc_kind_memo.
-        lcl_string_memo=>get_instance( )->call_screen( ls_fld_opt ).
+      WHEN zcl_aqo_util=>mc_kind_memo.
+        lo_string_memo = lcl_string_memo=>get_instance( ).
+        lo_string_memo->call_screen( ls_fld_opt ).
 
       WHEN OTHERS.
         RETURN.
@@ -174,8 +178,12 @@ ENDCLASS.                    "lcl_free_sel IMPLEMENTATION
 *----------------------------------------------------------------------*
 FORM sel_screen_pbo TABLES ct_seldyn STRUCTURE rsseldyn
                            ct_fldnum STRUCTURE rsdsfldnum.  "#EC CALLED
+  DATA:
+    lo_scr_free_sel TYPE REF TO lcl_scr_free_sel.
+
   SORT ct_fldnum BY group1.
-  lcl_scr_free_sel=>get_instance( )->pbo(
+  lo_scr_free_sel = lcl_scr_free_sel=>get_instance( ).
+  lo_scr_free_sel->pbo(
    it_seldyn    = ct_seldyn[]
    it_dsfldnum  = ct_fldnum[] ).
 ENDFORM.                    "SEL_SCREEN_PBO
@@ -184,6 +192,8 @@ ENDFORM.                    "SEL_SCREEN_PBO
 *----------------------------------------------------------------------*
 FORM sel_screen_pai TABLES ct_seldyn STRUCTURE rsseldyn
                            ct_fldnum STRUCTURE rsdsfldnum.  "#EC CALLED
+  DATA:
+    lo_scr_free_sel TYPE REF TO lcl_scr_free_sel.
   FIELD-SYMBOLS:
     <ls_sscrfields> TYPE sscrfields.
 
@@ -192,7 +202,8 @@ FORM sel_screen_pai TABLES ct_seldyn STRUCTURE rsseldyn
   CHECK <ls_sscrfields> IS ASSIGNED.
 
   SORT ct_fldnum BY group1.
-  lcl_scr_free_sel=>get_instance( )->pai(
+  lo_scr_free_sel = lcl_scr_free_sel=>get_instance( ).
+  lo_scr_free_sel->pai(
    EXPORTING
      it_seldyn    = ct_seldyn[]
      it_dsfldnum  = ct_fldnum[]

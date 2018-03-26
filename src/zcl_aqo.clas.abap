@@ -3,54 +3,14 @@ class ZCL_AQO definition
   create public .
 
 public section.
+  type-pools ABAP .
 
   types:
     BEGIN OF ts_clst_key,
         object    TYPE ZTAQO_DATA-object,
         subobject TYPE ZTAQO_DATA-subobject,
       END OF ts_clst_key .
-  types:
-    BEGIN OF ts_comp,
-        name        TYPE fieldname,
-        sys_type    TYPE abap_typekind, " SYSTEM
-        kind        TYPE rsscr_kind,    " P S T
-        ui_type     TYPE string,        " Only for KIND = P
-        length      TYPE i,             " Only for KIND = P
-        decimals    TYPE i,             " Only for KIND = P
 
-        " For editing in ALV
-        rollname    TYPE RSBOBJDS_DATATYPE,
-        text        TYPE DESCR_40,
-
-        " Table description
-        table_kind  TYPE abap_tablekind,
-        unique      TYPE abap_bool,
-        key         TYPE abap_keydescr_tab,
-        key_defkind TYPE abap_keydefkind,
-
-        subcomps    TYPE string,
-    END OF ts_comp .
-  types:
-    tt_comp TYPE STANDARD TABLE OF ts_comp WITH DEFAULT KEY .
-  types:
-    BEGIN OF ts_field_opt,
-        value       TYPE string,
-        is_old      TYPE XSDBOOLEAN,
-        edit        TYPE ZDAQO_EDITABLE.
-
-        INCLUDE TYPE ts_comp AS comp.
-    TYPES:
-    END OF ts_field_opt .
-  types:
-    tt_field_opt TYPE STANDARD TABLE OF ts_field_opt WITH DEFAULT KEY
-          WITH NON-UNIQUE SORTED KEY name COMPONENTS name .
-  types:
-    tt_unique TYPE SORTED TABLE OF STRING WITH UNIQUE KEY TABLE_LINE .
-
-  constants MC_KIND_PARAMETER type RSSCR_KIND value 'P' ##NO_TEXT.
-  constants MC_KIND_SELECT_OPTION type RSSCR_KIND value 'S' ##NO_TEXT.
-  constants MC_KIND_TABLE type RSSCR_KIND value 'T' ##NO_TEXT.
-  constants MC_KIND_MEMO type RSSCR_KIND value 'M' ##NO_TEXT.
   data MS_CLUSTER type ZTAQO_DATA read-only .
   data MS_KEY type TS_CLST_KEY read-only .
 
@@ -97,21 +57,21 @@ public section.
       value(RR_DATA) type ref to DATA .
 protected section.
 
-  data MT_FIELD_OPT type TT_FIELD_OPT .
+  data MT_FIELD_OPT type ZCL_AQO_UTIL=>TT_FIELD_OPT .
   data MS_LAST_CALL type ABAP_CALLSTACK_LINE .
 private section.
 
   data MR_DATA type ref to DATA .
   data MO_DATA type ref to OBJECT .
   data MT_ALL_FIELD type TTFIELDNAME .
-  data MT_UNQ_NAME type TT_UNIQUE .
+  data MT_UNQ_NAME type ZCL_AQO_UTIL=>TT_UNIQUE .
 
   methods CONSTRUCT_NEW_COMP
     importing
       !IV_FIELD_NAME type LVC_FNAME
       !IM_DATA type ANY
     returning
-      value(RS_COMP) type TS_COMP
+      value(RS_COMP) type ZCL_AQO_UTIL=>TS_COMP
     exceptions
       IS_NOT_STRUCTURE
       CANNOT_DETECT_TYPE .
@@ -134,7 +94,7 @@ METHOD constructor.
     lt_callstack TYPE abap_callstack,
     ls_last_call TYPE REF TO abap_callstack_line,
     lv_name      TYPE string,
-    lr_field_opt TYPE REF TO zcl_aqo=>ts_field_opt.
+    lr_field_opt TYPE REF TO zcl_aqo_util=>ts_field_opt.
 
   " Key fields
   ms_key-object    = iv_object.
@@ -267,16 +227,16 @@ METHOD constructor.
     lv_field     TYPE REF TO fieldname,
     lt_new_field TYPE STANDARD TABLE OF lvc_fname,
     lr_new_field TYPE REF TO lvc_fname,
-    ls_field_opt TYPE zcl_aqo=>ts_field_opt,
+    ls_field_opt TYPE zcl_aqo_util=>ts_field_opt,
     lr_data      TYPE REF TO data.
   " Field data
   FIELD-SYMBOLS:
-    <lv_field>    TYPE any.
+    <lv_field>    TYPE ANY.
 
   " Try to find new options
   LOOP AT me->mt_all_field REFERENCE INTO lv_field.
     READ TABLE mt_field_opt TRANSPORTING NO FIELDS
-     WITH TABLE KEY name COMPONENTS name = lv_field->*.
+     WITH KEY name = lv_field->*.
     CHECK sy-subrc <> 0.
 
     APPEND lv_field->* TO lt_new_field.
@@ -308,13 +268,13 @@ METHOD construct_new_comp.
     lv_cnt          TYPE i,
     lr_row          TYPE REF TO data,
     lo_type         TYPE REF TO cl_abap_typedescr,
-    lt_subcomp      TYPE STANDARD TABLE OF ts_comp,
+    lt_subcomp      TYPE STANDARD TABLE OF zcl_aqo_util=>ts_comp,
     lv_name         TYPE string.
   FIELD-SYMBOLS:
     <ls_comp_tab> TYPE abap_compdescr,
-    <ls_row>      TYPE any,
-    <lv_subvalue> TYPE any,
-    <ls_subfield> TYPE ts_comp.
+    <ls_row>      TYPE ANY,
+    <lv_subvalue> TYPE ANY,
+    <ls_subfield> TYPE zcl_aqo_util=>ts_comp.
 
   lo_type = cl_abap_typedescr=>describe_by_data( im_data ).
   rs_comp-name     = iv_field_name.
@@ -327,13 +287,13 @@ METHOD construct_new_comp.
 
   " Is parameter
   IF rs_comp-sys_type <> cl_abap_typedescr=>typekind_table.
-    rs_comp-kind = zcl_aqo=>mc_kind_parameter.
+    rs_comp-kind = zcl_aqo_util=>mc_kind_parameter.
     CASE rs_comp-sys_type.
         " Memo text
       WHEN cl_abap_typedescr=>typekind_string.
         rs_comp-ui_type  = 'memo'.
         rs_comp-rollname = 'STRINGVAL'.
-        rs_comp-kind     = zcl_aqo=>mc_kind_memo.
+        rs_comp-kind     = zcl_aqo_util=>mc_kind_memo.
 
         " Date
       WHEN cl_abap_typedescr=>typekind_date.
@@ -367,7 +327,7 @@ METHOD construct_new_comp.
     ENDCASE.
   ELSE.
     " Is table
-    rs_comp-kind         = zcl_aqo=>mc_kind_table.
+    rs_comp-kind         = zcl_aqo_util=>mc_kind_table.
     lr_table_descr ?= lo_type.
 
     rs_comp-table_kind   = lr_table_descr->table_kind.
@@ -413,7 +373,7 @@ METHOD construct_new_comp.
 
     " Select option ?
     DO 1 TIMES.
-      lv_cnt = lines( lt_subcomp ).
+      lv_cnt = LINES( lt_subcomp ).
 
       CHECK lv_cnt = 4.
       " TODO Check length ?
@@ -423,7 +383,7 @@ METHOD construct_new_comp.
       ENDLOOP.
 
       CHECK lv_cnt = 0.
-      rs_comp-kind   = zcl_aqo=>mc_kind_select_option.
+      rs_comp-kind   = zcl_aqo_util=>mc_kind_select_option.
 
       " No need in components
       CLEAR rs_comp-subcomps.
@@ -439,8 +399,8 @@ METHOD construct_new_comp.
 
   " Try to find TABLE-FIELDNAME
   DO 1 TIMES.
-    CHECK   rs_comp-kind = zcl_aqo=>mc_kind_select_option OR
-            rs_comp-kind = zcl_aqo=>mc_kind_parameter.
+    CHECK   rs_comp-kind = zcl_aqo_util=>mc_kind_select_option OR
+            rs_comp-kind = zcl_aqo_util=>mc_kind_parameter.
     zcl_aqo_util=>find_table_fieldname(
      EXPORTING
       iv_name        = rs_comp-name
@@ -455,7 +415,7 @@ METHOD construct_new_comp.
     ENDIF.
   ENDDO.
 
-*  IF rs_comp-kind <> zcl_aqo=>mc_kind_table AND
+*  IF rs_comp-kind <> zcl_aqo_util=>mc_kind_table AND
 *     rs_comp-rollname IS INITIAL.
 *    MESSAGE e009(zaqo_mes) WITH rs_comp-name RAISING cannot_detect_type.
 *  ENDIF.
@@ -567,21 +527,21 @@ METHOD read.
     lr_table         TYPE REF TO data,
     lo_type          TYPE REF TO cl_abap_datadescr,
     lv_ok            TYPE abap_bool,
-    ls_new_field_opt TYPE ts_field_opt,
-    ls_comp          TYPE ts_comp.
+    ls_new_field_opt TYPE zcl_aqo_util=>ts_field_opt,
+    ls_comp          TYPE zcl_aqo_util=>ts_comp.
   FIELD-SYMBOLS:
-    <lv_value>     TYPE any,
+    <lv_value>     TYPE ANY,
     <lt_value>     TYPE STANDARD TABLE,
     <lt_any_tab>   TYPE ANY TABLE,
-    <ls_value>     TYPE any,
-    <ls_low>       TYPE any,
+    <ls_value>     TYPE ANY,
+    <ls_low>       TYPE ANY,
     <ls_field_opt> LIKE LINE OF mt_field_opt.
 
 
   LOOP AT mt_all_field REFERENCE INTO lv_field.
     " Read option
     READ TABLE mt_field_opt ASSIGNING <ls_field_opt>
-     WITH TABLE KEY name COMPONENTS name = lv_field->*.
+     WITH KEY name = lv_field->*.
     CHECK sy-subrc = 0.
 
     " Destination
@@ -590,7 +550,7 @@ METHOD read.
     CHECK sy-subrc = 0.
 
     " For tables only
-    IF iv_safe_read = abap_true AND <ls_field_opt>-kind = mc_kind_table.
+    IF iv_safe_read = abap_true AND <ls_field_opt>-kind = zcl_aqo_util=>mc_kind_table.
       ls_comp            = <ls_field_opt>-comp.
 
       " Create standard table
@@ -614,7 +574,7 @@ METHOD read.
        ex_data = <lv_value>
        ev_ok   = lv_ok ).
 
-    IF iv_safe_read = abap_true AND <ls_field_opt>-kind = mc_kind_table.
+    IF iv_safe_read = abap_true AND <ls_field_opt>-kind = zcl_aqo_util=>mc_kind_table.
       " Prev ref
       ASSIGN lr_data->* TO <lv_value>.
 
@@ -623,7 +583,7 @@ METHOD read.
         INSERT <ls_value> INTO TABLE <lt_any_tab>.
       ENDLOOP.
 
-      IF lines( <lt_value> ) <> lines( <lt_any_tab> ).
+      IF LINES( <lt_value> ) <> LINES( <lt_any_tab> ).
         lv_ok = abap_false.
       ENDIF.
     ENDIF.
@@ -640,7 +600,8 @@ METHOD read.
     CHECK <ls_field_opt>-rollname = ls_new_field_opt-rollname.
 
     " P -> S
-    IF <ls_field_opt>-kind = mc_kind_parameter AND ls_new_field_opt-kind = mc_kind_select_option.
+    IF <ls_field_opt>-kind = zcl_aqo_util=>mc_kind_parameter AND
+     ls_new_field_opt-kind = zcl_aqo_util=>mc_kind_select_option.
       ASSIGN <lv_value> TO <lt_value>.
       APPEND INITIAL LINE TO <lt_value> ASSIGNING <ls_value>.
       <ls_value> = 'IEQ'.
@@ -660,7 +621,8 @@ METHOD read.
       ENDIF.
 
       " S -> P
-    ELSEIF <ls_field_opt>-kind = mc_kind_select_option AND ls_new_field_opt-kind = mc_kind_parameter.
+    ELSEIF <ls_field_opt>-kind = zcl_aqo_util=>mc_kind_select_option AND
+         ls_new_field_opt-kind = zcl_aqo_util=>mc_kind_parameter.
       " Create OLD range table
       lo_type = zcl_aqo_util=>create_type_descr( is_comp = <ls_field_opt>-comp ).
       CREATE DATA lr_data TYPE HANDLE lo_type.
@@ -756,7 +718,7 @@ METHOD save.
     LOOP AT mt_all_field REFERENCE INTO lv_field.
       " Read option
       READ TABLE mt_field_opt ASSIGNING <ls_field_opt>
-       WITH TABLE KEY name COMPONENTS name = lv_field->*.
+       WITH KEY name = lv_field->*.
       CHECK sy-subrc = 0.
 
       " Source

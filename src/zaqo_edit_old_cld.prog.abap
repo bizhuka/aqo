@@ -8,7 +8,7 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL FRIENDS
     TYPES:
       BEGIN OF ts_fld_opt,
         icon TYPE icon_d.
-        INCLUDE TYPE zcl_aqo=>ts_field_opt.
+        INCLUDE TYPE zcl_aqo_util=>ts_field_opt.
     TYPES:
       tab_rollname TYPE string, " Only for runtime
       value_button TYPE icon_d,
@@ -111,12 +111,12 @@ CLASS lcl_scr_free_sel DEFINITION FINAL.
     METHODS:
       pbo
         IMPORTING
-          it_seldyn   TYPE zif_prog_params_ui_ext=>rsseldyn_tab "#EC NEEDED
+          it_seldyn   TYPE rsseldyn_tab "#EC NEEDED
           it_dsfldnum TYPE tt_rsdsfldnum,
 
       pai
         IMPORTING
-          it_seldyn   TYPE zif_prog_params_ui_ext=>rsseldyn_tab "#EC NEEDED
+          it_seldyn   TYPE rsseldyn_tab "#EC NEEDED
           it_dsfldnum TYPE tt_rsdsfldnum
         CHANGING
           cv_cmd      TYPE syucomm.
@@ -152,7 +152,7 @@ CLASS lcl_table_comp_alv DEFINITION FINAL.
 
     DATA:
       ms_fld_opt    TYPE REF TO lcl_opt=>ts_fld_opt,
-      mt_components TYPE zcl_aqo=>tt_comp,
+      mt_components TYPE zcl_aqo_util=>tt_comp,
 
       mv_refresh    TYPE abap_bool,
       mr_grid       TYPE REF TO cl_gui_alv_grid.

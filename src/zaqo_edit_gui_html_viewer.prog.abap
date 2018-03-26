@@ -45,9 +45,9 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
   METHOD on_sapevent.
     DATA:
       lv_name      TYPE string,
-      lv_object    TYPE ztparams_cluster-object,
-      lv_subobject TYPE ztparams_cluster-subobject,
-      lv_datatype  TYPE zcl_aqo=>ts_field_opt-rollname,
+      lv_object    TYPE ztaqo_data-object,
+      lv_subobject TYPE ztaqo_data-subobject,
+      lv_datatype  TYPE zcl_aqo_util=>ts_field_opt-rollname,
       lv_title     TYPE sytitle,
       lv_ranges    TYPE string,
       lv_mandt     TYPE symandt,
@@ -59,7 +59,7 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
       lv_favorite  TYPE string.
     FIELD-SYMBOLS:
       <ls_param> LIKE LINE OF lt_param,
-      <lv_any>   TYPE any.
+      <lv_any>   TYPE ANY.
 
     lt_param = parse_fields( postdata ).
 
@@ -148,16 +148,16 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
     DEFINE unescape.
       " do not use cl_http_utility as it does strange things with the encoding
       " todo, more to be added here
-      REPLACE ALL OCCURRENCES OF:
-        `%24` IN &1 WITH `$`,
-        `%26` IN &1 WITH `&`,
-        `%2B` IN &1 WITH `+`,
-        `%2C` IN &1 WITH `,`,
-        `%3A` IN &1 WITH `:`,
-        `%3B` IN &1 WITH `;`,
-        `%3D` IN &1 WITH `=`,
-        `%3F` IN &1 WITH `?`,
-        `%40` IN &1 WITH `@`.
+      replace all occurrences of:
+        `%24` in &1 with `$`,
+        `%26` in &1 with `&`,
+        `%2B` in &1 with `+`,
+        `%2C` in &1 with `,`,
+        `%3A` in &1 with `:`,
+        `%3B` in &1 with `;`,
+        `%3D` in &1 with `=`,
+        `%3F` in &1 with `?`,
+        `%40` in &1 with `@`.
     END-OF-DEFINITION.
 
     CONCATENATE LINES OF it_postdata INTO lv_string.
@@ -168,15 +168,15 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
     LOOP AT lt_substrings INTO lv_substring.
       CLEAR: ls_field.
 
-      ls_field-name = substring_before( val = lv_substring
-                                        sub = '=' ).
-      unescape ls_field-name.
+      SPLIT lv_substring AT '=' INTO ls_field-name ls_field-value.
+
+      " Convert from url
+      unescape:
+       ls_field-name,
+       ls_field-value.
+
+      " Insert in upper case
       TRANSLATE ls_field-name TO UPPER CASE.
-
-      ls_field-value = substring_after( val = lv_substring
-                                        sub = '=' ).
-      unescape ls_field-value.
-
       INSERT ls_field INTO TABLE rt_fields.
     ENDLOOP.
   ENDMETHOD.

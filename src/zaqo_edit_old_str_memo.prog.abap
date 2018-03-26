@@ -120,13 +120,17 @@ ENDCLASS.                    "IMPLEMENTATION
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pbo_0400 OUTPUT.
-  lcl_string_memo=>get_instance( )->pbo( ).
+  DATA:
+    go_string_memo TYPE REF TO lcl_string_memo.
+  go_string_memo = lcl_string_memo=>get_instance( ).
+  go_string_memo->pbo( ).
 ENDMODULE.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pai_0400 INPUT.
-  lcl_string_memo=>get_instance( )->pai(
+  go_string_memo = lcl_string_memo=>get_instance( ).
+  go_string_memo->pai(
    CHANGING
      cv_cmd = gv_ok_code ).
 ENDMODULE.

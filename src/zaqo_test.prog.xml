@@ -18,11 +18,6 @@
      <ENTRY>Attention! No options are detected</ENTRY>
      <LENGTH>68</LENGTH>
     </item>
-    <item>
-     <ID>R</ID>
-     <ENTRY>Check ZCL_PROG_PARAMS class</ENTRY>
-     <LENGTH>70</LENGTH>
-    </item>
    </TPOOL>
    <I18N_TPOOL>
     <item>

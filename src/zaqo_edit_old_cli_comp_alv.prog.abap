@@ -154,13 +154,17 @@ ENDCLASS.
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pbo_0300 OUTPUT.
-  lcl_table_comp_alv=>get_instance( )->pbo( ).
+  DATA:
+    go_table_comp_alv TYPE REF TO lcl_table_comp_alv.
+  go_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
+  go_table_comp_alv->pbo( ).
 ENDMODULE.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pai_0300 INPUT.
-  lcl_table_comp_alv=>get_instance( )->pai(
+  go_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
+  go_table_comp_alv->pai(
    CHANGING
      cv_cmd = gv_ok_code ).
 ENDMODULE.

@@ -1,4 +1,4 @@
-FUNCTION z_sh_unq_items.
+FUNCTION Z_SH_UNQ_ITEMS.
 *"--------------------------------------------------------------------
 *"*"Local Interface:
 *"  TABLES
@@ -8,7 +8,7 @@ FUNCTION z_sh_unq_items.
 *"     VALUE(SHLP) TYPE  SHLP_DESCR
 *"     VALUE(CALLCONTROL) LIKE  DDSHF4CTRL STRUCTURE  DDSHF4CTRL
 *"--------------------------------------------------------------------
-  DATA:
+DATA:
     lt_disp TYPE STANDARD TABLE OF ztaqo_data.
   DEFINE read_field.
     CALL FUNCTION 'F4UT_PARAMETER_VALUE_GET'
@@ -44,4 +44,9 @@ FUNCTION z_sh_unq_items.
   DELETE record_tab INDEX sy-tabix.
 
 *  CALL FUNCTION 'F4UT_PARAMETER_RESULTS_PUT'
+
+
+
+
+
 ENDFUNCTION.

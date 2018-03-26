@@ -75,9 +75,10 @@ CLASS lcl_table_alv IMPLEMENTATION.
       lv_ind      TYPE i,
       lv_sum      TYPE num4,
       lt_code     TYPE STANDARD TABLE OF syucomm,
-      lt_subcomps TYPE zcl_aqo=>tt_comp,
-      ls_subcomp  TYPE REF TO zcl_aqo=>ts_comp,
-      lv_ok       TYPE ABAP_BOOL.
+      lt_subcomps TYPE zcl_aqo_util=>tt_comp,
+      ls_subcomp  TYPE REF TO zcl_aqo_util=>ts_comp,
+      lv_ok       TYPE ABAP_BOOL,
+      lv_cnt      TYPE i.
     FIELD-SYMBOLS:
       <lt_table> TYPE STANDARD TABLE.
 
@@ -124,7 +125,7 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
     " Get field catalog
     ASSIGN mr_table->* TO <lt_table>.
-    zcl_prog_params=>create_field_catalog(
+    zcl_aqo_util=>create_field_catalog(
      IMPORTING
        et_fieldcat = lt_fieldcat
      CHANGING
@@ -194,7 +195,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
     ls_variant-report  = p_object.
 
     lv_sum = 0.
-    DO strlen( ms_fld_opt->name ) TIMES.
+    lv_cnt = strlen( ms_fld_opt->name ).
+    DO lv_cnt TIMES.
       lv_ind = sy-index - 1.
       lv_sum = lv_sum + cl_abap_conv_out_ce=>uccpi( ms_fld_opt->name+lv_ind(1) ).
     ENDDO.
@@ -312,13 +314,17 @@ ENDCLASS.                    "lcl_table_alv IMPLEMENTATION
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pbo_0200 OUTPUT.
-  lcl_table_alv=>get_instance( )->pbo( ).
+  DATA:
+    go_table_alv TYPE REF TO lcl_table_alv.
+  go_table_alv = lcl_table_alv=>get_instance( ).
+  go_table_alv->pbo( ).
 ENDMODULE.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 MODULE pai_0200 INPUT.
-  lcl_table_alv=>get_instance( )->pai(
+  go_table_alv = lcl_table_alv=>get_instance( ).
+  go_table_alv->pai(
    CHANGING
      cv_cmd = gv_ok_code ).
 ENDMODULE.

@@ -19,7 +19,7 @@ public section.
       value(RO_INSTANCE) type ref to ZCL_AQO_OPT_EXAMPLE
     exceptions
       UNKNOWN_FIELD .
-  PROTECTED SECTION.
+protected section.
 private section.
 
   class-data MO_INSTANCE type ref to ZCL_AQO_OPT_EXAMPLE .
