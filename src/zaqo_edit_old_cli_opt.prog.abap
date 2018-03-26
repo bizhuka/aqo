@@ -39,6 +39,70 @@ CLASS lcl_opt IMPLEMENTATION.
     CLEAR cv_cmd.
   ENDMETHOD.
 
+  METHOD on_f4.
+    TYPES:
+      BEGIN OF ts_f4,
+        object    TYPE ztaqo_data-object,
+        subobject TYPE ztaqo_data-subobject,
+        uname     TYPE ztaqo_data-uname,
+        udate     TYPE ztaqo_data-udate,
+        utime     TYPE ztaqo_data-utime,
+      END OF ts_f4.
+    DATA:
+      lt_f4   TYPE STANDARD TABLE OF ts_f4,
+      lt_ret  TYPE STANDARD TABLE OF ddshretval,
+      ls_ret  TYPE REF TO ddshretval,
+      lt_dynp TYPE STANDARD TABLE OF dynpread,
+      ls_dynp TYPE REF TO dynpread.
+
+    " Unique items
+    SELECT DISTINCT object subobject uname udate utime INTO CORRESPONDING FIELDS OF TABLE lt_f4
+    FROM ztaqo_data.
+    SORT lt_f4 BY object subobject.
+
+    " Show search help
+    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+      EXPORTING
+        retfield         = iv_field
+        dynprofield      = iv_dynpro
+        dynpprog         = sy-cprog
+        dynpnr           = sy-dynnr
+        value_org        = 'S'
+        callback_program = sy-repid
+        callback_form    = 'CALLBACK_ON_F4'
+      TABLES
+        value_tab        = lt_f4
+        return_tab       = lt_ret
+      EXCEPTIONS
+        OTHERS           = 3.
+    CHECK sy-subrc = 0.
+
+    " Write back
+    LOOP AT lt_ret REFERENCE INTO ls_ret.
+      APPEND INITIAL LINE TO lt_dynp REFERENCE INTO ls_dynp.
+      ls_dynp->fieldvalue = ls_ret->fieldval.
+
+      CASE ls_ret->fieldname.
+        WHEN 'F0001'.
+          p_object = ls_ret->fieldval.
+          SET PARAMETER ID 'ZAQO_OBJECT' FIELD p_object.
+          ls_dynp->fieldname = 'P_OBJECT'.
+
+        WHEN 'F0002'.
+          p_sub_ob = ls_ret->fieldval.
+          SET PARAMETER ID 'ZAQO_SUBOBJECT' FIELD p_sub_ob.
+          ls_dynp->fieldname = 'P_SUB_OB'.
+      ENDCASE.
+    ENDLOOP.
+
+    CALL FUNCTION 'DYNP_VALUES_UPDATE'
+      EXPORTING
+        dyname     = sy-cprog
+        dynumb     = sy-dynnr
+      TABLES
+        dynpfields = lt_dynp.
+  ENDMETHOD.
+
   METHOD constructor.
     DATA:
       ls_field_opt   TYPE REF TO zcl_aqo_util=>ts_field_opt,
@@ -137,3 +201,27 @@ CLASS lcl_opt IMPLEMENTATION.
     super->save( iv_mandt = iv_mandt ).
   ENDMETHOD.
 ENDCLASS.                    "LCL_MAIN IMPLEMENTATION
+
+
+FORM callback_on_f4
+  TABLES   record_tab  STRUCTURE seahlpres
+  CHANGING shlp        TYPE shlp_descr
+           callcontrol TYPE ddshf4ctrl.
+  DATA:
+    ls_intf TYPE REF TO ddshiface.
+
+  " Overwrite selectable fields on search help
+  CLEAR shlp-interface.
+
+  APPEND INITIAL LINE TO shlp-interface REFERENCE INTO ls_intf.
+  ls_intf->shlpfield = 'F0001'.
+  ls_intf->valfield  = 'OBJECT'.
+  ls_intf->f4field   = abap_true.
+  GET PARAMETER ID 'ZAQO_OBJECT' FIELD ls_intf->value.
+
+  APPEND INITIAL LINE TO shlp-interface REFERENCE INTO ls_intf.
+  ls_intf->shlpfield = 'F0002'.
+  ls_intf->valfield  = 'SUBOBJECT'.
+  ls_intf->f4field   = abap_true.
+  GET PARAMETER ID 'ZAQO_SUBOBJECT' FIELD ls_intf->value.
+ENDFORM.

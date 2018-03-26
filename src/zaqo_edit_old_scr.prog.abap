@@ -3,12 +3,11 @@
 
 " Options
 SELECTION-SCREEN BEGIN OF BLOCK bl_main WITH FRAME.
-PARAMETERS : p_object TYPE zsaqo_search_help-object     MODIF ID obl MEMORY ID zaqo_object,
-             p_sub_ob TYPE zsaqo_search_help-subobject  MODIF ID obl MEMORY ID zaqo_subobject.
+PARAMETERS : p_object TYPE ztaqo_data-object     MODIF ID obl MEMORY ID zaqo_object,
+             p_sub_ob TYPE ztaqo_data-subobject  MODIF ID obl MEMORY ID zaqo_subobject.
 SELECTION-SCREEN END OF BLOCK bl_main.
 
-
-
+" Where used
 SELECTION-SCREEN BEGIN OF SCREEN 1010.
 SELECTION-SCREEN BEGIN OF BLOCK bl_where_used.
 
@@ -23,6 +22,12 @@ SELECTION-SCREEN END OF BLOCK bl_where_used.
 SELECTION-SCREEN END OF SCREEN 1010.
 
 SELECTION-SCREEN FUNCTION KEY 1.
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_object.
+  lcl_opt=>on_f4( iv_field = 'OBJECT'    iv_dynpro = 'P_OBJECT' ).
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_sub_ob.
+  lcl_opt=>on_f4( iv_field = 'SUBOBJECT' iv_dynpro = 'P_SUB_OB' ).
 
 AT SELECTION-SCREEN OUTPUT.
   CASE sy-dynnr.

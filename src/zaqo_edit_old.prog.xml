@@ -1909,6 +1909,11 @@
      <LENGTH>25</LENGTH>
     </item>
     <item>
+     <ID>R</ID>
+     <ENTRY>Edit options</ENTRY>
+     <LENGTH>12</LENGTH>
+    </item>
+    <item>
      <ID>S</ID>
      <KEY>P_BL_NAM</KEY>
      <ENTRY>.</ENTRY>

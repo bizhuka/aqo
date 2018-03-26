@@ -37,8 +37,13 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL FRIENDS
       pbo,
 
       pai
-       CHANGING
-         cv_cmd TYPE syucomm.
+        CHANGING
+          cv_cmd TYPE syucomm,
+
+      on_f4
+        IMPORTING
+          iv_field  TYPE dfies-fieldname
+          iv_dynpro TYPE HELP_INFO-DYNPROFLD.
 
 ENDCLASS.                    "LCL_MAIN DEFINITION
 
@@ -111,12 +116,12 @@ CLASS lcl_scr_free_sel DEFINITION FINAL.
     METHODS:
       pbo
         IMPORTING
-          it_seldyn   TYPE rsseldyn_tab "#EC NEEDED
+          it_seldyn   TYPE rsseldyn_tab                     "#EC NEEDED
           it_dsfldnum TYPE tt_rsdsfldnum,
 
       pai
         IMPORTING
-          it_seldyn   TYPE rsseldyn_tab "#EC NEEDED
+          it_seldyn   TYPE rsseldyn_tab                     "#EC NEEDED
           it_dsfldnum TYPE tt_rsdsfldnum
         CHANGING
           cv_cmd      TYPE syucomm.
