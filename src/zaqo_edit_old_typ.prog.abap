@@ -15,7 +15,8 @@ TABLES:
 TYPE-POOLS:
   abap,
   icon,
-  sscr.
+  sscr,
+  cndp.
 
 DATA:
   " OK_CODE 4 screens

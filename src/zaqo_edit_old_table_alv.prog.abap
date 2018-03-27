@@ -31,15 +31,6 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
     " Destination structure
     CLEAR mr_table.
-*    IF go_opt->mo_ui_ext IS NOT INITIAL.
-*      TRY.
-*          mr_table = go_opt->mo_ui_ext->create_field_type(
-*           iv_name = ms_fld_opt->name
-*           iv_type = zif_prog_params_ui_ext=>mc_type_ui ).
-*        CATCH cx_sy_dyn_call_illegal_method.
-*          CLEAR mr_table.
-*      ENDTRY.
-*    ENDIF.
 
     " Destination structure (based on source)
     IF mr_table IS INITIAL.
@@ -112,10 +103,6 @@ CLASS lcl_table_alv IMPLEMENTATION.
         RETURN.
       ENDIF.
 
-*      SET HANDLER:
-*       on_data_changed  FOR mo_grid,
-*       on_hotspot_click FOR mo_grid.
-
       mo_grid->register_edit_event( i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
     ENDIF.
 
@@ -130,16 +117,6 @@ CLASS lcl_table_alv IMPLEMENTATION.
        et_fieldcat = lt_fieldcat
      CHANGING
        ct_table    = <lt_table> ).
-
-*    " Fill virtual fields
-*    IF go_opt->mo_ui_ext IS NOT INITIAL.
-*      TRY.
-*          go_opt->mo_ui_ext->table_data_changed(
-*            iv_name = ms_fld_opt->name
-*            ir_data = mr_table ).
-*        CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*      ENDTRY.
-*    ENDIF.
 
     " Table to show
     zcl_aqo_util=>from_json(
@@ -174,17 +151,6 @@ CLASS lcl_table_alv IMPLEMENTATION.
            ls_fieldcat->ref_field.
         ENDIF.
       ENDIF.
-
-*      " Change based extension
-*      CHECK go_opt->mo_ui_ext IS NOT INITIAL.
-*      TRY.
-*          go_opt->mo_ui_ext->change_field_catalog(
-*           EXPORTING
-*             iv_name     = ms_fld_opt->name
-*           CHANGING
-*             cs_fieldcat = ls_fieldcat->* ).
-*        CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*      ENDTRY.
     ENDLOOP.
 
     " Prepare layout
@@ -279,37 +245,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
         LEAVE TO SCREEN 0.
 
     ENDCASE.
-  ENDMETHOD.                    "pai
-
-*  METHOD on_data_changed.
-*    " Fill virtual fields
-*    CHECK go_opt->mo_ui_ext IS NOT INITIAL.
-*
-*    TRY.
-*        go_opt->mo_ui_ext->table_data_changed(
-*          iv_name         = ms_fld_opt->name
-*          ir_data         = mr_table
-*          io_data_changed = er_data_changed ).
-*      CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*    ENDTRY.
-*  ENDMETHOD.
-*
-*  METHOD on_hotspot_click.
-*    " Fill virtual fields
-*    CHECK go_opt->mo_ui_ext IS NOT INITIAL.
-*
-*    TRY.
-*        go_opt->mo_ui_ext->table_hotspot_click(
-*         EXPORTING
-*          iv_name         = ms_fld_opt->name
-*          ir_data         = mr_table
-*          io_gui_alv_grid = sender
-*          iv_column_id    = e_column_id
-*          is_row_no       = es_row_no ).
-*      CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*    ENDTRY.
-*  ENDMETHOD.
-ENDCLASS.                    "lcl_table_alv IMPLEMENTATION
+  ENDMETHOD.
+ENDCLASS.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*

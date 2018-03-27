@@ -54,6 +54,28 @@ CLASS lcl_opt IMPLEMENTATION.
       ls_ret  TYPE REF TO ddshretval,
       lt_dynp TYPE STANDARD TABLE OF dynpread,
       ls_dynp TYPE REF TO dynpread.
+    FIELD-SYMBOLS:
+      <lv_val> TYPE csequence.
+
+    " Read data on screen
+    APPEND INITIAL LINE TO lt_dynp REFERENCE INTO ls_dynp.
+    ls_dynp->fieldname = 'P_OBJECT'.
+
+    APPEND INITIAL LINE TO lt_dynp REFERENCE INTO ls_dynp.
+    ls_dynp->fieldname = 'P_SUB_OB'.
+
+    CALL FUNCTION 'DYNP_VALUES_READ'
+      EXPORTING
+        dyname     = sy-cprog
+        dynumb     = sy-dynnr
+      TABLES
+        dynpfields = lt_dynp.
+
+    " Save in parameters
+    LOOP AT lt_dynp REFERENCE INTO ls_dynp.
+      ASSIGN (ls_dynp->fieldname) To <lv_val>.
+      <lv_val> = ls_dynp->fieldvalue.
+    ENDLOOP.
 
     " Unique items
     SELECT DISTINCT object subobject uname udate utime INTO CORRESPONDING FIELDS OF TABLE lt_f4
@@ -78,6 +100,7 @@ CLASS lcl_opt IMPLEMENTATION.
     CHECK sy-subrc = 0.
 
     " Write back
+    CLEAR lt_dynp.
     LOOP AT lt_ret REFERENCE INTO ls_ret.
       APPEND INITIAL LINE TO lt_dynp REFERENCE INTO ls_dynp.
       ls_dynp->fieldvalue = ls_ret->fieldval.
@@ -208,7 +231,19 @@ FORM callback_on_f4
   CHANGING shlp        TYPE shlp_descr
            callcontrol TYPE ddshf4ctrl.
   DATA:
-    ls_intf TYPE REF TO ddshiface.
+    ls_intf TYPE REF TO ddshiface,
+    ls_opt  TYPE REF TO ddshselopt.
+
+  " SH filter
+  DEFINE add_filter.
+    IF ls_intf->value IS NOT INITIAL.
+      APPEND INITIAL LINE TO shlp-selopt REFERENCE INTO ls_opt.
+      ls_opt->shlpfield = ls_intf->shlpfield.
+      ls_opt->sign      = 'I'.
+      ls_opt->option    = 'EQ'.
+      ls_opt->low       = ls_intf->value.
+    ENDIF.
+  END-OF-DEFINITION.
 
   " Overwrite selectable fields on search help
   CLEAR shlp-interface.
@@ -217,11 +252,15 @@ FORM callback_on_f4
   ls_intf->shlpfield = 'F0001'.
   ls_intf->valfield  = 'OBJECT'.
   ls_intf->f4field   = abap_true.
-  GET PARAMETER ID 'ZAQO_OBJECT' FIELD ls_intf->value.
+  " GET PARAMETER ID 'ZAQO_OBJECT' FIELD ls_intf->value.
+  ls_intf->value     = p_object.
+  add_filter.
 
   APPEND INITIAL LINE TO shlp-interface REFERENCE INTO ls_intf.
   ls_intf->shlpfield = 'F0002'.
   ls_intf->valfield  = 'SUBOBJECT'.
   ls_intf->f4field   = abap_true.
-  GET PARAMETER ID 'ZAQO_SUBOBJECT' FIELD ls_intf->value.
+  " GET PARAMETER ID 'ZAQO_SUBOBJECT' FIELD ls_intf->value.
+  ls_intf->value     = p_sub_ob.
+  add_filter.
 ENDFORM.

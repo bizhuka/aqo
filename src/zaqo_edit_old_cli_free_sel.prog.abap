@@ -53,19 +53,6 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
           ls_screen-input     = '0'.
       ENDCASE.
 
-*      " Prepare 1 field
-*      IF go_opt->mo_ui_ext IS NOT INITIAL.
-*        TRY.
-*            go_opt->mo_ui_ext->pbo(
-*             EXPORTING
-*              iv_field_name = ls_fld_opt->name
-*             CHANGING
-*              cs_screen     = ls_screen ).
-*          CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*
-*        ENDTRY.
-*      ENDIF.
-
       " And update
       CHECK ls_screen <> screen.
       screen = ls_screen.
@@ -110,67 +97,6 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
     " Hide range screen
     CLEAR cv_cmd.
   ENDMETHOD.                    "pai
-
-*  METHOD on_f1.
-*    DATA:
-*      ls_fld_opt TYPE REF TO lcl_opt=>ts_fld_opt.
-*
-*    READ TABLE go_opt->mt_fld_opt REFERENCE INTO ls_fld_opt INDEX is_fldnum-group1.
-*    CHECK sy-subrc = 0.
-*
-*    " F1 pressed
-*    IF go_opt->mo_ui_ext IS NOT INITIAL.
-*      TRY.
-*          go_opt->mo_ui_ext->on_f1(
-*           EXPORTING
-*            iv_field_name = ls_fld_opt->name ).
-*        CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*
-*      ENDTRY.
-*    ENDIF.
-*  ENDMETHOD.
-*
-*  METHOD on_f4.
-*    DATA:
-*      ls_fld_opt TYPE REF TO lcl_opt=>ts_fld_opt.
-*
-*    READ TABLE go_opt->mt_fld_opt REFERENCE INTO ls_fld_opt INDEX is_fldnum-group1.
-*    CHECK sy-subrc = 0.
-*
-*    " F4 pressed
-*    IF go_opt->mo_ui_ext IS NOT INITIAL.
-*      TRY.
-*          go_opt->mo_ui_ext->on_f4(
-*           EXPORTING
-*            iv_field_name = ls_fld_opt->name
-*            is_f4info     = is_f4info
-*           CHANGING
-*            cv_value      = cv_value ).
-*        CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*
-*      ENDTRY.
-*    ENDIF.
-*  ENDMETHOD.
-*
-*  METHOD at_selection_screen_on.
-*    DATA:
-*      ls_fld_opt TYPE REF TO lcl_opt=>ts_fld_opt.
-*
-*    READ TABLE go_opt->mt_fld_opt REFERENCE INTO ls_fld_opt INDEX is_fldnum-group1.
-*    CHECK sy-subrc = 0.
-*
-*    " AT SELECTION-SCREEN ON
-*    IF go_opt->mo_ui_ext IS NOT INITIAL.
-*      TRY.
-*          go_opt->mo_ui_ext->at_selection_screen_on(
-*           EXPORTING
-*            iv_field_name = ls_fld_opt->name
-*            it_seldyn     = it_seldyn ).
-*        CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*
-*      ENDTRY.
-*    ENDIF.
-*  ENDMETHOD.
 ENDCLASS.
 
 

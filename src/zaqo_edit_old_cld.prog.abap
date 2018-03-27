@@ -43,7 +43,7 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL FRIENDS
       on_f4
         IMPORTING
           iv_field  TYPE dfies-fieldname
-          iv_dynpro TYPE HELP_INFO-DYNPROFLD.
+          iv_dynpro TYPE help_info-dynprofld.
 
 ENDCLASS.                    "LCL_MAIN DEFINITION
 
@@ -80,7 +80,7 @@ CLASS lcl_fld_opt_alv DEFINITION FINAL.
             e_column e_row,
 
       on_data_changed FOR EVENT data_changed OF cl_gui_alv_grid
-        IMPORTING er_data_changed,
+        IMPORTING sender er_data_changed,
 
       data_check
         RETURNING VALUE(rv_ok) TYPE abap_bool,
@@ -125,23 +125,6 @@ CLASS lcl_scr_free_sel DEFINITION FINAL.
           it_dsfldnum TYPE tt_rsdsfldnum
         CHANGING
           cv_cmd      TYPE syucomm.
-
-*      at_selection_screen_on
-*        IMPORTING
-*          is_fldnum TYPE rsdsfldnum
-*          it_seldyn TYPE ZIF_PROG_PARAMS_UI_EXT=>rsseldyn_tab,
-*
-*      on_f1
-*        IMPORTING
-*          is_fldnum TYPE rsdsfldnum,
-*
-*      on_f4
-*        IMPORTING
-*          is_fldnum TYPE rsdsfldnum
-*          is_f4info TYPE rsdsf4info
-*        CHANGING
-*          cv_value  TYPE any.
-
 ENDCLASS.
 
 *----------------------------------------------------------------------*
@@ -201,16 +184,6 @@ CLASS lcl_table_alv DEFINITION FINAL.
       pai
         CHANGING
           cv_cmd TYPE syucomm.
-
-*      on_data_changed  FOR EVENT data_changed OF cl_gui_alv_grid
-*        IMPORTING
-*            er_data_changed,
-*
-*      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
-*        IMPORTING
-*            sender
-*            e_column_id
-*            es_row_no.
 ENDCLASS.
 
 *----------------------------------------------------------------------*
@@ -263,4 +236,17 @@ CLASS lcl_where_used DEFINITION FINAL.
           cv_cmd TYPE syucomm,
 
       deep_scan.
+ENDCLASS.
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+CLASS lcl_grid DEFINITION INHERITING FROM cl_gui_alv_grid.
+  PUBLIC SECTION.
+    CLASS-METHODS:
+
+      " Get control
+      set_err_cells
+        IMPORTING
+          io_grid          TYPE REF TO cl_gui_alv_grid
+          io_protocol      TYPE REF TO cl_alv_changed_data_protocol.
 ENDCLASS.

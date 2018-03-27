@@ -15,3 +15,4 @@ INCLUDE zaqo_edit_old_cli_free_sel.
 INCLUDE zaqo_edit_old_table_alv.
 INCLUDE zaqo_edit_old_str_memo.
 INCLUDE zaqo_edit_old_where_used.
+INCLUDE zaqo_edit_gid.

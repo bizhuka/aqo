@@ -15,7 +15,7 @@ public section.
         length      TYPE i,             " Only for KIND = P
         decimals    TYPE i,             " Only for KIND = P
         " For editing in ALV
-        rollname    TYPE string,
+        rollname    TYPE ZDAQO_TABLE_AND_FIELD,
         text        TYPE DESCR_40,
         " Table description
         table_kind  TYPE abap_tablekind,
@@ -811,29 +811,21 @@ ENDMETHOD.
 
 METHOD from_json.
   DATA:
-    lo_error TYPE REF TO cx_root. "cx_transformation_error.
+    lo_error TYPE REF TO cx_transformation_error.
 
   " No need
   IF iv_json IS INITIAL.
-    ev_ok = abap_false. " !!!
+    ev_ok = abap_false. " Always have {"DATA":}
     RETURN.
   ENDIF.
 
-*  " Add text for converion
-*  IF iv_pure = abap_true.
-*    IF iv_kind = mc_kind_table OR iv_kind = mc_kind_select_option.
-*      CONCATENATE `{"DATA":` iv_json  `}` INTO lv_json.
-*    ELSE.
-*      CONCATENATE `{"DATA":"` iv_json  `"}` INTO lv_json.
-*    ENDIF.
-*  ELSE.
-*    lv_json = iv_json.
-*  ENDIF.
+  " Work with JSON even in ABAP 7.00!
+  " Regardless the fact that it do not have if_sxml=>co_xt_json
   TRY.
       CALL TRANSFORMATION id SOURCE XML iv_json
                              RESULT data = ex_data.
       ev_ok = abap_true.
-    CATCH cx_root INTO lo_error. " transformation_error
+    CATCH cx_transformation_error INTO lo_error.
       ev_ok = abap_false.
   ENDTRY.
 ENDMETHOD.
@@ -1019,46 +1011,30 @@ ENDMETHOD.
 
 
 METHOD to_json.
-*  DATA:
-*    lo_writer TYPE REF TO cl_sxml_string_writer,
-*    lv_xtring TYPE xstring.
-*
-*  " IF lo_writer IS INITIAL. ELSE lo_writer->initialize( ).
-*  lo_writer = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ). " TODO !!
-*
-*  CALL TRANSFORMATION id SOURCE data = im_data
-*                         RESULT XML lo_writer.
-*
-*  lv_xtring = lo_writer->get_output( ).
-*
-*  " downgrad ?
-*  DATA(lv_json) = zcl_aqo_util=>xstring_to_string( lv_xtring ).
+********************************************
+  " Preferable way
+********************************************
+  DATA:
+    lo_writer TYPE REF TO cl_sxml_string_writer,
+    lv_xtring TYPE xstring.
 
-  rv_json = abap_2_json( im_data = im_data iv_name = 'DATA' ).
-  CONCATENATE `{` rv_json `}` INTO rv_json.
+  " If have error delete comments in 'Alternative way'
+  " And comment the whole 'Preferable way'
+  lo_writer = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ).
 
-*  IF lv_json <> rv_json.
-*    BREAK-POINT.
-*  ENDIF.
+  CALL TRANSFORMATION id SOURCE data = im_data
+                         RESULT XML lo_writer.
 
+  lv_xtring = lo_writer->get_output( ).
 
-*  " delete surroundin DATA
-*  IF iv_pure = abap_true.
-*    lv_end = strlen( rv_json ).
-*
-*    IF rv_json(9) CP `{"DATA":"`.
-*      lv_beg = 9.
-*      lv_end = lv_end - 11.
-*    ELSE.
-*      lv_beg = 8.
-*      lv_end = lv_end - 9.
-*    ENDIF.
-*
-*    rv_json = rv_json+lv_beg(lv_end).
-*  ENDIF.
-*
-*  CHECK iv_prefix IS SUPPLIED.
-*  CONCATENATE iv_prefix rv_json INTO rv_json RESPECTING BLANKS.
+  " downgrad ?
+  rv_json = zcl_aqo_util=>xstring_to_string( lv_xtring ).
+
+********************************************
+  " Alternative way
+********************************************
+**  rv_json = abap_2_json( im_data = im_data iv_name = 'DATA' ).
+**  CONCATENATE `{` rv_json `}` INTO rv_json.
 ENDMETHOD.
 
 

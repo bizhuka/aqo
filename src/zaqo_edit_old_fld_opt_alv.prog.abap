@@ -389,7 +389,8 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
       ls_fld_opt TYPE REF TO lcl_opt=>ts_fld_opt,
       lv_row     TYPE i,
       lv_unq     TYPE string,
-      lt_unq     TYPE zcl_aqo_util=>tt_unique.
+      lt_unq     TYPE zcl_aqo_util=>tt_unique,
+      lv_handle  TYPE cntl_handle.
 
     LOOP AT go_opt->mt_fld_opt REFERENCE INTO ls_fld_opt.
       lv_row = sy-tabix.
@@ -436,8 +437,10 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
       ENDDO.
     ENDLOOP.
 
-    CHECK er_data_changed->mt_protocol IS NOT INITIAL.
-    er_data_changed->display_protocol( ).
+    " Set errors and show
+    lcl_grid=>set_err_cells(
+     io_grid     = sender
+     io_protocol = er_data_changed ).
   ENDMETHOD.
 
   METHOD data_check.
@@ -459,7 +462,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
 
     " Customs checks
     on_data_changed(
-     "sender          = mo_grid
+     sender          = mo_grid
      er_data_changed = lr_data_changed ).
 
     " Show without grid
@@ -590,23 +593,6 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
         MESSAGE s002(zaqo_mes) WITH lv_tabfld DISPLAY LIKE 'E'.
         RETURN.
       ENDIF.
-
-*      " Prepare 1 field
-*      IF go_opt->mo_ui_ext IS NOT INITIAL.
-*        TRY.
-*            go_opt->mo_ui_ext->prepare_field(
-*             EXPORTING
-*              iv_field_name = ls_fld_opt->name
-*             CHANGING
-*              cs_restrict   = ls_restrict
-*              cs_field      = ls_scr_fld
-*              cs_text       = ls_scr_fld_txt
-*              cs_option     = ls_scr_fld_opt
-*              cs_event      = ls_scr_fld_evt ).
-*          CATCH cx_sy_dyn_call_illegal_method ##NO_HANDLER.
-*
-*        ENDTRY.
-*      ENDIF.
 
       " Fields
       APPEND ls_scr_fld TO lt_scr_fld.
