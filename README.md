@@ -11,4 +11,6 @@ The maintainable data usually stored in a program structure (or in class attribu
 * strings (memo texts)
 * any tables (structure based tables)
 
+The first 2 are completely similar to STVARV, in strings for example you can store message templates, and tables are suitable when you need to write a large CASE that depends on a condition that can change, but creating a database table is burdensome.
+
 For more information read [wiki](https://github.com/bizhuka/aqo/wiki)
