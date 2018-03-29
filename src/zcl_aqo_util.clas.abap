@@ -58,7 +58,6 @@ public section.
   constants MC_KIND_TABLE type RSSCR_KIND value 'T' ##NO_TEXT.
   constants MC_KIND_MEMO type RSSCR_KIND value 'M' ##NO_TEXT.
 
-  class-methods CLASS_CONSTRUCTOR .
   class-methods CREATE_TYPE_DESCR
     importing
       !IV_ROLLNAME type CSEQUENCE optional
@@ -161,7 +160,7 @@ public section.
 protected section.
 private section.
 
-  class-data MT_XSDBOOLEAN type STRINGTAB .
+  class-data MT_XSDBOOLEAN type ref to STRINGTAB .
 
   class-methods GET_POSITION
     importing
@@ -203,14 +202,39 @@ METHOD abap_2_json.
     l_name         TYPE string,
     l_strudescr    TYPE REF TO cl_abap_structdescr,
     lo_type        TYPE REF TO cl_abap_typedescr,
-    lo_subtype     TYPE REF TO cl_abap_typedescr.
+    lo_subtype     TYPE REF TO cl_abap_typedescr,
+    lv_type        TYPE REF TO string.
 
   FIELD-SYMBOLS:
-    <abap_data> TYPE any,
-    <itab>      TYPE ANY TABLE,
-    <stru>      TYPE ANY TABLE,
-    <comp>      TYPE any,
-    <abapcomp>  TYPE abap_compdescr.
+    <abap_data>     TYPE any,
+    <itab>          TYPE ANY TABLE,
+    <stru>          TYPE ANY TABLE,
+    <comp>          TYPE any,
+    <abapcomp>      TYPE abap_compdescr,
+    <lt_xsdboolean> TYPE stringtab.
+
+  " Lazy initialization
+  DO 1 TIMES.
+    " Init one time only
+    CHECK mt_xsdboolean IS INITIAL.
+    CREATE DATA mt_xsdboolean.
+
+    ASSIGN mt_xsdboolean->* TO <lt_xsdboolean>.
+
+    " Get all boolean types
+    SELECT rollname INTO TABLE <lt_xsdboolean>
+    FROM dd04l
+    WHERE domname = 'XSDBOOLEAN' AND as4local = 'A'.
+
+    " Add text for speed
+    LOOP AT <lt_xsdboolean> REFERENCE INTO lv_type.
+      CONCATENATE '\TYPE=' lv_type->* INTO lv_type->*.
+    ENDLOOP.
+
+    " Is standard table
+    SORT <lt_xsdboolean> BY table_line.
+  ENDDO.
+  ASSIGN mt_xsdboolean->* TO <lt_xsdboolean>.
 
 
   DEFINE get_scalar_value.
@@ -258,7 +282,7 @@ METHOD abap_2_json.
 *           condense &1.
 
       WHEN 'C' OR 'g'. " Char sequences and Strings
-        READ TABLE mt_xsdboolean TRANSPORTING NO FIELDS BINARY SEARCH
+        READ TABLE <lt_xsdboolean> TRANSPORTING NO FIELDS BINARY SEARCH
          WITH KEY table_line = &3->absolute_name.
         IF sy-subrc = 0.
           dont_quote = 'X'.
@@ -426,25 +450,6 @@ METHOD binary_to_string.
       text_buffer  = rv_string
     TABLES
       binary_tab   = it_table.
-ENDMETHOD.
-
-
-METHOD class_constructor.
-  DATA:
-    lv_type TYPE REF TO string.
-
-  " Get all boolean types
-  SELECT rollname INTO TABLE mt_xsdboolean
-  FROM dd04l
-  WHERE domname = 'XSDBOOLEAN' AND as4local = 'A'.
-
-  " Add text for speed
-  LOOP AT mt_xsdboolean REFERENCE INTO lv_type.
-    CONCATENATE '\TYPE=' lv_type->* INTO lv_type->*.
-  ENDLOOP.
-
-  " Is standard table
-  SORT mt_xsdboolean BY table_line.
 ENDMETHOD.
 
 
