@@ -356,6 +356,7 @@ METHOD abap_2_json.
 * Get ABAP data type again and start
   " DESCRIBE FIELD <abap_data> TYPE l_type COMPONENTS l_comps.
 
+  " A little fastaer than description of description
   TRY.
       l_strudescr ?= lo_type.
     CATCH cx_sy_move_cast_error.

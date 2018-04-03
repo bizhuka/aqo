@@ -290,6 +290,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
     DATA:
       ls_fld_opt        TYPE REF TO lcl_opt=>ts_fld_opt,
       lo_table_comp_alv TYPE REF TO lcl_table_comp_alv,
+      lo_table_alv      TYPE REF TO lcl_table_alv,
       lo_string_memo    TYPE REF TO lcl_string_memo.
 
     " Current item
@@ -307,8 +308,8 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
         " Only for tables
         CASE ls_fld_opt->kind.
           WHEN zcl_aqo_util=>mc_kind_table.
-            lo_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
-            lo_table_comp_alv->call_screen( ls_fld_opt ).
+            lo_table_alv = lcl_table_alv=>get_instance( ).
+            lo_table_alv->call_screen( ls_fld_opt ).
 
           WHEN zcl_aqo_util=>mc_kind_memo.
             lo_string_memo = lcl_string_memo=>get_instance( ).
