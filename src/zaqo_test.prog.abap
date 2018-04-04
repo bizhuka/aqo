@@ -33,7 +33,7 @@ CLASS lcl_main DEFINITION FINAL.
 
     CLASS-DATA:
       " Options
-      mr_opt TYPE ts_main_opt,
+      ms_opt TYPE ts_main_opt,
       " Class for data maintenance
       mo_opt TYPE REF TO zcl_aqo.
 
@@ -58,12 +58,12 @@ CLASS lcl_main IMPLEMENTATION.
     DATA:
       lv_ref TYPE REF TO data.
 
-    GET REFERENCE OF mr_opt INTO lv_ref.        " ! Ref to data
+    GET REFERENCE OF ms_opt INTO lv_ref.        " ! Ref to data
     CREATE OBJECT mo_opt
       EXPORTING
         iv_object    = '$TMP'                   " Better use package or program
         iv_subobject = 'Main options'(opt)      " Any text < 30 symbols
-        ir_data      = lv_ref.                  " REF #( mr_opt )
+        ir_data      = lv_ref.                  " REF #( ms_opt )
   ENDMETHOD.
 
   METHOD start_of_selection.
@@ -87,11 +87,15 @@ CLASS lcl_main IMPLEMENTATION.
        EXPORTING
         it_empty_field = lt_empty_field
        CHANGING
-        cs_opt         = mr_opt ).
+        cs_opt         = ms_opt ).
 
       " And save
       mo_opt->save( ). " iv_delete_prev = abap_true
     ENDDO.
+
+    " Now open tr ZAQO_EDIT or ZAQO_EDIT_OLD
+    BREAK-POINT. " Double click here --> ms_opt <--
+    " After editing and saving data launch it again
   ENDMETHOD.
 
   METHOD init_options.
@@ -168,7 +172,7 @@ CLASS lcl_main IMPLEMENTATION.
           cs_opt-some_text = `Very very very very " very very \" very very very very very very very very very long text`.
 
         WHEN OTHERS.
-          MESSAGE e012(zcl_aqo) WITH lv_field RAISING unknown_field.
+          MESSAGE e012(zaqo_mes) WITH lv_field RAISING unknown_field.
 
       ENDCASE.
     ENDLOOP.
