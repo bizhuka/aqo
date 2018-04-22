@@ -699,8 +699,13 @@
             var httpType = getHttpType();
             var scripts = [];
             // var selector = httpType === HttpType.GITHUB ? "script" : "script[type='ui5/fragment']";
-console.log("httpType0 " + httpType);
+console.log("httpType1 " + httpType);
             $("script[type='ui5/fragment']").each(function (ind, script) {
+                
+                console.log(ind);
+                
+                
+                
                 var objid = $(this).data("objid");
                 console.log("httpType " + httpType);
                 if (httpType === HttpType.SAP)
