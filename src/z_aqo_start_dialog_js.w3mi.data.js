@@ -47,7 +47,6 @@ function getOptions(httpType, scripts) {
 
 function getStartDialog(startInit) {
     var startDialog = sap.ui.getCore().byId("start_dialog");
-    console.log("start_dialog " + $("#id_start_dialog").text());
 
     if (!startDialog) {
         startDialog = sap.ui.xmlfragment({

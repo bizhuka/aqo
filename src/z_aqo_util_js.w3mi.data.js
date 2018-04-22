@@ -20,6 +20,7 @@ String.prototype.formatUnicorn = String.prototype.formatUnicorn ||
         return str;
     };
 
+// Detect where to start
 var HttpType = {
     SAP: 1,
     BROWSER: 2,

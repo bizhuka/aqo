@@ -12,13 +12,8 @@
     </script>
 
     <script type="text/javascript" src="util.js" data-objid="Z_AQO_UTIL_JS"></script>
-    <script type="text/javascript" src="z_aqo_util_js.w3mi.data.js"></script>
-
     <script type="text/javascript" src="start_dialog.js" data-objid="Z_AQO_START_DIALOG_JS"></script>
-    <script type="text/javascript" src="z_aqo_start_dialog_js.w3mi.data.js"></script>
-
     <script type="text/javascript" src="usage.js" data-objid="Z_AQO_USAGE_JS"></script>
-    <script type="text/javascript" src="z_aqo_usage_js.w3mi.data.js"></script>
 
     <!--All dialogs-->
     <script id="id_start_dialog" type="ui5/fragment" src="view/startDialog.xml"
@@ -699,23 +694,18 @@
             var httpType = getHttpType();
             var scripts = [];
             // var selector = httpType === HttpType.GITHUB ? "script" : "script[type='ui5/fragment']";
-console.log("httpType11 " + httpType);
+
+            console.log("httpType is = " + httpType);
             $("script[type='ui5/fragment']").each(function (ind, script) {
-                
-                console.log(ind);
-                
-                
-                
                 var objid = $(this).data("objid");
-                console.log("httpType " + httpType);
                 if (httpType === HttpType.SAP)
                     scripts.push({
                         ID: script.id,
                         OBJID: objid
                     });
                 else {
-                    console.log("here");
                     var src = script.src;
+                    console.log("src0 = " + src);
 
                     // Change url for htmlpreview
                     if (httpType === HttpType.GITHUB) {
@@ -731,7 +721,7 @@ console.log("httpType11 " + httpType);
                                 break;
                         }
                     }
-                    console.log(src);
+                    console.log("src1 = " + src);
 
                     scripts.push(
                         $.get(src, function (text) {
