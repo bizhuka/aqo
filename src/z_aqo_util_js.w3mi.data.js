@@ -20,6 +20,24 @@ String.prototype.formatUnicorn = String.prototype.formatUnicorn ||
         return str;
     };
 
+var HttpType = {
+    SAP: 1,
+    BROWSER: 2,
+    GITHUB: 3
+};
+
+function getHttpType() {
+    var url = window.location.href.toLowerCase();
+
+    if (url.lastIndexOf("sap", 0) === 0)
+        return HttpType.SAP;
+
+    if (url.lastIndexOf("htmlpreview.github.io") === 0)
+        return HttpType.GITHUB;
+
+    return HttpType.BROWSER;
+}
+
 function formatDate(date) {
     if (typeof date !== "string")
         return;

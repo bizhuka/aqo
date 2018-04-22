@@ -12,8 +12,13 @@
     </script>
 
     <script type="text/javascript" src="util.js" data-objid="Z_AQO_UTIL_JS"></script>
+    <script type="text/javascript" src="z_aqo_util_js.w3mi.data.js"></script>
+
     <script type="text/javascript" src="start_dialog.js" data-objid="Z_AQO_START_DIALOG_JS"></script>
+    <script type="text/javascript" src="z_aqo_start_dialog_js.w3mi.data.js"></script>
+
     <script type="text/javascript" src="usage.js" data-objid="Z_AQO_USAGE_JS"></script>
+    <script type="text/javascript" src="z_aqo_usage_js.w3mi.data.js"></script>
 
     <!--All dialogs-->
     <script id="id_start_dialog" type="ui5/fragment" src="view/startDialog.xml"
@@ -37,25 +42,6 @@
     <script id="id_usage_dialog" type="ui5/fragment" src="view/usageDialog.xml"
             data-objid="Z_AQO_USAGE_DIALOG"></script>
     <script>
-
-        var HttpType = {
-            SAP: 1,
-            BROWSER: 2,
-            GITHUB: 3
-        };
-
-        function getHttpType() {
-            var url = window.location.href.toLowerCase();
-
-            if (url.lastIndexOf("sap", 0) === 0)
-                return HttpType.SAP;
-
-            if (url.lastIndexOf("htmlpreview.github.io") === 0)
-                return HttpType.GITHUB;
-
-            return HttpType.BROWSER;
-        }
-
         // For convenience
         var _core = sap.ui.getCore();
         //sap.ui.localResources("./");
@@ -712,9 +698,9 @@
             // Load all dialogs
             var httpType = getHttpType();
             var scripts = [];
-            var selector = httpType === HttpType.GITHUB ? "script" : "script[type='ui5/fragment']";
+            // var selector = httpType === HttpType.GITHUB ? "script" : "script[type='ui5/fragment']";
 
-            $(selector).each(function (ind, script) {
+            $("script[type='ui5/fragment']").each(function (ind, script) {
                 var objid = $(this).data("objid");
                 if (httpType === HttpType.SAP)
                     scripts.push({
