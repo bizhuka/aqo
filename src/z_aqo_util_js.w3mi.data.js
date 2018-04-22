@@ -32,7 +32,7 @@ function getHttpType() {
     if (url.lastIndexOf("sap", 0) === 0)
         return HttpType.SAP;
 
-    if (url.lastIndexOf("htmlpreview.github.io") === 0)
+    if (url.lastIndexOf("https://htmlpreview.github.io") === 0)
         return HttpType.GITHUB;
 
     return HttpType.BROWSER;
