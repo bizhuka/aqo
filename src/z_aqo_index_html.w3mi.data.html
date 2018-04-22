@@ -702,6 +702,7 @@
 
             $("script[type='ui5/fragment']").each(function (ind, script) {
                 var objid = $(this).data("objid");
+                console.log("httpType " + httpType);
                 if (httpType === HttpType.SAP)
                     scripts.push({
                         ID: script.id,
