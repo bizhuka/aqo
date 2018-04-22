@@ -1,0 +1,43 @@
+<core:FragmentDefinition
+        xmlns="sap.m"
+        xmlns:core="sap.ui.core"
+        xmlns:f="sap.ui.layout.form">
+
+    <Dialog id="last_call_dialog"
+            title="{i18n>/LAST_CALL}"
+            model="true"
+            class="sapUiSizeCompact">
+        <content>
+            <f:SimpleForm>
+                <f:content>
+                    <Label text="{i18n>/PROG_NAME}"/>
+                    <Input enabled="false" value="{/DATA/LAST_CALL/MAINPROGRAM}"/>
+
+                    <Label text="{i18n>/INCLUDE}"/>
+                    <Input id="edInclude" enabled="false" value="{/DATA/LAST_CALL/INCLUDE}"/>
+
+                    <Label text="{i18n>/LINE_NUMBER}"/>
+                    <Input id="edIncludeLine" enabled="false" value="{/DATA/LAST_CALL/LINE}"/>
+
+                    <Label text="{i18n>/TYPE_BLOCK}"/>
+                    <Input enabled="false" value="{/DATA/LAST_CALL/BLOCKTYPE}"/>
+
+                    <Label text="{i18n>/NAME_BLOCK}"/>
+                    <Input enabled="false" value="{/DATA/LAST_CALL/BLOCKNAME}"/>
+                </f:content>
+            </f:SimpleForm>
+        </content>
+
+        <buttons>
+            <Button icon="sap-icon://sys-find"
+                    press="onShowLastCall"/>
+
+            <Button icon="sap-icon://sys-find-next"
+                    press="onShowUsage"/>
+
+            <Button icon="sap-icon://undo"
+                    press="onGoBack"/>
+        </buttons>
+
+    </Dialog>
+</core:FragmentDefinition>

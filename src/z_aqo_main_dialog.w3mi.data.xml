@@ -1,0 +1,79 @@
+<core:FragmentDefinition
+        xmlns="sap.m"
+        xmlns:core="sap.ui.core">
+
+    <Dialog id="main_dialog"
+            title="{/DATA/TITLE}"
+            model="true"
+            class="sapUiSizeCompact"
+            afterClose="afterClose">
+
+        <content>
+            <Table id="main_table">
+                <!--items="{ path: '/DATA/FLD_OPT'}"-->
+
+                <columns>
+                    <Column visible="{/DATA/TECH_VISIBLE}">
+                        <Text text="{i18n>/NAME}"/>
+                    </Column>
+                    <Column visible="{/DATA/TECH_VISIBLE}">
+                        <Text text="{i18n>/DESC}"/>
+                    </Column>
+                    <Column visible="{/DATA/TECH_VISIBLE}" width="10%">
+                        <Text text="{i18n>/EDITABLE}"/>
+                    </Column>
+                    <Column visible="{/DATA/TECH_VISIBLE}">
+                        <Text text="{i18n>/DATA_TYPE}"/>
+                    </Column>
+                    <Column visible="{/DATA/EDIT_VISIBLE}">
+                        <Text text="{i18n>/DESC}"/>
+                    </Column>
+                    <Column visible="{/DATA/EDIT_VISIBLE}">
+                        <Text text="{i18n>/VALUE}"/>
+                    </Column>
+                </columns>
+
+                <!--<ColumnListItem>-->
+                    <!--<cells>-->
+                    <!--</cells>-->
+                <!--</ColumnListItem>-->
+            </Table>
+        </content>
+
+        <buttons>
+            <Button id="bt_delete_row"
+                    icon="sap-icon://negative"
+                    press="on_delete_row"
+                    visible="{parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/TECH_VISIBLE'}, {path: '/DATA/DEV_MANDT'}], formatter: '.bt_delete_visible' }"/>
+
+            <Button icon="sap-icon://copy"
+                    press="on_copy_option"
+                    visible="{parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/TECH_VISIBLE'}, {path: '/is_changed'}], formatter: '.bt_visible_tech_and_not_changed' }"/>
+
+            <Button icon="sap-icon://shipping-status"
+                    press="on_transport_option"
+                    visible="{parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/TECH_VISIBLE'}, {path: '/is_changed'}], formatter: '.bt_visible_tech_and_not_changed' }"/>
+
+            <Button icon="sap-icon://delete"
+                    press="on_delete_option"
+                    visible="{parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/TECH_VISIBLE'}, {path: '/is_changed'}], formatter: '.bt_visible_tech_and_not_changed' }"/>
+
+            <Button icon="sap-icon://sys-find"
+                    press="on_show_usage"
+                    visible="{/DATA/TECH_VISIBLE}"/>
+
+            <Button id="bt_toggle_edit"
+                    icon="sap-icon://edit"
+                    press="on_toggle_edit"
+                    visible="{/DATA/DEV_MANDT}"/>
+
+            <Button icon="sap-icon://save"
+                    press="on_save_option"
+                    visible="{/is_changed}"/>
+
+            <Button icon="sap-icon://undo"
+                    press="on_back"/>
+        </buttons>
+    </Dialog>
+
+</core:FragmentDefinition>

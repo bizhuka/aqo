@@ -3,9 +3,6 @@ $.sap.require("sap.m.MessageBox");
 // For SAP callbacks
 var callBack = [];
 
-// For SAP
-var dialogStack = [];
-
 String.prototype.formatUnicorn = String.prototype.formatUnicorn ||
     function () {
         "use strict";
@@ -23,35 +20,22 @@ String.prototype.formatUnicorn = String.prototype.formatUnicorn ||
         return str;
     };
 
-function showDialog(dialog) {
-    dialogStack.push(dialog);
-    dialog.open();
-}
-
-function closeDialog(dialog) {
-    if (dialogStack.length == 1 && dialogStack[0].sId == "start_dialog")
+function formatDate(date) {
+    if (typeof date !== "string")
         return;
 
-    if (dialog)
-        removeDialog(dialog);
-    else
-        dialog = dialogStack.pop();
+    date = date.replace(/-/g, '');
+    if (date.length !== 8)
+        return;
 
-    if (dialog.sId == "f4_select_dialog")
-        dialog._dialog.close();
-    else
-        dialog.close();
+    var dateObj = new Date(date.substring(0, 4), date.substring(4, 6) - 1, date.substring(6, 8));
+    return dateObj.toLocaleDateString();
 }
 
-function removeDialog(dialog) {
-    var index = dialogStack.indexOf(dialog);
-
-    if (index > -1)
-        dialogStack.splice(index, 1);
-}
-
-function is_sap() {
-    return window.location.href.toLowerCase().lastIndexOf("sap", 0) === 0;
+function formatTime(time) {
+    if (typeof time !== "string" && time.length !== 6)
+        return;
+    return time.substring(0, 2) + ":" + time.substring(2, 4) + ":" + time.substring(4, 6);
 }
 
 // Create hidden form and submit with sapevent
@@ -87,6 +71,24 @@ function call_back(guid, data1, data2, data3) {
     delete callBack[guid];
 }
 
-function printPath(path){
-    console.log(_core.byId("main_dialog").getModel().getProperty(path))
+function closeDialog() {
+    $("div.sapMDialog").last().each(function (i, diag) {
+        // No need
+        if (diag.id === "start_dialog") {
+            call_sap("DO_CLOSE");
+            return;
+        }
+
+        var arr = diag.id.split("-");
+        var dialog = sap.ui.getCore().byId(arr[0]);
+
+        if (arr.length === 2)
+            dialog = dialog["_" + arr[1]];
+
+        dialog.close();
+    });
+}
+
+function printPath(path) {
+    console.log(sap.ui.getCore().byId("main_dialog").getModel().getProperty(path))
 }

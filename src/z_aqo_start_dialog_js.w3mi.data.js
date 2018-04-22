@@ -1,76 +1,158 @@
-// Option model
-var oOptModel = null;
-
 function getStartInput(name) {
-    return sap.ui.getCore().byId("ed_" + name)
+    return sap.ui.getCore().byId("ed" + name)
 }
 
 function setFavoriteIcon(fav) {
     sap.ui.getCore().byId("bt_favorite").setIcon(fav ? "sap-icon://favorite" : "sap-icon://add-favorite")
 }
 
-// Make bold
-function isFavorite() {
-    return {
-        path: 'FAV',
-        formatter: function (fav) {
-            return fav ? "Bold" : "Standard";
-        }
+function getOptions(httpType, scripts) {
+    var startInit = {
+        model: new sap.ui.model.json.JSONModel(),
+        i18n: new sap.ui.model.json.JSONModel()
+    };
+
+    // Text translations
+    sap.ui.getCore().setModel(startInit.i18n, "i18n");
+
+    if (httpType !== HttpType.SAP) {
+        startInit.model.loadData('json/data.json');
+        startInit.i18n.loadData('json/i18n_en.json');
+        return startInit;
     }
-}
 
-function createObjectName(name, subname) {
-    var oInput = new sap.m.Input("ed_" + name, {
-        type: sap.m.InputType.Text,
-        width: "24em",
-        placeholder: '...',
+    call_sap("GET_OPTIONS", {
+        smw0: JSON.stringify({
+            DATA: scripts
+        }),
 
-        showSuggestion: true,
+        onBack: function (model, i18n, params) {
+            // Models
+            startInit.model.setData(model);
+            startInit.i18n.setData(i18n);
 
-        suggestionItems: {
-            path: "/DATA",
-            template: new sap.ui.core.ListItem(
-                {
-                    text: "{" + name + "}",
-                    additionalText: "{" + subname + "}",
-                    icon: "{FAV}"
-                })
-        },
+            // Input
+            startInit.obj = params.OBJECT;
+            startInit.sub = params.SUBOBJECT;
 
-        suggestionItemSelected: function (oEvent) {
-            var item = oEvent.getParameter("selectedItem");
-
-            getStartInput(subname).setValue(item.getAdditionalText());
-            setFavoriteIcon(item.getIcon() == "true");
-        },
-
-        showValueHelp: true,
-
-        valueHelpRequest: function (oEvent) {
-            valueF4Object(oEvent, oOptModel)
+            // Fragments
+            for (var i = 0; i < scripts.length; i++) {
+                var xml = params[scripts[i].ID.toUpperCase()];
+                $("#" + scripts[i].ID).text(xml)
+            }
+            getStartDialog(startInit).open();
         }
     });
-
-    // set model and return
-    oInput.setModel(oOptModel);
-    return oInput;
 }
 
-function valueF4Object(oEvent, oOptModel) {
-    // Create a SelectDialog and display it; bind to the same  model as for the suggested items
-    var f4SelectDialog = sap.ui.getCore().byId("f4_select_dialog");
-    if (!f4SelectDialog) {
-        f4SelectDialog = new sap.m.TableSelectDialog("f4_select_dialog", { // SelectDialog
-            title: "{i18n>/SEL_OPTION}",
+function getStartDialog(startInit) {
+    var startDialog = sap.ui.getCore().byId("start_dialog");
 
-            columns: [
-                new sap.m.Column({hAlign: "Begin", header: new sap.m.Label({text: "{i18n>/FAV}"}), visible: false}),
-                new sap.m.Column({hAlign: "Begin", header: new sap.m.Label({text: "{i18n>/OBJECT}"})}),
-                new sap.m.Column({hAlign: "Begin", header: new sap.m.Label({text: "{i18n>/SUBOBJ}"})}),
-                new sap.m.Column({hAlign: "Begin", header: new sap.m.Label({text: "{i18n>/CHANGED}"})}),
-                new sap.m.Column({hAlign: "End", header: new sap.m.Label({text: "{i18n>/DATE}"})}),
-                new sap.m.Column({hAlign: "End", header: new sap.m.Label({text: "{i18n>/TIME}"})})
-            ],
+    if (!startDialog) {
+        startDialog = sap.ui.xmlfragment({
+            // Dialog code
+            fragmentContent: $("#id_start_dialog").text()
+        }, {// Controller
+
+            // Alternative for F4
+            suggestionItemSelected: function (oEvent) {
+                var item = oEvent.getParameter("selectedItem");
+
+                // Change other Input
+                var sId = oEvent.getParameter("id") === "edOBJECT" ? "SUBOBJECT" : "OBJECT";
+                getStartInput(sId).setValue(item.getAdditionalText());
+
+                // Change icon
+                setFavoriteIcon(item.getIcon() == "true");
+            },
+
+            valueHelpRequest: function () {
+                valueF4Object(startInit.model);
+            },
+
+            // button 1
+            show_option: function () {
+                if (getHttpType() === HttpType.SAP)
+                    call_sap("SHOW_OPTION", {
+                        object: getStartInput("OBJECT").getValue(),
+                        subobject: getStartInput("SUBOBJECT").getValue(),
+
+                        onBack: showMainDialog
+                    });
+                else
+                    $.getJSON('json/opt.json', showMainDialog);
+            },
+
+            // button 2
+            toggle_old_ui: function () {
+                call_sap("CALL_OLD_UI", {
+                    object: getStartInput("OBJECT").getValue(),
+                    subobject: getStartInput("SUBOBJECT").getValue()
+                });
+            },
+
+            // button 3
+            set_favorite: function () {
+                var object = getStartInput("OBJECT").getValue();
+                var subobject = getStartInput("SUBOBJECT").getValue();
+
+                var options = startInit.model.getProperty("/DATA");
+                var option = null;
+                for (var i = 0; i < options.length; i++)
+                    if (options[i].OBJECT === object && options[i].SUBOBJECT === subobject) {
+                        option = options[i];
+                        break;
+                    }
+
+                if (!option) {
+                    var mes = sap.ui.getCore().getModel("i18n").getProperty("/NO_OPTION_EXIST");
+                    sap.m.MessageToast.show(mes, {
+                        duration: 2000
+                    });
+                    return;
+                }
+
+                call_sap("SET_FAVORITE", {
+                    object: object,
+                    subobject: subobject,
+                    favorite: !option.FAV, // Invert
+
+                    onBack: function (ok) {
+                        if (ok != "true")
+                            return;
+
+                        // Invert in model
+                        option.FAV = !option.FAV;
+                        setFavoriteIcon(option.FAV)
+                    }
+                });
+            },
+
+            // button 4
+            close_app: function () {
+                call_sap("DO_CLOSE");
+            }
+        });
+
+        // Set model & initial values
+        startDialog.setModel(startInit.model);
+        if (startInit.obj && startInit.sub) {
+            getStartInput("OBJECT").setValue(startInit.obj);
+            getStartInput("SUBOBJECT").setValue(startInit.sub);
+        }
+    }
+
+    return startDialog;
+}
+
+function valueF4Object(oOptModel) {
+    // Create a SelectDialog and display it; bind to the same  model as for the suggested items
+    var f4SelectDialog = sap.ui.getCore().byId("f4_dialog");
+    if (!f4SelectDialog) {
+        f4SelectDialog = sap.ui.xmlfragment({
+            // Dialog code
+            fragmentContent: $("#id_f4_dialog").text()
+        }, {// Controller
 
             search: function (oEvent) {
                 var oFilter = [],
@@ -91,10 +173,6 @@ function valueF4Object(oEvent, oOptModel) {
                 itemsBinding.filter(oFilter);
             },
 
-            afterClose: function () {
-                removeDialog(this);
-            },
-
             confirm: function (oEvent) {
                 var selectedItem = oEvent.getParameter("selectedItem");
                 if (selectedItem) {
@@ -104,41 +182,22 @@ function valueF4Object(oEvent, oOptModel) {
                     getStartInput("SUBOBJECT").setValue(oCells[2].getText());
                     setFavoriteIcon(oCells[0].getText() == "true");
                 }
-            }
+            },
+
+            // Make bold
+            isFavorite: function (fav) {
+                return fav ? "Bold" : "Standard";
+            },
+
+            formatDate: formatDate,
+
+            formatTime: formatTime
         });
 
         f4SelectDialog.setModel(oOptModel);
-        f4SelectDialog.bindAggregation("items", "/DATA", new sap.m.ColumnListItem({
-            path: "/DATA",
-            type: "Active",
-            unread: false,
-
-            cells: [
-                new sap.m.Label({text: "{FAV}"}),
-                new sap.m.Label({text: "{OBJECT}", design: isFavorite()}),
-                new sap.m.Label({text: "{SUBOBJECT}", design: isFavorite()}),
-                new sap.m.Label({text: "{UNAME}", design: isFavorite()}),
-                new sap.m.Label({
-                    text: {
-                        path: 'UDATE',
-                        formatter: function (udate) {
-                            dateObj = new Date(udate.substring(0, 4), udate.substring(4, 6) - 1, udate.substring(6, 8));
-                            return dateObj.toLocaleDateString();
-                        }
-                    }, design: isFavorite()
-                }),
-                new sap.m.Label({
-                    text: {
-                        path: 'UTIME',
-                        formatter: function (utime) {
-                            return utime.substring(0, 2) + ":" + utime.substring(2, 4) + ":" + utime.substring(4, 6);
-                        }
-                    }, design: isFavorite()
-                })]
-        }));
     }
 
-    showDialog(f4SelectDialog);
+    f4SelectDialog.open();
 
     // Fire search by input fields
     var oDialogDOM = f4SelectDialog.$();
@@ -148,128 +207,4 @@ function valueF4Object(oEvent, oOptModel) {
     // What text
     oSearchField.setValue(getStartInput("OBJECT").getValue() || getStartInput("SUBOBJECT").getValue());
     oSearchField.fireSearch();
-}
-function getStartDialog() {
-    var startDialog = sap.ui.getCore().byId("start_dialog");
-
-    if (!startDialog) {
-        // Cannot load from SAP json file!
-        oOptModel = new sap.ui.model.json.JSONModel();
-        var i18nModel = new sap.ui.model.json.JSONModel();
-        _core.setModel(i18nModel, "i18n");
-
-        if (!is_sap()) {
-            oOptModel.loadData('json/data.json');
-            i18nModel.loadData('json/i18n_en.json');
-        } else
-            call_sap("GET_OPTIONS", {
-                onBack: function (data, i18n, params) {
-                    oOptModel.setData(data);
-                    i18nModel.setData(i18n);
-                    // If passed
-                    getStartInput("OBJECT").setValue(params.DATA.OBJECT);
-                    getStartInput("SUBOBJECT").setValue(params.DATA.SUBOBJECT);
-                }
-            });
-
-        startDialog = new sap.m.Dialog("start_dialog", {
-            title: "{i18n>/SEL_OPTION}",
-            model: true,
-            contentWidth: "29em",
-
-            content: [
-                new sap.m.VBox({
-                    items: [
-                        new sap.m.Label({text: "{i18n>/OBJECT}"}),
-                        createObjectName("OBJECT", "SUBOBJECT"),
-                        new sap.m.Label({text: "{i18n>/SUBOBJ}"}),
-                        createObjectName("SUBOBJECT", "OBJECT")
-                    ]
-                })
-            ],
-
-            buttons: [
-                new sap.m.Button({
-                    icon: "sap-icon://accept",
-                    press: function () {
-
-                        if (is_sap())
-                            call_sap("SHOW_OPTION", {
-                                object: getStartInput("OBJECT").getValue(),
-                                subobject: getStartInput("SUBOBJECT").getValue(),
-
-                                onBack: function (data) {
-                                    sap.ui.getCore().show_option(data);
-                                }
-                            });
-                        else
-                            $.getJSON('json/opt.json', function (data) {
-                                sap.ui.getCore().show_option(data);
-                            });
-                    }
-                }),
-
-                new sap.m.Button({
-                    icon : "sap-icon://synchronize",
-                    press: function () {
-                        call_sap("CALL_OLD_UI", {
-                            object: getStartInput("OBJECT").getValue(),
-                            subobject: getStartInput("SUBOBJECT").getValue()
-                        });
-                    }
-                }),
-
-                new sap.m.Button("bt_favorite", {
-                    icon: "sap-icon://unfavorite",
-                    press: function () {
-                        var object = getStartInput("OBJECT").getValue();
-                        var subobject = getStartInput("SUBOBJECT").getValue();
-
-                        var options = oOptModel.getProperty("/DATA");
-                        var option = null;
-                        for (var i = 0; i < options.length; i++)
-                            if (options[i].OBJECT === object && options[i].SUBOBJECT === subobject) {
-                                option = options[i];
-                                break;
-                            }
-
-                        if (!option) {
-                            var mes = sap.ui.getCore().getModel("i18n").getProperty("/NO_OPTION_EXIST");
-                            sap.m.MessageToast.show(mes, {
-                                duration: 2000
-                            });
-                            return;
-                        }
-
-                        call_sap("SET_FAVORITE", {
-                            object: object,
-                            subobject: subobject,
-                            favorite: !option.FAV, // Invert
-
-                            onBack: function (ok) {
-                                if (ok != "true")
-                                    return;
-
-                                // Invert in model
-                                option.FAV = !option.FAV;
-                                setFavoriteIcon(option.FAV)
-                            }
-                        });
-                    }
-                }),
-
-                new sap.m.Button({
-                    icon: "sap-icon://visits",
-                    press: function () {
-                        call_sap("DO_CLOSE");
-                    }
-                })
-            ],
-
-            afterClose: function () {
-                removeDialog(this);
-            }
-        });
-    }
-    return startDialog;
 }

@@ -48,6 +48,8 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
       BEGIN OF ts_own_opt,
         fav    TYPE SORTED TABLE OF ts_fav   WITH UNIQUE KEY uname object subobject,
         old_ui TYPE SORTED TABLE OF ts_uname WITH UNIQUE KEY uname, " Only structures
+        path   TYPE string,
+        debug  TYPE xsdboolean,
       END OF ts_own_opt,
 ***************************************
 
@@ -82,7 +84,8 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
 
       get_options
         IMPORTING
-          iv_guid TYPE csequence,
+          iv_guid TYPE csequence
+          iv_smw0 TYPE csequence,
 
       show_option
         IMPORTING
@@ -95,10 +98,16 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
           iv_object    TYPE csequence
           iv_subobject TYPE csequence,
 
+      " DELETE ?
+      load_from_smw0
+        IMPORTING
+                  iv_objid       TYPE wwwdata-objid
+        RETURNING VALUE(rv_data) TYPE string,
+
+
       load_data
         IMPORTING
-                  iv_data       TYPE string OPTIONAL
-                  iv_subtype    TYPE c
+                  iv_objid      TYPE wwwdata-objid
                   iv_url        TYPE w3url
         RETURNING VALUE(rv_url) TYPE w3url,
 
@@ -137,10 +146,10 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL.
           iv_favorite  TYPE csequence
           iv_guid      TYPE csequence,
 
-      load_from_smw0
+      save_json
         IMPORTING
-                  iv_objid       TYPE wwwdata-objid
-        RETURNING VALUE(rv_data) TYPE string.
+          iv_json            TYPE string
+          VALUE(iv_filename) TYPE string.
 ENDCLASS.
 
 DATA:

@@ -5,30 +5,60 @@
     <meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/>
 
     <script src="https://sapui5.hana.ondemand.com/resources/sap-ui-core.js"
-            id="sap-ui-bootstrap" data-sap-ui-libs="sap.m,sap.ui.table,sap.ui.commons,sap.ui.comp"
+            id="sap-ui-bootstrap"
+            data-sap-ui-libs="sap.m,sap.ui.table,sap.ui.commons,sap.ui.comp"
+            data-sap-ui-xx-bindingSyntax="complex"
             data-sap-ui-theme="sap_bluecrystal">
     </script>
 
-    <script type="text/javascript" src="start_dialog.js"></script>
-    <script type="text/javascript" src="util.js"></script>
-    <script type="text/javascript" src="usage.js"></script>
+    <script type="text/javascript" src="util.js" data-objid="Z_AQO_UTIL_JS"></script>
+    <script type="text/javascript" src="start_dialog.js" data-objid="Z_AQO_START_DIALOG_JS"></script>
+    <script type="text/javascript" src="usage.js" data-objid="Z_AQO_USAGE_JS"></script>
 
+    <!--All dialogs-->
+    <script id="id_start_dialog" type="ui5/fragment" src="view/startDialog.xml"
+            data-objid="Z_AQO_START_DIALOG"></script>
+
+    <script id="id_f4_dialog" type="ui5/fragment" src="view/f4Dialog.xml"
+            data-objid="Z_AQO_F4_DIALOG"></script>
+
+    <script id="id_main_dialog" type="ui5/fragment" src="view/mainDialog.xml"
+            data-objid="Z_AQO_MAIN_DIALOG"></script>
+
+    <script id="id_main_table_list" type="ui5/fragment" src="view/mainTableList.xml"
+            data-objid="Z_AQO_MAIN_TABLE_LIST"></script>
+
+    <script id="id_field_catalog_dialog" type="ui5/fragment" src="view/fieldCatalogDialog.xml"
+            data-objid="Z_AQO_FIELD_CATALOG_DIALOG"></script>
+
+    <script id="id_last_call_dialog" type="ui5/fragment" src="view/lastCallDialog.xml"
+            data-objid="Z_AQO_LAST_CALL_DIALOG"></script>
+
+    <script id="id_usage_dialog" type="ui5/fragment" src="view/usageDialog.xml"
+            data-objid="Z_AQO_USAGE_DIALOG"></script>
     <script>
+
+        var HttpType = {
+            SAP: 1,
+            BROWSER: 2,
+            GITHUB: 3
+        };
+
+        function getHttpType() {
+            var url = window.location.href.toLowerCase();
+
+            if (url.lastIndexOf("sap", 0) === 0)
+                return HttpType.SAP;
+
+            if (url.lastIndexOf("htmlpreview.github.io") === 0)
+                return HttpType.GITHUB;
+
+            return HttpType.BROWSER;
+        }
+
         // For convenience
         var _core = sap.ui.getCore();
-
-        // VISIBLE Bind to properties
-        function tech_and_not_changed() {
-            return {
-                parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/TECH_VISIBLE'}, {path: '/is_changed'}],
-
-                formatter: function (readOnly, tech, is_changed) {
-                    if (readOnly)
-                        return false;
-                    return tech && !is_changed;
-                }
-            }
-        }
+        //sap.ui.localResources("./");
 
         // ENABLED
         function isEnabled(tabEnabled) {
@@ -280,7 +310,7 @@
                         var item = oContext.getModel().getProperty(oContext.sPath);
 
                         // Detect enabled for child table
-                        var oModel = mainDialog.getModel();
+                        var oModel = _core.byId("main_dialog").getModel();
                         var _tbEnabled = isEnabled(tabEnabled).formatter(oModel.getProperty('/DATA/READ_ONLY'),
                             oModel.getProperty('/DATA/DEV_MANDT'),
                             compObj.EDIT);
@@ -334,7 +364,7 @@
                                                     onClose: function (oAction) {
                                                         if (oAction !== sap.m.MessageBox.Action.YES)
                                                             return;
-                                                        var pos = _core.byId("edPosition").getValue()
+                                                        var pos = _core.byId("edPosition").getValue();
 
                                                         var new_row = {};
                                                         for (var i = 0; i < item.SUBCOMPS.length; i++)
@@ -385,17 +415,13 @@
                             buttons: [new sap.m.Button({
                                 icon: "sap-icon://accept",
                                 press: function () {
-                                    closeDialog(dialog)
+                                    dialog.close();
                                 }
-                            })],
-
-                            afterClose: function () {
-                                removeDialog(this);
-                            }
+                            })]
                         });
 
                         dialog.setModel(oContext.getModel());
-                        showDialog(dialog)
+                        dialog.open();
                     }
                 });
 
@@ -409,413 +435,345 @@
                 return btShowTable;
             }
         }
-        _core.attachInit(
-            function () {
-                // Default empty page
-                var app = new sap.m.App("myApp", {
-                    initialPage: "emptyPage"
-                });
 
-                var emptyPage = new sap.m.Page("emptyPage", {
-                    showHeader: false,
-                    content: []
-                });
-                app.addPage(emptyPage);
+        function getMainDialog() {
+            // Already created
+            var mainDialog = _core.byId("main_dialog");
+            if (mainDialog)
+                return mainDialog;
 
-                // Main dialog
-                _core.show_option = function (option) {
-                    // New model
-                    var oModel = new sap.ui.model.json.JSONModel();
+            // Main dialog
+            mainDialog = sap.ui.xmlfragment({
+                // Dialog code
+                fragmentContent: $("#id_main_dialog").text()
+            }, {// Controller
 
-                    // Change string to data
-                    fromJson(option.DATA.FLD_OPT);
+                afterClose: function () {
+                    getStartDialog().open();
+                },
 
-                    // No change at first
-                    var optCopy = null;
-                    option.is_changed = false;
+                // Button 1 - Delete selected rows
+                bt_delete_visible: function (readOnly, tech, dev) {
+                    var vis = !readOnly && tech && dev;
+                    _core.byId("main_table").setMode(vis ? sap.m.ListMode.MultiSelect : sap.m.ListMode.None);
+                    return vis;
+                },
 
-                    // Make copy
-                    oModel.initOptCopy = function () {
-                        optCopy = JSON.stringify(option.DATA.FLD_OPT);
-                        oModel.setProperty("/is_changed", false);
-                    };
-                    oModel.initOptCopy();
+                on_delete_row: function () {
+                    var oMainTable = _core.byId("main_table");
+                    var oModel = oMainTable.getModel();
+                    var oData = oModel.getProperty('/DATA/FLD_OPT');
 
-                    // Listen for change
-                    var oBindingModel = new sap.ui.model.Binding(oModel, "/", oModel.getContext("/"));
-                    oBindingModel.attachChange(function (oEvent) {
-                        if (option.is_changed)
-                            return;
+                    var oContexts = oMainTable.getSelectedContexts();
+                    for (var i = oContexts.length - 1; i >= 0; i--) {
+                        var curObj = oContexts[i].getObject();
+                        var index = $.map(oData, function (obj, index) {
+                            if (obj === curObj) {
+                                return index;
+                            }
+                        });
+                        oData.splice(index, 1);
+                    }
+                    oModel.setProperty('/DATA/FLD_OPT', oData);
+                    oMainTable.removeSelections(true);
+                },
 
-                        if (JSON.stringify(option.DATA.FLD_OPT) !== optCopy)
-                            oModel.setProperty("/is_changed", true);
-                    });
+                // Button 2 - Copy to another client number
+                bt_visible_tech_and_not_changed: function (readOnly, tech, is_changed) {
+                    if (readOnly)
+                        return false;
+                    return tech && !is_changed;
+                },
 
-                    // Set data & model
-                    oModel.setData(option);
-                    mainDialog.setModel(oModel);
+                on_copy_option: function () {
+                    var oMainTable = _core.byId("main_table");
 
-                    showDialog(mainDialog);
-                    closeDialog(getStartDialog());
-                };
+                    var f4CopyTo = _core.byId("f4_copy_to_dialog");
+                    if (!f4CopyTo) {
+                        f4CopyTo = new sap.m.TableSelectDialog("f4_copy_to_dialog", {
+                            title: "{i18n>/COPY_TO}",
 
-                mainDialog = new sap.m.Dialog("main_dialog", {
-                    title: '{/DATA/TITLE}',
-                    model: true,
+                            columns: [
+                                new sap.m.Column({header: new sap.m.Label({text: "{i18n>/CLIENT}"})}),
+                                new sap.m.Column({header: new sap.m.Label({text: "{i18n>/CLIENT_NAME}"})})
+                            ],
 
-                    afterClose: function (oEvent) {
-                        removeDialog(this);
-                        showDialog(getStartDialog());
-                    },
+                            search: function (oEvent) {
+                                var oFilter = [],
+                                    value = oEvent.getParameter("value"),
+                                    itemsBinding = oEvent.getParameter("itemsBinding");
 
-                    buttons: [
-
-                        // Delete selected rows
-                        new sap.m.Button("bt_delete_row", {
-                            icon: 'sap-icon://negative',
-                            visible: {
-                                parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/TECH_VISIBLE'}, {path: '/DATA/DEV_MANDT'}],
-
-                                formatter: function (readOnly, tech, dev) {
-                                    var vis = !readOnly && tech && dev;
-                                    _core.byId("main_table").setMode(vis ? sap.m.ListMode.MultiSelect : sap.m.ListMode.None);
-                                    return vis;
-                                }
+                                if (value)
+                                    oFilter = new sap.ui.model.Filter({
+                                        filters: [
+                                            new sap.ui.model.Filter("MANDT", sap.ui.model.FilterOperator.Contains, value),
+                                            new sap.ui.model.Filter("MTEXT", sap.ui.model.FilterOperator.Contains, value)
+                                        ],
+                                        and: false
+                                    });
+                                itemsBinding.filter(oFilter);
                             },
 
-                            press: function () {
-                                var oMainTable = _core.byId("main_table");
-                                var oModel = oMainTable.getModel();
-                                var oData = oModel.getProperty('/DATA/FLD_OPT');
-
-                                var oContexts = oMainTable.getSelectedContexts();
-                                for (var i = oContexts.length - 1; i >= 0; i--) {
-                                    var curObj = oContexts[i].getObject();
-                                    var index = $.map(oData, function (obj, index) {
-                                        if (obj === curObj) {
-                                            return index;
-                                        }
-                                    });
-                                    oData.splice(index, 1);
-                                }
-                                oModel.setProperty('/DATA/FLD_OPT', oData);
-                                oMainTable.removeSelections(true);
-                            }
-                        }).addStyleClass("sapUiTinyMarginEnd"),
-
-                        // Copy to another client number
-                        new sap.m.Button({
-                            icon: 'sap-icon://copy',
-                            visible: tech_and_not_changed(),
-
-                            press: function () {
-                                var oMainTable = _core.byId("main_table");
-
-                                var f4CopyTo = _core.byId("f4_copy_to_dialog");
-                                if (!f4CopyTo) {
-                                    f4CopyTo = new sap.m.TableSelectDialog("f4_copy_to_dialog", {
-                                        title: "{i18n>/COPY_TO}",
-
-                                        columns: [
-                                            new sap.m.Column({header: new sap.m.Label({text: "{i18n>/CLIENT}"})}),
-                                            new sap.m.Column({header: new sap.m.Label({text: "{i18n>/CLIENT_NAME}"})})
-                                        ],
-
-                                        search: function (oEvent) {
-                                            var oFilter = [],
-                                                value = oEvent.getParameter("value"),
-                                                itemsBinding = oEvent.getParameter("itemsBinding");
-
-                                            if (value)
-                                                oFilter = new sap.ui.model.Filter({
-                                                    filters: [
-                                                        new sap.ui.model.Filter("MANDT", sap.ui.model.FilterOperator.Contains, value),
-                                                        new sap.ui.model.Filter("MTEXT", sap.ui.model.FilterOperator.Contains, value)
-                                                    ],
-                                                    and: false
-                                                });
-                                            itemsBinding.filter(oFilter);
-                                        },
-
-                                        afterClose: function () {
-                                            removeDialog(this);
-                                        },
-
-                                        confirm: function (oEvent) {
-                                            var client = oEvent.getParameter("selectedItem").getCells()[0].getText();
-                                            sap.m.MessageBox.confirm(_core.getModel("i18n").getProperty("/COPY_TO_MANDT").formatUnicorn(client), {
-                                                onClose: function (oAction) {
-                                                    if (oAction === sap.m.MessageBox.Action.OK)
-                                                        doSave(client);
-                                                }
-                                            });
-                                        }
-                                    });
-
-                                    f4CopyTo.setModel(oMainTable.getModel());
-                                    f4CopyTo.bindAggregation("items", "/DATA/COPY_TO", new sap.m.ColumnListItem({
-                                        cells: [
-                                            new sap.m.Label({
-                                                text: "{MANDT}"
-                                            }),
-                                            new sap.m.Label({
-                                                text: "{MTEXT}"
-                                            })]
-                                    }));
-                                }
-
-                                showDialog(f4CopyTo);
-                            }
-                        }).addStyleClass("sapUiTinyMarginEnd"),
-
-                        new sap.m.Button({
-                            icon: 'sap-icon://shipping-status',
-                            visible: tech_and_not_changed(),
-
-                            press: function () {
-                                call_sap("TRANSPORT_OPTION")
-                            }
-                        }).addStyleClass("sapUiTinyMarginEnd"),
-
-                        new sap.m.Button({
-                            icon: 'sap-icon://delete',
-                            visible: tech_and_not_changed(),
-                            press: function () {
-                                sap.m.MessageBox.confirm(_core.getModel("i18n").getProperty("/DELETE_OPTION"), {
+                            confirm: function (oEvent) {
+                                var client = oEvent.getParameter("selectedItem").getCells()[0].getText();
+                                sap.m.MessageBox.confirm(_core.getModel("i18n").getProperty("/COPY_TO_MANDT").formatUnicorn(client), {
                                     onClose: function (oAction) {
                                         if (oAction === sap.m.MessageBox.Action.OK)
-                                            call_sap("DELETE_OPTION", {
-                                                onBack: function (data) {
-                                                    if (data)
-                                                        closeDialog(_core.byId("main_dialog"));
-                                                }
-                                            })
+                                            doSave(client);
                                     }
                                 });
                             }
-                        }).addStyleClass("sapUiTinyMarginEnd"),
+                        });
 
-                        new sap.m.Button({
-                            icon: 'sap-icon://sys-find',
-                            visible: "{/DATA/TECH_VISIBLE}",
-                            press: function () {
-                                showDialog(getLastCallDialog());
-                            }
-                        }).addStyleClass("sapUiTinyMarginEnd"),
+                        f4CopyTo.setModel(oMainTable.getModel());
+                        f4CopyTo.bindAggregation("items", "/DATA/COPY_TO", new sap.m.ColumnListItem({
+                            cells: [
+                                new sap.m.Label({text: "{MANDT}"}),
+                                new sap.m.Label({text: "{MTEXT}"})]
+                        }));
+                    }
 
-                        new sap.m.Button("bt_toggle_edit", {
-                            icon: 'sap-icon://edit',
-                            visible: "{/DATA/DEV_MANDT}",
-                            press: function () {
-                                var oModel = mainDialog.getModel();
+                    f4CopyTo.open();
+                },
 
-                                var bTech = !oModel.getProperty('/DATA/TECH_VISIBLE');
-                                oModel.setProperty('/DATA/TECH_VISIBLE', bTech);
-                                oModel.setProperty('/DATA/EDIT_VISIBLE', !bTech);
-                            }
-                        }).addStyleClass("sapUiTinyMarginEnd"),
+                on_transport_option: function () {
+                    call_sap("TRANSPORT_OPTION");
+                },
 
-                        new sap.m.Button({
-                            icon: 'sap-icon://save',
-                            visible: "{/is_changed}",
-                            press: function () {
-                                sap.m.MessageBox.confirm(_core.getModel("i18n").getProperty("/SAVE_OPTION"), {
-                                    onClose: function (oAction) {
-                                        if (oAction === sap.m.MessageBox.Action.OK)
-                                            doSave();
+                on_delete_option: function () {
+                    sap.m.MessageBox.confirm(_core.getModel("i18n").getProperty("/DELETE_OPTION"), {
+                        onClose: function (oAction) {
+                            if (oAction === sap.m.MessageBox.Action.OK)
+                                call_sap("DELETE_OPTION", {
+                                    onBack: function (data) {
+                                        if (data)
+                                            _core.byId("main_dialog").close();
                                     }
-                                });
-                            }
-                        }).addStyleClass("sapUiTinyMarginEnd"),
-
-                        new sap.m.Button({
-                            icon: 'sap-icon://undo',
-                            press: function () {
-                                closeDialog(mainDialog);
-                            }
-                        }).addStyleClass("sapUiTinyMarginEnd")
-                    ],
-
-                    content: [
-                        new sap.m.Table("main_table", {
-                            columns: [
-                                new sap.m.Column({
-                                    header: new sap.m.Label({text: "{i18n>/NAME}"}),
-                                    visible: "{/DATA/TECH_VISIBLE}"
-                                }),
-                                new sap.m.Column({
-                                    header: new sap.m.Label({text: "{i18n>/DESC}"}),
-                                    visible: "{/DATA/TECH_VISIBLE}"
-                                }),
-                                new sap.m.Column({
-                                    header: new sap.m.Label({text: "{i18n>/EDITABLE}"}),
-                                    visible: "{/DATA/TECH_VISIBLE}",
-                                    width: '10%'
-                                }),
-                                new sap.m.Column({
-                                    header: new sap.m.Label({text: "{i18n>/DATA_TYPE}"}),
-                                    visible: "{/DATA/TECH_VISIBLE}"
-                                }),
-                                new sap.m.Column({
-                                    header: new sap.m.Label({text: "{i18n>/DESC}"}),
-                                    visible: "{/DATA/EDIT_VISIBLE}"
-                                }),
-                                new sap.m.Column({
-                                    header: new sap.m.Label({text: "{i18n>/VALUE}"}),
-                                    visible: "{/DATA/EDIT_VISIBLE}"
                                 })
-                            ]
-                        }).addStyleClass("sapUiSizeCompact")
-                    ]
-                });
+                        }
+                    });
+                },
 
-                var oMainTable = _core.byId("main_table");
-                oMainTable.bindItems("/DATA/FLD_OPT", function (index, context) {
-                    var row = new sap.m.ColumnListItem();
+                on_show_usage: function () {
+                    getLastCallDialog().open();
+                },
 
-                    row.addCell(new sap.m.HBox({
-                        items: [
-                            new sap.ui.core.Icon({
-                                src: {
-                                    parts: [{path: 'KIND'}, {path: 'IS_OLD'}],
-                                    formatter: function (kind, is_old) {
-                                        if (is_old)
-                                            return sap.ui.core.IconPool.getIconURI("message-error");
+                on_toggle_edit: function () {
+                    var oModel = mainDialog.getModel();
 
-                                        switch (kind) {
-                                            case "P":
-                                                return sap.ui.core.IconPool.getIconURI("activity-2");
-                                            case "S":
-                                                return sap.ui.core.IconPool.getIconURI("multi-select");
-                                            case "T":
-                                                return sap.ui.core.IconPool.getIconURI("table-view");
-                                        }
-                                    }
-                                },
+                    var bTech = !oModel.getProperty('/DATA/TECH_VISIBLE');
+                    oModel.setProperty('/DATA/TECH_VISIBLE', bTech);
+                    oModel.setProperty('/DATA/EDIT_VISIBLE', !bTech);
+                },
 
-                                press: function (oEvent) {
-                                    var oContext = oEvent.getSource().getBindingContext();
-                                    var item = oContext.getModel().getProperty(oContext.sPath);
-                                    if (item.KIND !== "T")
-                                        return;
+                on_save_option: function () {
+                    sap.m.MessageBox.confirm(_core.getModel("i18n").getProperty("/SAVE_OPTION"), {
+                        onClose: function (oAction) {
+                            if (oAction === sap.m.MessageBox.Action.OK)
+                                doSave();
+                        }
+                    });
+                },
 
-                                    // Set editable
-                                    var oModel = mainDialog.getModel();
-                                    var _tbEnabled = isEnabled().formatter(oModel.getProperty('/DATA/READ_ONLY'),
-                                        oModel.getProperty('/DATA/DEV_MANDT'),
-                                        true);
-                                    var oTable = new sap.ui.table.Table({
-                                        title: "Field catalog",
-
-                                        columns: [
-                                            new sap.ui.table.Column({
-                                                label: "Name",
-                                                template: new sap.m.Label({text: "{NAME}"})
-                                            }),
-                                            new sap.ui.table.Column({
-                                                label: "Text",
-                                                template: new sap.m.Input({value: "{TEXT}"})
-                                            }),
-                                            new sap.ui.table.Column({
-                                                label: "Type",
-                                                template: new sap.m.Input({value: "{ROLLNAME}"})
-                                            })
-                                        ]
-                                    });
-
-                                    oTable.bindRows(oContext.sPath + "/SUBCOMPS");
-
-                                    var dialog = new sap.m.Dialog({
-                                        title: item.TEXT,
-                                        model: true,
-
-                                        content: [new sap.m.VBox({
-                                            items: [oTable]
-                                        })],
-                                        buttons: [new sap.m.Button({
-                                            icon: "sap-icon://accept",
-                                            press: function () {
-                                                closeDialog(dialog)
-                                            }
-                                        })],
-
-                                        afterClose: function () {
-                                            removeDialog(this);
-                                        }
-                                    });
-
-                                    dialog.setModel(oContext.getModel());
-                                    showDialog(dialog)
-                                }
-                            }).addStyleClass("sapUiTinyMarginEnd"),
-
-                            new sap.m.Label({
-                                text: "{NAME}",  // or obj.NAME
-
-                                design: {
-                                    path: 'IS_OLD',
-                                    formatter: function (is_old) {
-                                        return is_old ? "Bold" : "Standard";
-                                    }
-                                }
-                            })
-                        ]
-                    }));
-
-                    row.addCell(new sap.m.Input({
-                        value: "{TEXT}",  // or obj.TEXT
-                        enabled: isEnabled()
-                    }));
-
-                    row.addCell(new sap.m.CheckBox({
-                        selected: "{EDIT}", // obj.EDIT
-                        enabled: isEnabled()
-                    }));
-
-                    row.addCell(new sap.m.HBox({
-                        items: [
-                            new sap.ui.core.Icon({
-                                src: {
-                                    path: 'ROLLNAME',
-                                    formatter: function (rollname) {
-                                        return rollname.indexOf('-') !== -1 ? "sap-icon://detail-view" : "sap-icon://status-in-process"
-                                    }
-                                },
-
-                                press: function (oEvent) {
-                                    var oContext = oEvent.getSource().getBindingContext();
-                                    var item = oContext.getModel().getProperty(oContext.sPath);
-
-                                    call_sap("DRILL_DOWN", {
-                                        datatype: item.ROLLNAME
-                                    })
-                                }
-                            }).addStyleClass("sapUiTinyMarginEnd").addStyleClass("sapUiTinyMarginTop"),
-
-                            new sap.m.Input({
-                                value: "{ROLLNAME}",
-                                enabled: isEnabled()
-                            })
-                        ]
-                    }));
-
-                    row.addCell(new sap.m.Label({text: "{TEXT}"}));
-
-                    //var obj = context.getObject(); Is copy !
-                    var obj = context.getModel().getProperty(context.sPath);
-                    row.addCell(createMultiUI(obj, "VALUE"));
-
-                    return row;
-                });
-
-                // Show dialog
-                app.placeAt("content");
-                showDialog(getStartDialog());
+                on_back: function () {
+                    mainDialog.close();
+                }
             });
-    </script>
 
+            var oMainTable = _core.byId("main_table");
+            var listXML = $("#id_main_table_list").text();
+
+            oMainTable.bindItems("/DATA/FLD_OPT", function (index, context) {
+                //var row = new sap.m.ColumnListItem();
+                var row = sap.ui.xmlfragment({
+                    // List code
+                    fragmentContent: listXML
+                }, {// Controller
+
+                    isEnabled: function (readOnly, dev, edit) {
+                        if (readOnly)
+                            return false;
+
+                        return dev || edit;
+                    },
+
+                    design_bold_old: function (is_old) {
+                        return is_old ? "Bold" : "Standard";
+                    },
+
+                    get_kind_icon: function (kind, is_old) {
+                        if (is_old)
+                            return sap.ui.core.IconPool.getIconURI("message-error");
+
+                        switch (kind) {
+                            case "P":
+                                return sap.ui.core.IconPool.getIconURI("activity-2");
+                            case "S":
+                                return sap.ui.core.IconPool.getIconURI("multi-select");
+                            case "T":
+                                return sap.ui.core.IconPool.getIconURI("table-view");
+                        }
+                    },
+
+                    on_press_kind_icon: function (oEvent) {
+                        var oContext = oEvent.getSource().getBindingContext();
+                        var item = oContext.getModel().getProperty(oContext.sPath);
+                        if (item.KIND !== "T")
+                            return;
+
+                        var dialog = _core.byId("field_catalog_dialog");
+                        if (!dialog)
+                            dialog = sap.ui.xmlfragment({
+                                // Dialog code
+                                fragmentContent: $("#id_field_catalog_dialog").text()
+                            }, {// Controller
+
+                                tabIsEnabled: function (readOnly, dev) {
+                                    if (readOnly)
+                                        return false;
+                                    return dev;
+                                },
+
+                                on_close_click: function () {
+                                    dialog.close();
+                                }
+                            });
+                        // Path for fields
+                        _core.byId("field_catalog_table").bindRows(oContext.sPath + "/SUBCOMPS");
+
+                        dialog.setTitle(item.TEXT);
+                        dialog.setModel(oContext.getModel());
+                        dialog.open();
+                    },
+
+                    get_drill_down_icon: function (rollname) {
+                        return rollname.indexOf('-') !== -1 ? "sap-icon://detail-view" : "sap-icon://status-in-process";
+                    },
+
+                    on_press_drill_down: function (oEvent) {
+                        var oContext = oEvent.getSource().getBindingContext();
+                        var item = oContext.getModel().getProperty(oContext.sPath);
+
+                        call_sap("DRILL_DOWN", {
+                            datatype: item.ROLLNAME
+                        })
+                    }
+                });
+
+                //var obj = context.getObject(); Is copy !
+                var obj = context.getModel().getProperty(context.sPath);
+                row.addCell(createMultiUI(obj, "VALUE"));
+
+                return row;
+            });
+
+            // Return dialog
+            return mainDialog;
+        }
+
+        function showMainDialog(option) {
+            // New model
+            var oModel = new sap.ui.model.json.JSONModel();
+
+            // Change string to data
+            fromJson(option.DATA.FLD_OPT);
+
+            // No change at first
+            var optCopy = null;
+            option.is_changed = false;
+
+            // Make copy
+            oModel.initOptCopy = function () {
+                optCopy = JSON.stringify(option.DATA.FLD_OPT);
+                oModel.setProperty("/is_changed", false);
+            };
+            oModel.initOptCopy();
+
+            // Listen for change
+            var oBindingModel = new sap.ui.model.Binding(oModel, "/", oModel.getContext("/"));
+            oBindingModel.attachChange(function (oEvent) {
+                if (option.is_changed)
+                    return;
+
+                if (JSON.stringify(option.DATA.FLD_OPT) !== optCopy)
+                    oModel.setProperty("/is_changed", true);
+            });
+
+            // Set data & model
+            var mainDialog = getMainDialog();
+            oModel.setData(option);
+            mainDialog.setModel(oModel);
+
+            mainDialog.open();
+            getStartDialog().close();
+        }
+
+        _core.attachInit(function () {
+            // Load all dialogs
+            var httpType = getHttpType();
+            var scripts = [];
+            var selector = httpType === HttpType.GITHUB ? "script" : "script[type='ui5/fragment']";
+
+            $(selector).each(function (ind, script) {
+                var objid = $(this).data("objid");
+                if (httpType === HttpType.SAP)
+                    scripts.push({
+                        ID: script.id,
+                        OBJID: objid
+                    });
+                else {
+                    var src = script.src;
+
+                    // Change url for htmlpreview
+                    if (httpType === HttpType.GITHUB) {
+                        src = objid.toLowerCase() + ".w3mi.data";
+
+                        switch (script.type) {
+                            case 'ui5/fragment':
+                                src += ".xml";
+                                break;
+
+                            case 'text/javascript':
+                                src += ".js";
+                                break;
+                        }
+                    }
+
+                    scripts.push(
+                        $.get(src, function (text) {
+                            script.innerText = text;
+                        }, 'text').fail(function (err) {
+                            alert(JSON.stringify(err));
+                        }));
+                }
+            });
+
+            // Default empty page
+            var app = new sap.m.App("myApp", {
+                initialPage: "emptyPage"
+            });
+
+            var emptyPage = new sap.m.Page("emptyPage", {
+                showHeader: false,
+                content: []
+            });
+            app.addPage(emptyPage);
+
+            // Show dialog
+            app.placeAt("content");
+
+            // If all dialogs are loaded
+            var startInit = getOptions(httpType, scripts);
+            if (httpType !== HttpType.SAP)
+                $.when.apply($, scripts).then(function () {
+                    getStartDialog(startInit).open();
+                });
+        });
+    </script>
 </head>
+
 <body class="sapUiBody" role="application">
 <div id="content"></div>
 </body>
+
 </html>

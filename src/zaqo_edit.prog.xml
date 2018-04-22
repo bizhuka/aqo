@@ -69,7 +69,7 @@
        <LINE>PROCESS AFTER INPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pai_exit AT EXIT-COMMAND.</LINE>
+       <LINE>*  MODULE pai_exit AT EXIT-COMMAND.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
        <LINE>MODULE pai_100.</LINE>
@@ -80,7 +80,7 @@
       <item>2</item>
       <item>0</item>
       <item>0</item>
-      <item>2</item>
+      <item>0</item>
       <item>2</item>
      </SPACES>
     </item>
@@ -100,6 +100,22 @@
      </RSMPE_STAT>
     </STA>
     <FUN>
+     <RSMPE_FUNT>
+      <CODE>ESCAPE</CODE>
+      <TEXTNO>001</TEXTNO>
+      <TYPE>E</TYPE>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <FUN_TEXT>Exit</FUN_TEXT>
+     </RSMPE_FUNT>
+     <RSMPE_FUNT>
+      <CODE>ESCAPE</CODE>
+      <TEXTNO>002</TEXTNO>
+      <TYPE>E</TYPE>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT_NAME>ICON_CANCEL</TEXT_NAME>
+      <ICON_ID>@0W@</ICON_ID>
+      <FUN_TEXT>Cancel</FUN_TEXT>
+     </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>EXIT</CODE>
       <TEXTNO>001</TEXTNO>
@@ -121,8 +137,14 @@
      <RSMPE_PFK>
       <CODE>000001</CODE>
       <PFNO>12</PFNO>
-      <FUNCODE>EXIT</FUNCODE>
+      <FUNCODE>ESCAPE</FUNCODE>
       <FUNNO>002</FUNNO>
+     </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000001</CODE>
+      <PFNO>15</PFNO>
+      <FUNCODE>ESCAPE</FUNCODE>
+      <FUNNO>001</FUNNO>
      </RSMPE_PFK>
      <RSMPE_PFK>
       <CODE>000001</CODE>
@@ -132,6 +154,10 @@
      </RSMPE_PFK>
     </PFK>
     <SET>
+     <RSMPE_STAF>
+      <STATUS>ST_MAIN</STATUS>
+      <FUNCTION>ESCAPE</FUNCTION>
+     </RSMPE_STAF>
      <RSMPE_STAF>
       <STATUS>ST_MAIN</STATUS>
       <FUNCTION>EXIT</FUNCTION>

@@ -85,49 +85,56 @@ CLASS lcl_opt IMPLEMENTATION.
       mo_html_viewer EXPORTING
         io_parent = lo_cont. " cl_gui_container=>screen0.
 
-    lv_data = load_from_smw0( 'Z_AQO_UTIL_JS' ).
-    load_data( iv_data    = lv_data
-               iv_subtype = 'javascript'
-               iv_url     = 'util.js' ).
+    load_data( iv_objid  = 'Z_AQO_UTIL_JS'
+               iv_url    = 'util.js' ).
 
-    lv_data = load_from_smw0( 'Z_AQO_START_DIALOG_JS' ).
-    load_data( iv_data    = lv_data
-               iv_subtype = 'javascript'
-               iv_url     = 'start_dialog.js' ).
+    load_data( iv_objid  = 'Z_AQO_START_DIALOG_JS'
+               iv_url    = 'start_dialog.js' ).
 
-    lv_data = load_from_smw0( 'Z_AQO_USAGE_JS' ).
-    load_data( iv_data    = lv_data
-               iv_subtype = 'javascript'
-               iv_url     = 'usage.js' ).
+    load_data( iv_objid  = 'Z_AQO_USAGE_JS'
+               iv_url    = 'usage.js' ).
 
-    lv_data = load_from_smw0( 'Z_AQO_INDEX_HTML' ).
-    load_data( iv_data    = lv_data
-               iv_subtype = 'html'
-               iv_url     = 'index.html' ).
+    load_data( iv_objid  = 'Z_AQO_INDEX_HTML'
+               iv_url    = 'index.html' ).
 
     mo_html_viewer->show_url( url = 'index.html'  ).
   ENDMETHOD.
 
   METHOD get_options.
     TYPES:
-      BEGIN OF ts_json,
+      BEGIN OF ts_smw0,
+        id    TYPE string,
+        objid TYPE wwwdata-objid,
+      END OF ts_smw0,
+
+      BEGIN OF ts_model,
         object    TYPE ztaqo_data-object,
         subobject TYPE ztaqo_data-subobject,
         uname     TYPE ztaqo_data-uname,
         udate     TYPE char8, "ZTAQO_DATA-udate, for search without delimeters
         utime     TYPE char6, "ZTAQO_DATA-utime, for search without delimeters
         fav       TYPE xsdboolean,
-      END OF ts_json.
+      END OF ts_model.
     DATA:
-      lt_cluster TYPE STANDARD TABLE OF ztaqo_data,
-      ls_cluster TYPE REF TO ztaqo_data,
-      lt_json    TYPE STANDARD TABLE OF ts_json,
-      ls_json    TYPE ts_json,
-      lv_json    TYPE string,
-      lv_objid   TYPE wwwdata-objid,
-      lv_i18n    TYPE string,
-      ls_own_opt TYPE REF TO ts_own_opt,
-      lv_param   TYPE string.
+      lt_cluster   TYPE STANDARD TABLE OF ztaqo_data,
+      ls_cluster   TYPE REF TO ztaqo_data,
+      lt_model     TYPE STANDARD TABLE OF ts_model,
+      ls_model     TYPE ts_model,
+      lv_model     TYPE string,
+      lv_i18n      TYPE string,
+      lv_objid     TYPE wwwdata-objid,
+      ls_own_opt   TYPE REF TO ts_own_opt,
+      lv_param     TYPE string,
+      lt_smw0      TYPE STANDARD TABLE OF ts_smw0 WITH DEFAULT KEY,
+      ls_smw0      TYPE REF TO ts_smw0,
+      lt_comp      TYPE abap_component_tab,
+      ls_component TYPE REF TO abap_compdescr,
+      ls_comp      TYPE abap_componentdescr,
+      lo_struct    TYPE REF TO cl_abap_structdescr,
+      lr_struc     TYPE REF TO data.
+    FIELD-SYMBOLS:
+      <ls_struc> TYPE any,
+      <lv_field> TYPE string.
 
     " Read own options
     read_own_opt(
@@ -141,31 +148,28 @@ CLASS lcl_opt IMPLEMENTATION.
     " Manual convert date and time
     LOOP AT lt_cluster REFERENCE INTO ls_cluster WHERE object    <> mc_own_object
                                                     OR subobject <> mc_own_subobject.
-      CLEAR ls_json.
-      MOVE-CORRESPONDING ls_cluster->* TO ls_json.
+      CLEAR ls_model.
+      MOVE-CORRESPONDING ls_cluster->* TO ls_model.
 
       " Check is
       READ TABLE ls_own_opt->fav TRANSPORTING NO FIELDS
        WITH TABLE KEY uname = sy-uname object = ls_cluster->object subobject = ls_cluster->subobject.
       IF sy-subrc = 0.
-        ls_json-fav = abap_true.
+        ls_model-fav = abap_true.
       ENDIF.
 
-      INSERT ls_json INTO TABLE lt_json.
+      INSERT ls_model INTO TABLE lt_model.
     ENDLOOP.
 
     " Favorite first
-    SORT lt_json BY fav DESCENDING object subobject.
-    lv_json = zcl_aqo_util=>to_json( im_data = lt_json ).
+    SORT lt_model BY fav DESCENDING object subobject.
+    lv_model = zcl_aqo_util=>to_json( im_data = lt_model ).
 
-*    zcl_aok_util=>download(
-*     im_content  = lv_json
-*     im_path     = 'c:\Users\IBM_ADMIN\IdeaProjects\aqo\json\'
-*     im_filename = 'data.json'
-*     im_open     = abap_false ).
-*    BREAK-POINT.
+    " Save to file
+    save_json( iv_json     = lv_model
+               iv_filename = 'data.json' ).
 
-    " SMW0
+    " Translation texts
     DO 2 TIMES.
       CASE sy-index.
         WHEN 1.
@@ -182,11 +186,45 @@ CLASS lcl_opt IMPLEMENTATION.
       ENDIF.
     ENDDO.
 
-    " Pass values
-    lv_param = zcl_aqo_util=>to_json( im_data = ms_srtat_param ).
+    " get smw0 ids
+    zcl_aqo_util=>from_json(
+     EXPORTING
+       iv_json = iv_smw0
+     IMPORTING
+       ex_data = lt_smw0 ).
+
+    " Get all fields
+    lo_struct ?= cl_abap_structdescr=>describe_by_data( ms_srtat_param ).
+
+    ls_comp-type = cl_abap_elemdescr=>get_string( ).
+    LOOP AT lo_struct->components REFERENCE INTO ls_component.
+      ls_comp-name = ls_component->name.
+      APPEND ls_comp TO lt_comp.
+    ENDLOOP.
+
+    " Fields of structure
+    LOOP AT lt_smw0 REFERENCE INTO ls_smw0.
+      ls_comp-name = ls_smw0->id.
+      APPEND ls_comp TO lt_comp.
+    ENDLOOP.
+    lo_struct = cl_abap_structdescr=>create( lt_comp ).
+
+    " Create run-time structure
+    CREATE DATA lr_struc TYPE HANDLE lo_struct.
+    ASSIGN lr_struc->* TO <ls_struc>.
+    MOVE-CORRESPONDING ms_srtat_param TO <ls_struc>.
+
+    " Copy values
+    LOOP AT lt_smw0 REFERENCE INTO ls_smw0.
+      ASSIGN COMPONENT ls_smw0->id OF STRUCTURE <ls_struc> TO <lv_field>.
+      <lv_field> = load_from_smw0( iv_objid = ls_smw0->objid ).
+    ENDLOOP.
+
+    " Pass initial values
+    lv_param = zcl_aqo_util=>to_json( im_data = <ls_struc> iv_pure = abap_true ).
 
     " Whole command
-    CONCATENATE `"` iv_guid `", ` lv_json `, ` lv_i18n `, ` lv_param INTO lv_param.
+    CONCATENATE `"` iv_guid `", ` lv_model `, ` lv_i18n `, ` lv_param INTO lv_param.
     mo_html_viewer->run_js( iv_function   = 'call_back'
                             iv_param      = lv_param ).
   ENDMETHOD.
@@ -229,31 +267,12 @@ CLASS lcl_opt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD load_data.
-    DATA:
-      lv_xstr  TYPE xstring,
-      lv_size  TYPE int4,
-      lt_xdata TYPE w3mimetabtype.
-
-    " cl_bcs_convert ?
-    lv_xstr = zcl_aqo_util=>string_to_xstring( iv_data ).
-
-    zcl_aqo_util=>xstring_to_binary(
-     EXPORTING
-      iv_xstring = lv_xstr
-     IMPORTING
-      et_table   = lt_xdata
-      ev_length  = lv_size ).
-
-    mo_html_viewer->load_data(
+    mo_html_viewer->load_mime_object(
       EXPORTING
-        type         = 'text'
-        subtype      = iv_subtype
-        size         = lv_size
-        url          = iv_url
+        object_id    = iv_objid
+        object_url   = iv_url
       IMPORTING
         assigned_url = rv_url
-      CHANGING
-        data_table   = lt_xdata
       EXCEPTIONS
         OTHERS       = 1 ) .
   ENDMETHOD.
@@ -288,8 +307,8 @@ CLASS lcl_opt IMPLEMENTATION.
       END OF ts_json.
 
     DATA:
-      ls_json  TYPE ts_json,
-      lv_param TYPE string.
+      ls_json TYPE ts_json,
+      lv_json TYPE string.
     CREATE OBJECT mo_opt
       EXPORTING
         iv_object         = iv_object
@@ -327,18 +346,15 @@ CLASS lcl_opt IMPLEMENTATION.
     " Where used
     ls_json-last_call = mo_opt->ms_last_call.
 
-    lv_param = zcl_aqo_util=>to_json( im_data = ls_json ).
+    lv_json = zcl_aqo_util=>to_json( im_data = ls_json ).
 
-*    zcl_aok_util=>download(
-*     im_content  = lv_param
-*     im_path     = 'c:\Users\IBM_ADMIN\IdeaProjects\aqo\json\'
-*     im_filename = 'opt.json'
-*     im_open     = abap_false ).
-*    BREAK-POINT.
+    " Save to file
+    save_json( iv_json     = lv_json
+               iv_filename = 'opt.json' ).
 
-    CONCATENATE `"` iv_guid `", ` lv_param INTO lv_param.
+    CONCATENATE `"` iv_guid `", ` lv_json INTO lv_json.
     mo_html_viewer->run_js( iv_function   = 'call_back'
-                            iv_param      = lv_param ). " As json object
+                            iv_param      = lv_json ). " As json object
   ENDMETHOD.
 
   METHOD call_old_ui.
@@ -558,18 +574,22 @@ CLASS lcl_opt IMPLEMENTATION.
   METHOD deep_scan.
     DATA:
       lt_usage TYPE zcl_aqo_util=>tt_usage,
-      lv_param TYPE string.
+      lv_json  TYPE string.
 
     " Get as table
     lt_usage = zcl_aqo_util=>get_usage(
      iv_object    = mo_opt->ms_key-object
      iv_subobject = mo_opt->ms_key-subobject ).
 
+    " Convert to JSON
+    lv_json = zcl_aqo_util=>to_json( lt_usage ).
+    save_json( iv_json     = lv_json
+               iv_filename = 'usage.json' ).
+
     " Show result
-    lv_param = zcl_aqo_util=>to_json( lt_usage ).
-    CONCATENATE `"` iv_guid `", ` lv_param INTO lv_param.
+    CONCATENATE `"` iv_guid `", ` lv_json INTO lv_json.
     mo_html_viewer->run_js( iv_function   = 'call_back'
-                            iv_param      = lv_param ).
+                            iv_param      = lv_json ).
   ENDMETHOD.
 
   METHOD set_favorite.
@@ -607,19 +627,45 @@ CLASS lcl_opt IMPLEMENTATION.
 
     " Show own messages
     IF lv_ok <> 'true'.
-      MESSAGE text-m01 TYPE 'S' DISPLAY LIKE 'E'.
+      MESSAGE TEXT-m01 TYPE 'S' DISPLAY LIKE 'E'.
     ELSE.
       CASE iv_favorite.
         WHEN 'true'.
-          MESSAGE text-m02 TYPE 'S'.
+          MESSAGE TEXT-m02 TYPE 'S'.
         WHEN 'false'.
-          MESSAGE text-m03 TYPE 'S'.
+          MESSAGE TEXT-m03 TYPE 'S'.
       ENDCASE.
     ENDIF.
 
     CONCATENATE `"` iv_guid `", "` lv_ok `"` INTO lv_param.
     mo_html_viewer->run_js( iv_function = 'call_back'
                             iv_param    = lv_param ).
+  ENDMETHOD.
+
+  METHOD save_json.
+    DATA:
+      ls_own_opt TYPE REF TO ts_own_opt.
+
+    " No need
+    IF mo_opt IS NOT INITIAL.
+      CHECK mo_opt->ms_key-subobject <> mc_own_subobject.
+    ENDIF.
+
+    " Current option
+    read_own_opt(
+     IMPORTING
+      es_own_opt = ls_own_opt ).
+
+    " For test only
+    CHECK ls_own_opt->debug = abap_true AND ls_own_opt->path IS NOT INITIAL.
+
+    " For testing
+    CONCATENATE ls_own_opt->path iv_filename INTO iv_filename.
+    zcl_aqo_util=>download(
+     iv_content  = iv_json
+     iv_filename = iv_filename ).
+
+    BREAK-POINT.
   ENDMETHOD.
 ENDCLASS.
 

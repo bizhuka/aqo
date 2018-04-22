@@ -93,6 +93,7 @@ public section.
   class-methods TO_JSON
     importing
       !IM_DATA type ANY
+      !IV_PURE type ABAP_BOOL default ABAP_FALSE
     returning
       value(RV_JSON) type STRING .
   class-methods FROM_JSON
@@ -157,6 +158,10 @@ public section.
       !IV_XSTRING type XSTRING
     returning
       value(RV_STRING) type STRING .
+  class-methods DOWNLOAD
+    importing
+      !IV_CONTENT type STRING
+      !IV_FILENAME type STRING .
 protected section.
 private section.
 
@@ -683,6 +688,35 @@ METHOD CREATE_TYPE_DESCR.
 ENDMETHOD.
 
 
+METHOD download.
+  DATA:
+    lv_xstring TYPE xstring,
+    lv_size    TYPE int4,
+    lt_xdata   TYPE w3mimetabtype.
+
+  lv_xstring = string_to_xstring( iv_content ).
+
+  " Convert to table
+  xstring_to_binary(
+   EXPORTING
+     iv_xstring = lv_xstring
+   IMPORTING
+     ev_length  = lv_size
+     et_table   = lt_xdata ).
+
+  " For small files
+  CALL FUNCTION 'GUI_DOWNLOAD'
+    EXPORTING
+      filename     = iv_filename
+      filetype     = 'BIN'
+      bin_filesize = lv_size
+    TABLES
+      data_tab     = lt_xdata
+    EXCEPTIONS
+      OTHERS       = 1.
+ENDMETHOD.
+
+
 METHOD drill_down.
   DATA:
     lv_tab TYPE dd02v-tabname,
@@ -1022,7 +1056,9 @@ METHOD to_json.
 ********************************************
   DATA:
     lo_writer TYPE REF TO cl_sxml_string_writer,
-    lv_xtring TYPE xstring.
+    lv_xtring TYPE xstring,
+    lv_end    TYPE i,
+    lv_beg    TYPE i.
 
   " If have error delete comments in 'Alternative way'
   " And comment the whole 'Preferable way'
@@ -1041,6 +1077,21 @@ METHOD to_json.
 ********************************************
 **  rv_json = abap_2_json( im_data = im_data iv_name = 'DATA' ).
 **  CONCATENATE `{` rv_json `}` INTO rv_json.
+
+  " delete surroundin DATA
+  IF iv_pure = abap_true.
+    lv_end = strlen( rv_json ).
+
+    IF rv_json(9) CP `{"DATA":"`.
+      lv_beg = 9.
+      lv_end = lv_end - 11.
+    ELSE.
+      lv_beg = 8.
+      lv_end = lv_end - 9.
+    ENDIF.
+
+    rv_json = rv_json+lv_beg(lv_end).
+  ENDIF.
 ENDMETHOD.
 
 

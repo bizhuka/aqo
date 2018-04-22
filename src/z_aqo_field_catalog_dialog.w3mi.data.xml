@@ -1,0 +1,39 @@
+<core:FragmentDefinition
+        xmlns="sap.ui.table"
+        xmlns:m="sap.m"
+        xmlns:core="sap.ui.core">
+
+    <m:Dialog id="field_catalog_dialog"
+              model="true"
+              class="sapUiSizeCompact">
+
+        <m:content>
+            <Table id="field_catalog_table" title="{i18n>/FIELD_CATALOG}" selectionMode="None">
+                <columns>
+                    <Column label="{i18n>/NAME}">
+                        <template>
+                            <m:Label text="{NAME}"/>
+                        </template>
+                    </Column>
+
+                    <Column label="{i18n>/DESC}">
+                        <template>
+                            <m:Input value="{TEXT}" enabled="{ parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/DEV_MANDT'}], formatter: '.tabIsEnabled'}"/>
+                        </template>
+                    </Column>
+
+                    <Column label="{i18n>/DATA_TYPE}">
+                        <template>
+                            <m:Input value="{ROLLNAME}" enabled="{ parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/DEV_MANDT'}], formatter: '.tabIsEnabled'}"/>
+                        </template>
+                    </Column>
+                </columns>
+            </Table>
+        </m:content>
+
+        <m:buttons>
+            <m:Button icon="sap-icon://accept" press="on_close_click"/>
+        </m:buttons>
+    </m:Dialog>
+
+</core:FragmentDefinition>

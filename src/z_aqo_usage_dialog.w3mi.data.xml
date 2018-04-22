@@ -1,0 +1,54 @@
+<core:FragmentDefinition
+        xmlns="sap.m"
+        xmlns:core="sap.ui.core">
+    <TableSelectDialog
+            id="usage_dialog"
+            title="{i18n>/SEL_USAGE}"
+            search="handleSearch"
+            confirm="handleConfirm"
+            items="{/DATA}"
+            class="sapUiSizeCompact">
+        <ColumnListItem>
+            <cells>
+                <Label text="{LINE}"/>
+                <Label design="{ path: 'FOUND', formatter: '.isFound' }" text="{INCLUDE}"></Label>
+                <Label design="{ path: 'FOUND', formatter: '.isFound' }" text="{METH}"></Label>
+                <Label design="{ path: 'FOUND', formatter: '.isFound' }" text="{UNAME}"></Label>
+                <Label design="{ path: 'FOUND', formatter: '.isFound' }" text="{ path: 'UDATE', formatter: '.formatDate' }"></Label>
+                <Label design="{ path: 'FOUND', formatter: '.isFound' }" text="{UZEIT}"></Label>
+            </cells>
+        </ColumnListItem>
+        <columns>
+            <Column visible="false">
+                <header>
+                    <Text text="{i18n>/LINE}"/>
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="{i18n>/PROGRAM}"/>
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="{i18n>/METH_NAME}"/>
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="{i18n>/USER}"/>
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="{i18n>/DATE}"/>
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="{i18n>/TIME}"/>
+                </header>
+            </Column>
+        </columns>
+    </TableSelectDialog>
+</core:FragmentDefinition>

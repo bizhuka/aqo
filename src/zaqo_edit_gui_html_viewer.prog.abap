@@ -56,10 +56,11 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
       lv_line      TYPE i,
       lv_option    TYPE string,
       lv_guid      TYPE string,
-      lv_favorite  TYPE string.
+      lv_favorite  TYPE string,
+      lv_smw0      TYPE string.
     FIELD-SYMBOLS:
       <ls_param> LIKE LINE OF lt_param,
-      <lv_any>   TYPE ANY.
+      <lv_any>   TYPE any.
 
     lt_param = parse_fields( postdata ).
 
@@ -74,7 +75,8 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
 
     CASE action.
       WHEN 'GET_OPTIONS'.
-        lcl_opt=>get_options( lv_guid ).
+        lcl_opt=>get_options( iv_guid = lv_guid
+                              iv_smw0 = lv_smw0 ).
 
       WHEN 'SHOW_OPTION'.
         lcl_opt=>show_option(
@@ -148,16 +150,16 @@ CLASS lcl_gui_html_viewer IMPLEMENTATION.
     DEFINE unescape.
       " do not use cl_http_utility as it does strange things with the encoding
       " todo, more to be added here
-      replace all occurrences of:
-        `%24` in &1 with `$`,
-        `%26` in &1 with `&`,
-        `%2B` in &1 with `+`,
-        `%2C` in &1 with `,`,
-        `%3A` in &1 with `:`,
-        `%3B` in &1 with `;`,
-        `%3D` in &1 with `=`,
-        `%3F` in &1 with `?`,
-        `%40` in &1 with `@`.
+      REPLACE ALL OCCURRENCES OF:
+        `%24` IN &1 WITH `$`,
+        `%26` IN &1 WITH `&`,
+        `%2B` IN &1 WITH `+`,
+        `%2C` IN &1 WITH `,`,
+        `%3A` IN &1 WITH `:`,
+        `%3B` IN &1 WITH `;`,
+        `%3D` IN &1 WITH `=`,
+        `%3F` IN &1 WITH `?`,
+        `%40` IN &1 WITH `@`.
     END-OF-DEFINITION.
 
     CONCATENATE LINES OF it_postdata INTO lv_string.
