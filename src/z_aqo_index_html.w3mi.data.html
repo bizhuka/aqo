@@ -722,19 +722,8 @@
                     var src = script.src;
 
                     // Change url for htmlpreview
-                    if (httpType === HttpType.GITHUB) {
-                        src = objid.toLowerCase() + ".w3mi.data";
-
-                        switch (script.type) {
-                            case 'ui5/fragment':
-                                src += ".xml";
-                                break;
-
-                            case 'text/javascript':
-                                src += ".js";
-                                break;
-                        }
-                    }
+                    if (httpType === HttpType.GITHUB)
+                        src = objid.toLowerCase() + ".w3mi.data.xml";
 
                     scripts.push(
                         $.get(src, function (text) {
