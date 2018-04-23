@@ -19,7 +19,8 @@
 
             <HBox>
                 <core:Icon class="sapUiTinyMarginEnd sapUiTinyMarginTop"
-                           src="{path: 'ROLLNAME', formatter: '.get_drill_down_icon'}"/>
+                           src="{path: 'ROLLNAME', formatter: '.get_drill_down_icon'}"
+                           press="on_press_drill_down"/>
                 <Input value="{ROLLNAME}"
                        enabled="{ parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/DEV_MANDT'}, {path: 'EDIT'}], formatter: '.isEnabled'}"/>
             </HBox>

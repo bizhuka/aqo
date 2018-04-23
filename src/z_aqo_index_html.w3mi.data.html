@@ -11,9 +11,10 @@
             data-sap-ui-theme="sap_bluecrystal">
     </script>
 
-    <script type="text/javascript" src="util.js" data-objid="Z_AQO_UTIL_JS"></script>
-    <script type="text/javascript" src="start_dialog.js" data-objid="Z_AQO_START_DIALOG_JS"></script>
-    <script type="text/javascript" src="usage.js" data-objid="Z_AQO_USAGE_JS"></script>
+    <!--Main modules-->
+    <script type="text/javascript" src="z_aqo_util_js.w3mi.data.js" data-objid="Z_AQO_UTIL_JS"></script>
+    <script type="text/javascript" src="z_aqo_start_dialog_js.w3mi.data.js" data-objid="Z_AQO_START_DIALOG_JS"></script>
+    <script type="text/javascript" src="z_aqo_usage_js.w3mi.data.js" data-objid="Z_AQO_USAGE_JS"></script>
 
     <!--All dialogs-->
     <script id="id_start_dialog" type="ui5/fragment" src="view/startDialog.xml"
@@ -72,6 +73,7 @@
             }
         }
 
+        // Save to SAP
         function doSave(mandt) {
             var fld_opt = _core.byId("main_dialog").getModel().getProperty("/DATA/FLD_OPT");
 
@@ -107,7 +109,9 @@
             if (mandt)
                 param.mandt = mandt;
 
-            call_sap("SAVE_OPTION", param)
+            call_sap("SAVE_OPTION", param);
+            if (getHttpType() !== HttpType.SAP)
+                sap.m.MessageToast.show("Save option to database");
         }
 
         // Create control
@@ -181,7 +185,9 @@
                             onBack: function (data) {
                                 input.setValue(data);
                             }
-                        })
+                        });
+                        if (getHttpType() !== HttpType.SAP)
+                            sap.m.MessageToast.show("Show SAP f4 dialog");
                     }
                 });
 
@@ -213,7 +219,9 @@
                             onBack: function (value) {
                                 theTokenInput._setNewTokens(value.DATA, true);
                             }
-                        })
+                        });
+                        if (getHttpType() !== HttpType.SAP)
+                            sap.m.MessageToast.show("Show SAP selection dialog");
                     },
 
                     tokenUpdate: function (oControlEvent) {
@@ -302,6 +310,7 @@
 
                             title: new sap.m.HBox({
                                 items: [
+                                    // Delete selected rows
                                     new sap.m.Button({
                                         icon: 'sap-icon://negative',
                                         visible: _tbEnabled,
@@ -319,6 +328,7 @@
                                         }
                                     }).addStyleClass("sapUiTinyMarginEnd"),
 
+                                    // Insert new row
                                     new sap.m.Button({
                                         icon: 'sap-icon://positive',
                                         visible: _tbEnabled,
@@ -363,8 +373,6 @@
                                                     }
                                                 }
                                             );
-
-
                                         }
                                     }).addStyleClass("sapUiTinyMarginEnd")
                                 ]
@@ -519,18 +527,23 @@
 
                 on_transport_option: function () {
                     call_sap("TRANSPORT_OPTION");
+                    if (getHttpType() !== HttpType.SAP)
+                        sap.m.MessageToast.show("SAP transport request dialog");
                 },
 
                 on_delete_option: function () {
                     sap.m.MessageBox.confirm(_core.getModel("i18n").getProperty("/DELETE_OPTION"), {
                         onClose: function (oAction) {
-                            if (oAction === sap.m.MessageBox.Action.OK)
+                            if (oAction === sap.m.MessageBox.Action.OK) {
                                 call_sap("DELETE_OPTION", {
                                     onBack: function (data) {
                                         if (data)
                                             _core.byId("main_dialog").close();
                                     }
-                                })
+                                });
+                                if (getHttpType() !== HttpType.SAP)
+                                    sap.m.MessageToast.show("Delete option from database");
+                            }
                         }
                     });
                 },
@@ -599,6 +612,8 @@
                     on_press_kind_icon: function (oEvent) {
                         var oContext = oEvent.getSource().getBindingContext();
                         var item = oContext.getModel().getProperty(oContext.sPath);
+
+                        // Only for tables
                         if (item.KIND !== "T")
                             return;
 
@@ -637,7 +652,9 @@
 
                         call_sap("DRILL_DOWN", {
                             datatype: item.ROLLNAME
-                        })
+                        });
+                        if (getHttpType() !== HttpType.SAP)
+                            sap.m.MessageToast.show("Drill down to SE11");
                     }
                 });
 
@@ -693,16 +710,8 @@
             // Load all dialogs
             var httpType = getHttpType();
             var scripts = [];
-            // var selector = httpType === HttpType.GITHUB ? "script" : "script[type='ui5/fragment']";
 
-            console.log("httpType = " + httpType);
-            $("script").each(function (ind, script) {
-                console.log("script.id = " + script.id);
-                console.log("script.type = " + script.type);
-                console.log("script.src = " + script.src);
-            });
-            
-            $("script[type='ui5/fragment']").each(function (ind, script) {
+            $("script[id*='id_']").each(function (ind, script) { //script[type='ui5/fragment']
                 var objid = $(this).data("objid");
                 if (httpType === HttpType.SAP)
                     scripts.push({
@@ -711,7 +720,6 @@
                     });
                 else {
                     var src = script.src;
-                    console.log("src0 = " + src);
 
                     // Change url for htmlpreview
                     if (httpType === HttpType.GITHUB) {
@@ -727,7 +735,6 @@
                                 break;
                         }
                     }
-                    console.log("src1 = " + src);
 
                     scripts.push(
                         $.get(src, function (text) {

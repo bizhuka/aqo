@@ -2,6 +2,16 @@
  * Created by user on 18.03.2018.
  */
 
+function navigate_to(include, line) {
+    call_sap("NAVIGATE_TO", {
+        "INCLUDE": include,
+        "LINE": line
+    });
+
+    if (getHttpType() !== HttpType.SAP)
+        sap.m.MessageToast.show("Drill down to SE38");
+}
+
 function getLastCallDialog() {
     var lastCallDialog = sap.ui.getCore().byId("last_call_dialog");
 
@@ -15,10 +25,8 @@ function getLastCallDialog() {
             onShowLastCall: function () {
                 lastCallDialog.close();
 
-                call_sap("NAVIGATE_TO", {
-                    "INCLUDE": sap.ui.getCore().byId("edInclude").getValue(),
-                    "LINE": sap.ui.getCore().byId("edIncludeLine").getValue()
-                });
+                navigate_to(sap.ui.getCore().byId("edInclude").getValue(),
+                    sap.ui.getCore().byId("edIncludeLine").getValue());
             },
 
             // №2 button
@@ -69,10 +77,7 @@ function show_usage(usages) {
 
             handleConfirm: function (oEvent) {
                 var cells = oEvent.getParameter("selectedItem").getCells();
-                call_sap("NAVIGATE_TO", {
-                    "INCLUDE": cells[1].getText(),
-                    "LINE": cells[0].getText()
-                });
+                navigate_to(cells[1].getText(), cells[0].getText());
             },
 
             isFound: function (found) {

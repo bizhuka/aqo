@@ -86,13 +86,13 @@ CLASS lcl_opt IMPLEMENTATION.
         io_parent = lo_cont. " cl_gui_container=>screen0.
 
     load_data( iv_objid  = 'Z_AQO_UTIL_JS'
-               iv_url    = 'util.js' ).
+               iv_url    = 'z_aqo_util_js.w3mi.data.js' ).
 
     load_data( iv_objid  = 'Z_AQO_START_DIALOG_JS'
-               iv_url    = 'start_dialog.js' ).
+               iv_url    = 'z_aqo_start_dialog_js.w3mi.data.js' ).
 
     load_data( iv_objid  = 'Z_AQO_USAGE_JS'
-               iv_url    = 'usage.js' ).
+               iv_url    = 'z_aqo_usage_js.w3mi.data.js' ).
 
     load_data( iv_objid  = 'Z_AQO_INDEX_HTML'
                iv_url    = 'index.html' ).

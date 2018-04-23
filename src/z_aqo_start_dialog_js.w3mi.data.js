@@ -17,7 +17,7 @@ function getOptions(httpType, scripts) {
 
     if (httpType !== HttpType.SAP) {
         startInit.model.loadData('json/data.json');
-        startInit.i18n.loadData('json/i18n_en.json');
+        startInit.i18n.loadData('z_aqo_i18n_en_json.w3mi.data.json');
         return startInit;
     }
 
@@ -89,6 +89,9 @@ function getStartDialog(startInit) {
                     object: getStartInput("OBJECT").getValue(),
                     subobject: getStartInput("SUBOBJECT").getValue()
                 });
+
+                if (getHttpType() !== HttpType.SAP)
+                    sap.m.MessageToast.show("Switch to standard SAP UI");
             },
 
             // button 3
@@ -126,11 +129,15 @@ function getStartDialog(startInit) {
                         setFavoriteIcon(option.FAV)
                     }
                 });
+                if (getHttpType() !== HttpType.SAP)
+                    sap.m.MessageToast.show("Change favorites");
             },
 
             // button 4
             close_app: function () {
                 call_sap("DO_CLOSE");
+                if (getHttpType() !== HttpType.SAP)
+                    sap.m.MessageToast.show("Close the transaction");
             }
         });
 
