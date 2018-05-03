@@ -88,11 +88,11 @@ CLASS lcl_opt IMPLEMENTATION.
     load_data( iv_objid  = 'Z_AQO_UTIL_JS'
                iv_url    = 'z_aqo_util_js.w3mi.data.js' ).
 
-    load_data( iv_objid  = 'Z_AQO_START_DIALOG_JS'
-               iv_url    = 'z_aqo_start_dialog_js.w3mi.data.js' ).
+    load_data( iv_objid  = 'Z_AQO_MAIN_CONTROLLER'
+               iv_url    = 'z_aqo_main_controller.w3mi.data.js' ).
 
-    load_data( iv_objid  = 'Z_AQO_USAGE_JS'
-               iv_url    = 'z_aqo_usage_js.w3mi.data.js' ).
+    load_data( iv_objid  = 'Z_AQO_MULTI_UI'
+               iv_url    = 'z_aqo_multi_ui.w3mi.data.js' ).
 
     load_data( iv_objid  = 'Z_AQO_INDEX_HTML'
                iv_url    = 'index.html' ).
@@ -107,6 +107,14 @@ CLASS lcl_opt IMPLEMENTATION.
         objid TYPE wwwdata-objid,
       END OF ts_smw0,
 
+      " DB
+      BEGIN OF ts_cluster.
+        INCLUDE TYPE ztaqo_data.
+    TYPES:
+      size TYPE i,
+      END OF ts_cluster,
+
+      " View
       BEGIN OF ts_model,
         object    TYPE ztaqo_data-object,
         subobject TYPE ztaqo_data-subobject,
@@ -114,10 +122,11 @@ CLASS lcl_opt IMPLEMENTATION.
         udate     TYPE char8, "ZTAQO_DATA-udate, for search without delimeters
         utime     TYPE char6, "ZTAQO_DATA-utime, for search without delimeters
         fav       TYPE xsdboolean,
+        size      TYPE i,
       END OF ts_model.
     DATA:
-      lt_cluster   TYPE STANDARD TABLE OF ztaqo_data,
-      ls_cluster   TYPE REF TO ztaqo_data,
+      lt_cluster   TYPE STANDARD TABLE OF ts_cluster,
+      ls_cluster   TYPE REF TO ts_cluster,
       lt_model     TYPE STANDARD TABLE OF ts_model,
       ls_model     TYPE ts_model,
       lv_model     TYPE string,
@@ -142,14 +151,18 @@ CLASS lcl_opt IMPLEMENTATION.
        es_own_opt = ls_own_opt ).
 
     " Saved options
-    SELECT DISTINCT object subobject uname udate utime INTO CORRESPONDING FIELDS OF TABLE lt_cluster
-    FROM ztaqo_data.
+    SELECT object subobject uname udate utime COUNT(*) AS size INTO CORRESPONDING FIELDS OF TABLE lt_cluster
+    FROM ztaqo_data
+    GROUP BY object subobject uname udate utime.
 
     " Manual convert date and time
     LOOP AT lt_cluster REFERENCE INTO ls_cluster WHERE object    <> mc_own_object
                                                     OR subobject <> mc_own_subobject.
       CLEAR ls_model.
       MOVE-CORRESPONDING ls_cluster->* TO ls_model.
+
+      " Size in kb (* width in bytes)
+      ls_model-size = ls_model-size * 3103 / 1024.
 
       " Check is
       READ TABLE ls_own_opt->fav TRANSPORTING NO FIELDS
@@ -167,7 +180,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
     " Save to file
     save_json( iv_json     = lv_model
-               iv_filename = 'data.json' ).
+               iv_filename = 'sel.json' ).
 
     " Translation texts
     DO 2 TIMES.
@@ -293,22 +306,19 @@ CLASS lcl_opt IMPLEMENTATION.
       END OF ts_t000,
 
       BEGIN OF ts_json,
-        tech_visible TYPE xsdboolean,
-        edit_visible TYPE xsdboolean,
+        read_only TYPE xsdboolean,
+        dev_mandt TYPE xsdboolean,
 
-        read_only    TYPE xsdboolean,
-        dev_mandt    TYPE xsdboolean,
+        fld_opt   LIKE mo_opt->mt_field_opt,
+        copy_to   TYPE STANDARD TABLE OF ts_t000 WITH DEFAULT KEY,
 
-        title        TYPE string,
-        fld_opt      LIKE mo_opt->mt_field_opt,
-        copy_to      TYPE STANDARD TABLE OF ts_t000 WITH DEFAULT KEY,
-
-        last_call    TYPE abap_callstack_line,
+        last_call TYPE abap_callstack_line,
       END OF ts_json.
 
     DATA:
-      ls_json TYPE ts_json,
-      lv_json TYPE string.
+      ls_json     TYPE ts_json,
+      lv_json     TYPE string,
+      lv_filename TYPE string.
     CREATE OBJECT mo_opt
       EXPORTING
         iv_object         = iv_object
@@ -319,13 +329,6 @@ CLASS lcl_opt IMPLEMENTATION.
 
     " In prod just edit text
     ls_json-dev_mandt = zcl_aqo_util=>is_dev_mandt( ).
-    IF ls_json-dev_mandt = abap_true.
-      ls_json-tech_visible = abap_true.
-      ls_json-edit_visible = abap_false.
-    ELSE.
-      ls_json-tech_visible = abap_false.
-      ls_json-edit_visible = abap_true.
-    ENDIF.
 
     " All fields are gray
     IF mo_opt->lock( ) <> abap_true.
@@ -335,8 +338,8 @@ CLASS lcl_opt IMPLEMENTATION.
        WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     ENDIF.
 
-    ls_json-fld_opt      = mo_opt->mt_field_opt.
-    CONCATENATE iv_object ` - ` iv_subobject INTO ls_json-title.
+    " All fields options
+    ls_json-fld_opt = mo_opt->mt_field_opt.
 
     " Copy to another MANDT
     SELECT mandt mtext INTO CORRESPONDING FIELDS OF TABLE ls_json-copy_to
@@ -349,8 +352,9 @@ CLASS lcl_opt IMPLEMENTATION.
     lv_json = zcl_aqo_util=>to_json( im_data = ls_json ).
 
     " Save to file
+    CONCATENATE iv_object '-' iv_subobject '.json' INTO lv_filename.
     save_json( iv_json     = lv_json
-               iv_filename = 'opt.json' ).
+               iv_filename = lv_filename ).
 
     CONCATENATE `"` iv_guid `", ` lv_json INTO lv_json.
     mo_html_viewer->run_js( iv_function   = 'call_back'

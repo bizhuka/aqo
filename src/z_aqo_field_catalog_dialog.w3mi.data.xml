@@ -18,13 +18,15 @@
 
                     <Column label="{i18n>/DESC}">
                         <template>
-                            <m:Input value="{TEXT}" enabled="{ parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/DEV_MANDT'}], formatter: '.tabIsEnabled'}"/>
+                            <m:Input value="{TEXT}"
+                                     enabled="{= ${/DATA/READ_ONLY} ? false : ${/DATA/DEV_MANDT}}"></m:Input>
                         </template>
                     </Column>
 
                     <Column label="{i18n>/DATA_TYPE}">
                         <template>
-                            <m:Input value="{ROLLNAME}" enabled="{ parts: [{path: '/DATA/READ_ONLY'}, {path: '/DATA/DEV_MANDT'}], formatter: '.tabIsEnabled'}"/>
+                            <m:Input value="{ROLLNAME}"
+                                     enabled="{= ${/DATA/READ_ONLY} ? false : ${/DATA/DEV_MANDT}}"></m:Input>
                         </template>
                     </Column>
                 </columns>

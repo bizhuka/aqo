@@ -8,21 +8,16 @@ PARAMETERS:
 PERFORM start.
 
 FORM start.
-  PERFORM load USING  'Z_AQO_INDEX_HTML'          'index.html'.
-  PERFORM load USING  'Z_AQO_START_DIALOG_JS'     'z_aqo_start_dialog_js.w3mi.data.js'.
-  PERFORM load USING  'Z_AQO_USAGE_JS'            'z_aqo_usage_js.w3mi.data.js'.
-  PERFORM load USING  'Z_AQO_UTIL_JS'             'z_aqo_util_js.w3mi.data.js'.
+  PERFORM load USING  'Z_AQO_INDEX_HTML'           'index.html'.
+  PERFORM load USING  'Z_AQO_MULTI_UI'             'z_aqo_multi_ui.w3mi.data.js'.
+  PERFORM load USING  'Z_AQO_UTIL_JS'              'z_aqo_util_js.w3mi.data.js'.
+  PERFORM load USING  'Z_AQO_MAIN_CONTROLLER'      'z_aqo_main_controller.w3mi.data.js'.
 
-  PERFORM load USING  'Z_AQO_I18N_EN_JSON'        'z_aqo_i18n_en_json.w3mi.data.json'.
-  PERFORM load USING  'Z_AQO_I18N_RU_JSON'        'z_aqo_i18n_ru_json.w3mi.data.json'.
+  PERFORM load USING  'Z_AQO_I18N_EN_JSON'         'z_aqo_i18n_en_json.w3mi.data.json'.
+  PERFORM load USING  'Z_AQO_I18N_RU_JSON'         'z_aqo_i18n_ru_json.w3mi.data.json'.
 
-  PERFORM load USING  'Z_AQO_START_DIALOG'         'view/startDialog.xml'.
-  PERFORM load USING  'Z_AQO_F4_DIALOG'            'view/f4Dialog.xml'.
-  PERFORM load USING  'Z_AQO_MAIN_DIALOG'          'view/mainDialog.xml'.
-  PERFORM load USING  'Z_AQO_MAIN_TABLE_LIST'      'view/mainTableList.xml'.
+  PERFORM load USING  'Z_AQO_SPLIT_APP'            'view/splitApp.xml'.
   PERFORM load USING  'Z_AQO_FIELD_CATALOG_DIALOG' 'view/fieldCatalogDialog.xml'.
-  PERFORM load USING  'Z_AQO_LAST_CALL_DIALOG'     'view/lastCallDialog.xml'.
-  PERFORM load USING  'Z_AQO_USAGE_DIALOG'         'view/usageDialog.xml'.
 
   MESSAGE 'Done' TYPE 'S'.
 ENDFORM.

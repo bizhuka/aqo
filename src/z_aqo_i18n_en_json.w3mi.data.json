@@ -1,4 +1,5 @@
 ﻿{
+  "TITLE": "Maintain options",
   "OBJECT": "Object",
   "SUBOBJ": "Subobject",
   "CHANGED": "Changed by",
@@ -21,7 +22,7 @@
   "CLIENT_NAME": "Client name",
   "COPY_TO_MANDT": "Do you want to copy option's data to MANDT {0}?",
   "DELETE_OPTION": "Are you sure? The operation is irreversible.",
-  "SAVE_OPTION": "The settings will be overwritten. Continue?",
+  "SAVE_OPTION": "Do you want to save the changes in {0} - {1}?",
   "LAST_CALL": "Last call",
   "PROG_NAME": "Program Name",
   "INCLUDE": "Include",
@@ -31,5 +32,19 @@
   "NO_OPTION_EXIST": "Option with the name does not exist",
   "ROW_POS": "Row position. From {0} to {1}",
   "NEW_ROW": "Insert new row",
-  "FIELD_CATALOG": "Field catalog"
+  "FIELD_CATALOG": "Field catalog",
+  "NAVIGATE": "Navigate",
+  "DELETE_SELECTED": "Delete selected items",
+  "SET_FAVORITE": "Set favorite",
+  "UNSET_FAVORITE": "Unset favorite",
+  "FAVORITE": "Favorite",
+  "NONE": "None",
+  "CLOSE_APP": "Close application?",
+  "MAKE_CHANGE": "Make change to activate",
+  "SAVE_FIRST": "Save to activate",
+  "TRANSPORT": "Transport to",
+  "DELETE_OPT": "Delete option",
+  "BUG_INFO": "Bug info",
+  "SWITCH_TO_OLD": "Switch to old UI",
+  "CLOSE": "Close"
 }

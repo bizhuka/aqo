@@ -361,7 +361,7 @@ CLASS lcl_fld_opt_alv IMPLEMENTATION.
     mo_grid->check_changed_data( ).
 
     " Custom checks
-    CHECK data_check( ) = abap_true.
+    CHECK data_check( ) = abap_true OR lv_cmd = 'VIEW'.
 
     CASE lv_cmd.
       WHEN 'SAVE'.
