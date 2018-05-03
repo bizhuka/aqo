@@ -1,0 +1,106 @@
+{
+  "DATA": {
+    "READ_ONLY": true,
+    "DEV_MANDT": true,
+    "FLD_OPT": [
+      {
+        "VALUE": "{\"DATA\":\"1000\"}",
+        "IS_OLD": false,
+        "EDIT": true,
+        "NAME": "BUKRS",
+        "SYS_TYPE": "C",
+        "KIND": "P",
+        "UI_TYPE": "",
+        "LENGTH": 8,
+        "DECIMALS": 0,
+        "ROLLNAME": "KOMG-BUKRS",
+        "TEXT": "Company Code",
+        "TABLE_KIND": "",
+        "UNIQUE": "",
+        "KEY": [],
+        "KEY_DEFKIND": "",
+        "SUBCOMPS": ""
+      },
+      {
+        "VALUE": "{\"DATA\":[{\"SIGN\":\"I\",\"OPTION\":\"BT\",\"LOW\":\"1000\",\"HIGH\":\"3000\"}]}",
+        "IS_OLD": false,
+        "EDIT": true,
+        "NAME": "BUKRS_RANGE",
+        "SYS_TYPE": "h",
+        "KIND": "S",
+        "UI_TYPE": "",
+        "LENGTH": 8,
+        "DECIMALS": 0,
+        "ROLLNAME": "ANLAV-BUKRS",
+        "TEXT": "Company Code range",
+        "TABLE_KIND": "S",
+        "UNIQUE": "",
+        "KEY": [],
+        "KEY_DEFKIND": "D",
+        "SUBCOMPS": ""
+      },
+      {
+        "VALUE": "{\"DATA\":\"BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS\"}",
+        "IS_OLD": false,
+        "EDIT": true,
+        "NAME": "BUKRS_TEXT",
+        "SYS_TYPE": "g",
+        "KIND": "M",
+        "UI_TYPE": "memo",
+        "LENGTH": 8,
+        "DECIMALS": 0,
+        "ROLLNAME": "STRINGVAL",
+        "TEXT": "Long text",
+        "TABLE_KIND": "",
+        "UNIQUE": "",
+        "KEY": [],
+        "KEY_DEFKIND": "",
+        "SUBCOMPS": ""
+      },
+      {
+        "VALUE": "{\"DATA\":[{\"SPRAS\":\"0\",\"LASPEZ\":\"S\",\"LAHQ\":\"0\",\"LAISO\":\"SR\"},{\"SPRAS\":\"1\",\"LASPEZ\":\"D\",\"LAHQ\":\"0\",\"LAISO\":\"ZH\"},{\"SPRAS\":\"2\",\"LASPEZ\":\"M\",\"LAHQ\":\"0\",\"LAISO\":\"TH\"},{\"SPRAS\":\"3\",\"LASPEZ\":\"D\",\"LAHQ\":\"0\",\"LAISO\":\"KO\"},{\"SPRAS\":\"4\",\"LASPEZ\":\"S\",\"LAHQ\":\"0\",\"LAISO\":\"RO\"},{\"SPRAS\":\"5\",\"LASPEZ\":\"S\",\"LAHQ\":\"0\",\"LAISO\":\"SL\"},{\"SPRAS\":\"6\",\"LASPEZ\":\"S\",\"LAHQ\":\"0\",\"LAISO\":\"HR\"},{\"SPRAS\":\"7\",\"LASPEZ\":\"S\",\"LAHQ\":\"4\",\"LAISO\":\"MS\"},{\"SPRAS\":\"8\",\"LASPEZ\":\"S\",\"LAHQ\":\"0\",\"LAISO\":\"UK\"},{\"SPRAS\":\"9\",\"LASPEZ\":\"S\",\"LAHQ\":\"0\",\"LAISO\":\"ET\"},{\"SPRAS\":\"A\",\"LASPEZ\":\"L\",\"LAHQ\":\"0\",\"LAISO\":\"AR\"},{\"SPRAS\":\"B\",\"LASPEZ\":\"L\",\"LAHQ\":\"0\",\"LAISO\":\"HE\"},{\"SPRAS\":\"C\",\"LASPEZ\":\"S\",\"LAHQ\":\"4\",\"LAISO\":\"CS\"},{\"SPRAS\":\"D\",\"LASPEZ\":\"S\",\"LAHQ\":\"1\",\"LAISO\":\"DE\"},{\"SPRAS\":\"E\",\"LASPEZ\":\"S\",\"LAHQ\":\"1\",\"LAISO\":\"EN\"},{\"SPRAS\":\"F\",\"LASPEZ\":\"S\",\"LAHQ\":\"2\",\"LAISO\":\"FR\"},{\"SPRAS\":\"G\",\"LASPEZ\":\"S\",\"LAHQ\":\"0\",\"LAISO\":\"EL\"},{\"SPRAS\":\"H\",\"LASPEZ\":\"S\",\"LAHQ\":\"4\",\"LAISO\":\"HU\"},{\"SPRAS\":\"I\",\"LASPEZ\":\"S\",\"LAHQ\":\"2\",\"LAISO\":\"IT\"},{\"SPRAS\":\"J\",\"LASPEZ\":\"D\",\"LAHQ\":\"2\",\"LAISO\":\"JA\"},{\"SPRAS\":\"K\",\"LASPEZ\":\"S\",\"LAHQ\":\"3\",\"LAISO\":\"DA\"},{\"SPRAS\":\"L\",\"LASPEZ\":\"S\",\"LAHQ\":\"0\",\"LAISO\":\"PL\"},{\"SPRAS\":\"M\",\"LASPEZ\":\"D\",\"LAHQ\":\"0\",\"LAISO\":\"ZF\"}]}",
+        "IS_OLD": false,
+        "EDIT": true,
+        "NAME": "T002_TAB",
+        "SYS_TYPE": "h",
+        "KIND": "T",
+        "UI_TYPE": "",
+        "LENGTH": 8,
+        "DECIMALS": 0,
+        "ROLLNAME": "T002",
+        "TEXT": "Standard table",
+        "TABLE_KIND": "S",
+        "UNIQUE": "",
+        "KEY": [],
+        "KEY_DEFKIND": "D",
+        "SUBCOMPS": "{\"DATA\":[{\"NAME\":\"SPRAS\",\"SYS_TYPE\":\"C\",\"KIND\":\"P\",\"UI_TYPE\":\"\",\"LENGTH\":2,\"DECIMALS\":0,\"ROLLNAME\":\"TVOIT-LANGU\",\"TEXT\":\"Language Key\",\"TABLE_KIND\":\"\",\"UNIQUE\":\"\",\"KEY\":[],\"KEY_DEFKIND\":\"\",\"SUBCOMPS\":\"\"},{\"NAME\":\"LASPEZ\",\"SYS_TYPE\":\"C\",\"KIND\":\"P\",\"UI_TYPE\":\"\",\"LENGTH\":2,\"DECIMALS\":0,\"ROLLNAME\":\"T002-LASPEZ\",\"TEXT\":\"Language specifications\",\"TABLE_KIND\":\"\",\"UNIQUE\":\"\",\"KEY\":[],\"KEY_DEFKIND\":\"\",\"SUBCOMPS\":\"\"},{\"NAME\":\"LAHQ\",\"SYS_TYPE\":\"C\",\"KIND\":\"P\",\"UI_TYPE\":\"\",\"LENGTH\":2,\"DECIMALS\":0,\"ROLLNAME\":\"T002-LAHQ\",\"TEXT\":\"Degree of Translation of Language\",\"TABLE_KIND\":\"\",\"UNIQUE\":\"\",\"KEY\":[],\"KEY_DEFKIND\":\"\",\"SUBCOMPS\":\"\"},{\"NAME\":\"LAISO\",\"SYS_TYPE\":\"C\",\"KIND\":\"P\",\"UI_TYPE\":\"\",\"LENGTH\":4,\"DECIMALS\":0,\"ROLLNAME\":\"SLS_LOOKV-LANGU\",\"TEXT\":\"2-Character SAP Language Code\",\"TABLE_KIND\":\"\",\"UNIQUE\":\"\",\"KEY\":[],\"KEY_DEFKIND\":\"\",\"SUBCOMPS\":\"\"}]}"
+      }
+    ],
+    "COPY_TO": [
+      {
+        "MANDT": "000",
+        "MTEXT": "SAP SE"
+      },
+      {
+        "MANDT": "001",
+        "MTEXT": "SAP SE"
+      },
+      {
+        "MANDT": "100",
+        "MTEXT": "Development Client"
+      },
+      {
+        "MANDT": "120",
+        "MTEXT": "Data migration"
+      }
+    ],
+    "LAST_CALL": {
+      "MAINPROGRAM": "ZCL_AQO_OPT_EXAMPLE===========CP",
+      "INCLUDE": "ZCL_AQO_OPT_EXAMPLE===========CM001",
+      "LINE": 18,
+      "BLOCKTYPE": "METHOD",
+      "BLOCKNAME": "GET_INSTANCE",
+      "FLAG_SYSTEM": ""
+    }
+  }
+}
