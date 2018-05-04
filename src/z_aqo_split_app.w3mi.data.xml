@@ -6,8 +6,7 @@
         xmlns:t="sap.ui.table">
 
     <!--Make compact and set background color-->
-    <Shell backgroundColor="#009FDF" class="sapUiSizeCompact">
-
+    <Shell backgroundColor="#eaf1f6" class="sapUiSizeCompact">
         <!--PS like UI-->
         <SplitApp>
             <masterPages>
@@ -77,7 +76,7 @@
                                      showFooter="false">
                     <semantic:content>
                         <!--Hide at start-->
-                        <ObjectHeader id="id_detail_header"
+                            <ObjectHeader id="id_detail_header"
                                       title="{sel>/current/SUBOBJECT}"
                                       number="{sel>/current/UNAME}"
                                       numberUnit="{parts: [{path: 'sel>/current/UDATE'}, {path: 'sel>/current/UTIME'}], formatter: '.datetime'}"
@@ -100,7 +99,7 @@
                         </ObjectHeader>
 
                         <!--Modern tab bars-->
-                        <IconTabBar id="id_main_bar" class="sapUiResponsiveContentPadding" select="on_tab_select"
+                        <IconTabBar id="id_main_bar" select="on_tab_select"
                                     expanded="false">
                             <items>
 

@@ -23,6 +23,20 @@
     <script type="text/javascript" src="z_aqo_multi_ui.w3mi.data.js" data-objid="Z_AQO_MULTI_UI"></script>
     <script type="text/javascript" src="z_aqo_main_controller.w3mi.data.js" data-objid="Z_AQO_MAIN_CONTROLLER"></script>
 
+    <style>
+        #id_detail_header {
+            padding: 1rem; /* Make it smaller */
+        }
+
+        .sapMShellBrandingBar {
+            height: 0;
+        }
+
+        .sapMPageHeader::before {
+            border-top-width: 0;
+        }
+    </style>
+
     <script>
         // Starting point
         sap.ui.getCore().attachInit(function () {
