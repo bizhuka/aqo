@@ -28,12 +28,6 @@
     </item>
     <item>
      <ID>I</ID>
-     <KEY>NEW</KEY>
-     <ENTRY>The settings will be overwritten. Continue?</ENTRY>
-     <LENGTH>86</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
      <KEY>SAV</KEY>
      <ENTRY>Save</ENTRY>
      <LENGTH>14</LENGTH>

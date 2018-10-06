@@ -661,7 +661,6 @@ METHOD save.
   DATA:
     lv_field   TYPE REF TO fieldname,
     lr_data    TYPE REF TO data,
-    ms_cluster TYPE ztaqo_data,
     lv_answer  TYPE char1,
     lv_text    TYPE text255,
     lv_xml     TYPE string,
@@ -672,10 +671,12 @@ METHOD save.
 
   " Own dialogs
   IF iv_confirm = abap_true.
+    " Overrite message
+    MESSAGE s019(zaqo_mes) WITH ms_cluster-object ms_cluster-subobject INTO lv_text.
     CALL FUNCTION 'POPUP_TO_CONFIRM'
       EXPORTING
         titlebar              = TEXT-sav
-        text_question         = TEXT-new
+        text_question         = lv_text
         icon_button_1         = 'ICON_OKAY'
         icon_button_2         = 'ICON_CANCEL'
         default_button        = '2'
@@ -749,7 +750,7 @@ METHOD save.
 
   " Show info
   IF iv_message = abap_true.
-    CONCATENATE ms_cluster-object ` ` ms_cluster-subobject ` MANDT = ` iv_mandt INTO lv_text.
+    CONCATENATE ms_cluster-object ` - ` ms_cluster-subobject ` MANDT = ` iv_mandt INTO lv_text.
     MESSAGE s516(ed) WITH lv_text.
   ENDIF.
 ENDMETHOD.

@@ -116,6 +116,12 @@
      <MSGNR>018</MSGNR>
      <TEXT>Error in value &amp;1</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MES</ARBGB>
+     <MSGNR>019</MSGNR>
+     <TEXT>The setting &amp;1 - &amp;2 will be overwritten. Continue?</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>
