@@ -571,12 +571,7 @@ METHOD create_structure.
 
   " №4 Called from constructor if have in DB cluster
   LOOP AT it_field_opt ASSIGNING <ls_field_opt>.
-    " Create sub level
-          if <ls_field_opt>-name = 'CODE1'.
-        BREAK-POINT.
-      ENDIF.
-
-    " № 1 - level
+    " Create sub levels
     APPEND INITIAL LINE TO lt_comp ASSIGNING <ls_comp>.
     <ls_comp>-name = <ls_field_opt>-name.
     <ls_comp>-type = create_type_descr( is_comp = <ls_field_opt>-comp ).
