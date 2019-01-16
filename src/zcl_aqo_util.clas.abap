@@ -64,16 +64,16 @@ public section.
       !IS_COMP type TS_COMP optional
       value(IR_TYPE) type ref to DATA optional
     returning
-      value(RO_TYPE) type ref to CL_ABAP_DATADESCR .
+      value(RO_TYPE) type ref to CL_ABAP_DATADESCR
+    raising
+      ZCX_AQO_ERROR .
   class-methods CREATE_STRUCTURE
     importing
       !IO_RANGE type ref to CL_ABAP_DATADESCR optional
       !IV_COMPS type STRING optional
       !IT_FIELD_OPT type TT_FIELD_OPT optional
     returning
-      value(RO_STRUCT) type ref to CL_ABAP_STRUCTDESCR
-    exceptions
-      UNKNOWN_TYPE .
+      value(RO_STRUCT) type ref to CL_ABAP_STRUCTDESCR .
   class-methods CREATE_FIELD_CATALOG
     importing
       value(IR_STRUC) type ref to DATA optional
@@ -523,7 +523,6 @@ ENDMETHOD.
 METHOD create_structure.
   DATA:
     lv_field   TYPE REF TO fieldname,
-    lo_type    TYPE REF TO cl_abap_datadescr,
     lt_comp    TYPE abap_component_tab,
     lt_subcomp TYPE STANDARD TABLE OF ts_comp,
     lr_type    TYPE REF TO data,
@@ -566,49 +565,16 @@ METHOD create_structure.
     LOOP AT lt_subcomp ASSIGNING <ls_subfield>.
       APPEND INITIAL LINE TO lt_comp ASSIGNING <ls_comp>.
       <ls_comp>-name = <ls_subfield>-name.
-
-      CLEAR lo_type.
-
-      " For tables speed 2
-      IF <ls_subfield>-kind = zcl_aqo_util=>mc_kind_parameter.
-        lo_type = create_type_descr( iv_rollname = <ls_subfield>-rollname ).
-      ENDIF.
-
-      IF lo_type IS INITIAL.
-        CASE <ls_subfield>-sys_type.
-          WHEN cl_abap_typedescr=>typekind_char.
-            lo_type = cl_abap_elemdescr=>get_c( p_length = <ls_subfield>-length ).
-          WHEN cl_abap_typedescr=>typekind_date.
-            lo_type = cl_abap_elemdescr=>get_d( ).
-          WHEN cl_abap_typedescr=>typekind_int.
-            lo_type = cl_abap_elemdescr=>get_i( ).
-          WHEN cl_abap_typedescr=>typekind_float.
-            lo_type = cl_abap_elemdescr=>get_f( ).
-          WHEN cl_abap_typedescr=>typekind_num.
-            lo_type = cl_abap_elemdescr=>get_n( p_length = <ls_subfield>-length ).
-          WHEN cl_abap_typedescr=>typekind_packed.
-            lo_type = cl_abap_elemdescr=>get_p( p_length = <ls_subfield>-length p_decimals = <ls_subfield>-decimals ).
-          WHEN cl_abap_typedescr=>typekind_string.
-            lo_type = cl_abap_elemdescr=>get_string( ).
-          WHEN cl_abap_typedescr=>typekind_time.
-            lo_type = cl_abap_elemdescr=>get_t( ).
-          WHEN cl_abap_typedescr=>typekind_table.
-            "create_structure( iv_comps = <ls_subfield>-subcomps )
-            lo_type = create_type_descr( is_comp = <ls_subfield> ).
-
-          WHEN OTHERS.
-            MESSAGE e007(zaqo_mes) WITH <ls_comp>-name RAISING unknown_type.
-        ENDCASE.
-      ENDIF.
-
-      <ls_comp>-type = lo_type.
+      <ls_comp>-type = create_type_descr( is_comp = <ls_subfield> ).
     ENDLOOP.
   ENDDO.
 
   " №4 Called from constructor if have in DB cluster
   LOOP AT it_field_opt ASSIGNING <ls_field_opt>.
     " Create sub level
-    CLEAR: lo_type.
+          if <ls_field_opt>-name = 'CODE1'.
+        BREAK-POINT.
+      ENDIF.
 
     " № 1 - level
     APPEND INITIAL LINE TO lt_comp ASSIGNING <ls_comp>.
@@ -620,9 +586,11 @@ METHOD create_structure.
 ENDMETHOD.
 
 
-METHOD CREATE_TYPE_DESCR.
+METHOD create_type_descr.
   DATA:
-    lo_line TYPE REF TO CL_ABAP_DATADESCR.
+    lo_line  TYPE REF TO cl_abap_datadescr,
+    lv_kind  TYPE rsscr_kind,
+    lv_msgv1 TYPE symsgv.
 
   " No type
   CLEAR ro_type.
@@ -630,6 +598,7 @@ METHOD CREATE_TYPE_DESCR.
   " №0
   DO 1 TIMES.
     CHECK is_comp IS SUPPLIED.
+    lv_kind = is_comp-kind.
 
 *    " structure for DB
 *    IF mo_ui_ext IS NOT INITIAL.
@@ -644,8 +613,42 @@ METHOD CREATE_TYPE_DESCR.
 *    ENDIF.
 
     " For tables speed 1
-    ro_type = create_type_descr( iv_rollname = is_comp-rollname ).
-    CASE is_comp-kind.
+    IF is_comp-rollname IS NOT INITIAL.
+      ro_type = create_type_descr( iv_rollname = is_comp-rollname ).
+    ENDIF.
+
+    IF ro_type IS INITIAL AND lv_kind = zcl_aqo_util=>mc_kind_parameter.
+      CASE is_comp-sys_type.
+        WHEN cl_abap_typedescr=>typekind_char.
+          ro_type = cl_abap_elemdescr=>get_c( p_length = is_comp-length ).
+        WHEN cl_abap_typedescr=>typekind_date.
+          ro_type = cl_abap_elemdescr=>get_d( ).
+        WHEN cl_abap_typedescr=>typekind_int.
+          ro_type = cl_abap_elemdescr=>get_i( ).
+        WHEN cl_abap_typedescr=>typekind_float.
+          ro_type = cl_abap_elemdescr=>get_f( ).
+        WHEN cl_abap_typedescr=>typekind_num.
+          ro_type = cl_abap_elemdescr=>get_n( p_length = is_comp-length ).
+        WHEN cl_abap_typedescr=>typekind_packed.
+          ro_type = cl_abap_elemdescr=>get_p( p_length = is_comp-length p_decimals = is_comp-decimals ).
+        WHEN cl_abap_typedescr=>typekind_string.
+          ro_type = cl_abap_elemdescr=>get_string( ).
+        WHEN cl_abap_typedescr=>typekind_time.
+          ro_type = cl_abap_elemdescr=>get_t( ).
+        WHEN cl_abap_typedescr=>typekind_table.
+          "create_structure( iv_comps = <ls_subfield>-subcomps )
+          lv_kind = zcl_aqo_util=>mc_kind_table.
+
+        WHEN OTHERS.
+          lv_msgv1 = is_comp-name.
+          RAISE EXCEPTION TYPE zcx_aqo_error
+            EXPORTING
+              textid = zcx_aqo_error=>unknown_type
+              msgv1  = lv_msgv1.
+      ENDCASE.
+    ENDIF.
+
+    CASE lv_kind.
         " P
       WHEN zcl_aqo_util=>mc_kind_parameter.
 

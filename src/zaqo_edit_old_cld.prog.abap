@@ -22,8 +22,8 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL FRIENDS
 
     METHODS:
       constructor
-        EXCEPTIONS
-          unknown_type,
+        RAISING
+          zcx_aqo_error,
 
       is_editable
         IMPORTING
@@ -34,6 +34,8 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo FINAL FRIENDS
       save REDEFINITION.
 
     CLASS-METHODS:
+      start_of_selection,
+
       pbo,
 
       pai
@@ -247,6 +249,6 @@ CLASS lcl_grid DEFINITION INHERITING FROM cl_gui_alv_grid.
       " Get control
       set_err_cells
         IMPORTING
-          io_grid          TYPE REF TO cl_gui_alv_grid
-          io_protocol      TYPE REF TO cl_alv_changed_data_protocol.
+          io_grid     TYPE REF TO cl_gui_alv_grid
+          io_protocol TYPE REF TO cl_alv_changed_data_protocol.
 ENDCLASS.

@@ -21,10 +21,8 @@ public section.
       !IR_DATA type ref to DATA optional
       !IO_DATA type ref to OBJECT optional
       !IV_SAVE_LAST_CALL type ABAP_BOOL default ABAP_TRUE
-    exceptions
-      NO_OPTION_EXIST
-      WRONG_ATTR_ORDER
-      NO_FRIEND .
+    raising
+      ZCX_AQO_ERROR .
   methods DELETE
     importing
       !IV_CONFIRM type ABAP_BOOL default ABAP_TRUE
@@ -94,6 +92,8 @@ METHOD constructor.
     lt_callstack TYPE abap_callstack,
     ls_last_call TYPE REF TO abap_callstack_line,
     lv_name      TYPE string,
+    lv_msgv1     TYPE symsgv,
+    lv_msgv2     TYPE symsgv,
     lr_field_opt TYPE REF TO zcl_aqo_util=>ts_field_opt.
 
   " Key fields
@@ -123,19 +123,23 @@ METHOD constructor.
   " №1 Based on class
   IF mo_data IS NOT INITIAL.
     lo_class ?= cl_abap_classdescr=>describe_by_object_ref( mo_data ).
+    lv_name = lo_class->get_relative_name( ).
 
     " Check class
     lt_friend = lo_class->get_friend_types( ).
     READ TABLE lt_friend TRANSPORTING NO FIELDS
      WITH KEY table_line->absolute_name = '\CLASS=ZCL_AQO'.
     IF sy-subrc <> 0.
-      MESSAGE e014(zaqo_mes) RAISING no_friend.
+      lv_msgv1 = lv_name.
+      RAISE EXCEPTION TYPE zcx_aqo_error
+        EXPORTING
+          textid = zcx_aqo_error=>no_friend
+          msgv1  = lv_msgv1.
     ENDIF.
 
 *    " Is ZIF_PROG_PARAMS_UI_EXT ?
 *    DO 1 TIMES.
 *      " Only for global classes
-*      lv_name = lo_class->get_relative_name( ).
 *      CONCATENATE '\CLASS=' lv_name INTO lv_name.
 *      CHECK lo_class->absolute_name = lv_name. " is_ddic_type( ) = abap_true.
 *
@@ -159,7 +163,11 @@ METHOD constructor.
 
       " Check instance or static
       IF lv_is_stat <> abap_undefined AND lv_is_stat <> ls_attr->is_class.
-        MESSAGE e013(zaqo_mes) WITH ls_attr->name RAISING wrong_attr_order.
+        lv_msgv1 = ls_attr->name.
+        RAISE EXCEPTION TYPE zcx_aqo_error
+          EXPORTING
+            textid = zcx_aqo_error=>wrong_attr_order
+            msgv1  = lv_msgv1.
       ENDIF.
       lv_is_stat = ls_attr->is_class.
 
@@ -185,8 +193,13 @@ METHOD constructor.
   IF mr_data IS INITIAL AND mo_data IS INITIAL.
     " Just impossible to do something
     IF mt_field_opt IS INITIAL.
-      " TODO errror class ZCX_CLASS
-      MESSAGE e006(zaqo_mes) RAISING no_option_exist.
+      lv_msgv1 = iv_object.
+      lv_msgv2 = iv_subobject.
+      RAISE EXCEPTION TYPE zcx_aqo_error
+        EXPORTING
+          textid = zcx_aqo_error=>no_option_exist
+          msgv1  = lv_msgv1
+          msgv2  = lv_msgv2.
     ENDIF.
     lo_struc = zcl_aqo_util=>create_structure( it_field_opt = mt_field_opt ).
     CREATE DATA mr_data TYPE HANDLE lo_struc.
@@ -231,7 +244,7 @@ METHOD constructor.
     lr_data      TYPE REF TO data.
   " Field data
   FIELD-SYMBOLS:
-    <lv_field>    TYPE ANY.
+    <lv_field>    TYPE any.
 
   " Try to find new options
   LOOP AT me->mt_all_field REFERENCE INTO lv_field.

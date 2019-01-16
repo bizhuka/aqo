@@ -73,7 +73,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
     " Save in parameters
     LOOP AT lt_dynp REFERENCE INTO ls_dynp.
-      ASSIGN (ls_dynp->fieldname) To <lv_val>.
+      ASSIGN (ls_dynp->fieldname) TO <lv_val>.
       <lv_val> = ls_dynp->fieldvalue.
     ENDLOOP.
 
@@ -126,23 +126,29 @@ CLASS lcl_opt IMPLEMENTATION.
         dynpfields = lt_dynp.
   ENDMETHOD.
 
+  METHOD start_of_selection.
+    DATA:
+      lo_err TYPE REF TO zcx_aqo_error.
+
+    TRY.
+        CREATE OBJECT go_opt.
+      CATCH zcx_aqo_error INTO lo_err.
+        MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+    ENDTRY.
+
+  ENDMETHOD.
+
   METHOD constructor.
     DATA:
       ls_field_opt   TYPE REF TO zcl_aqo_util=>ts_field_opt,
       ls_fld_opt     TYPE REF TO ts_fld_opt,
-      lo_fld_opt_alv TYPE REF TO lcl_fld_opt_alv.
+      lo_fld_opt_alv TYPE REF TO lcl_fld_opt_alv,
+      lv_msgv1       TYPE symsgv.
 
     super->constructor(
-      EXPORTING
        iv_object         = p_object
        iv_subobject      = p_sub_ob
-       iv_save_last_call = abap_false
-      EXCEPTIONS
-       OTHERS       = 1 ).
-    IF sy-subrc <> 0.
-      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-      RETURN.
-    ENDIF.
+       iv_save_last_call = abap_false ).
 
     " Mandt is open
     mv_is_dev = zcl_aqo_util=>is_dev_mandt( ).
@@ -176,8 +182,11 @@ CLASS lcl_opt IMPLEMENTATION.
           ls_fld_opt->icon = icon_change_text.
 
         WHEN OTHERS.
-          MESSAGE e007(zaqo_mes) WITH ls_field_opt->name RAISING unknown_type.
-
+          lv_msgv1 = ls_field_opt->name.
+          RAISE EXCEPTION TYPE zcx_aqo_error
+            EXPORTING
+              textid = zcx_aqo_error=>unknown_type
+              msgv1  = lv_msgv1.
       ENDCASE.
 
       IF ls_fld_opt->kind = zcl_aqo_util=>mc_kind_table OR

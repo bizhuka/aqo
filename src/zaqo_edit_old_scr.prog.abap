@@ -53,7 +53,7 @@ AT SELECTION-SCREEN.
   ENDCASE.
 
 START-OF-SELECTION.
-  CREATE OBJECT go_opt.
+  lcl_opt=>start_of_selection( ).
 
 *----------------------------------------------------------------------*
 *  PAI_EXIT

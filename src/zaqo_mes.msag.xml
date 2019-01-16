@@ -42,7 +42,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MES</ARBGB>
      <MSGNR>006</MSGNR>
-     <TEXT>No option exist in the database</TEXT>
+     <TEXT>No option &amp;1 - &amp;2 exist in the database</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -90,7 +90,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MES</ARBGB>
      <MSGNR>014</MSGNR>
-     <TEXT>Add ZCL_AQO class to frieds first</TEXT>
+     <TEXT>Add ZCL_AQO class to frieds of &amp;1</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
