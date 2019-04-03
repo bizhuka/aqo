@@ -1,12 +1,11 @@
 ### ABAP quick options
-https://github.com/bizhuka/aqo/blob/master/src/z_aqo_index_html.w3mi.data.html)
 
 The main purpose of the library is to avoid [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants) and other `"permanent data"` from the code. And give the ability to user to change the `"constants"` in friendly interface.
 
 ##Before installation add the following item to SDOKMIME! (and delete previous BSP application in the package)
 | EXTENSION     | TYPE          |
 | ------------- |:-------------:|
-| json          | application/json |
+| json          | applicationjson |
 
 
 
