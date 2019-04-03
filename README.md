@@ -1,8 +1,10 @@
 ### ABAP quick options
+#### tr. SE38-> ZAQO_TESTER, tr. SE24 -> ZCL_AQO_TESTER  ===> F8
+#### tr. ZAQO_EDITOR, ZAQO_EDITOR_OLD, ZAQO_BSP_EDITOR
 
 The main purpose of the library is to avoid [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants) and other `"permanent data"` from the code. And give the ability to user to change the `"constants"` in friendly interface.
 
-##Before installation add the following item to SDOKMIME! (and delete previous BSP application in the package)
+#### Before installation add the following item to SDOKMIME! (and delete previous BSP application in the package)
 
 | EXTENSION        | TYPE           | 
 | ------------- |:-------------:|
