@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+        xmlns="sap.m"
+        xmlns:core="sap.ui.core"
+        xmlns:f="sap.ui.layout.form">
+    <Dialog title="{i18n>createNewOption}" afterClose="onAddNewFieldAfterClose" type="Message">
+        <content>
+            <f:Form editable="false">
+                <f:layout>
+                    <f:ResponsiveGridLayout singleContainerFullSize="false"/>
+                </f:layout>
+                <f:formContainers>
+                    <f:FormContainer>
+                        <f:formElements>
+                            <f:FormElement label="{i18n>id}">
+                                <f:fields>
+                                    <Input id="id_name" required="true" maxLength="30" valueLiveUpdate="true"
+                                           liveChange="on_check_inputs"/>
+                                </f:fields>
+                            </f:FormElement>
+
+                            <f:FormElement label="{i18n>rollname}">
+                                <f:fields>
+                                    <Input id="id_rollname" required="true" maxLength="61" valueLiveUpdate="true"
+                                           liveChange="on_check_inputs"/>
+                                </f:fields>
+                            </f:FormElement>
+                        </f:formElements>
+                    </f:FormContainer>
+                </f:formContainers>
+            </f:Form>
+        </content>
+
+        <beginButton>
+            <Button text="{i18n>ok_text}" press="onAddNewFieldConfirm" id="id_bt_new_field" enabled="false"/>
+        </beginButton>
+
+        <endButton>
+            <Button icon="sap-icon://accept" text="{i18n>cancel_text}" press="onAddNewFieldClose"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_MSAG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <T100A>
+    <ARBGB>ZAQO_MESSAGE</ARBGB>
+    <MASTERLANG>E</MASTERLANG>
+    <STEXT>Messages of ZSY_OPT</STEXT>
+   </T100A>
+   <T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>000</MSGNR>
+     <TEXT>&amp;1&amp;2&amp;3&amp;4</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>001</MSGNR>
+     <TEXT>The text of &amp;1 is initial</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>002</MSGNR>
+     <TEXT>Specify unique table name and field name for &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>003</MSGNR>
+     <TEXT>Error in FM &amp;1 sy-subrc &amp;2</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>004</MSGNR>
+     <TEXT>Data copied back</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>005</MSGNR>
+     <TEXT>Cannot write data back to table &amp;1. Maybe key duplication</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>006</MSGNR>
+     <TEXT>No option &amp;1 - &amp;2 exist in the database</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>007</MSGNR>
+     <TEXT>Unknown type for field &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>008</MSGNR>
+     <TEXT>Table line is not structure. Parameter &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>009</MSGNR>
+     <TEXT>Cannot detect type for &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>010</MSGNR>
+     <TEXT>Option &amp;1 &amp;2 is deleted</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>011</MSGNR>
+     <TEXT>Deletion is permited in DEV sytem only</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>012</MSGNR>
+     <TEXT>Field &amp;1 is not initialized</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>013</MSGNR>
+     <TEXT>Use static or instance attributes. But not both. &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>014</MSGNR>
+     <TEXT>Add ZCL_AQO_OPTION class to frieds of &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>015</MSGNR>
+     <TEXT>No usage was found</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>016</MSGNR>
+     <TEXT>Can not create &amp;1 data type</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>017</MSGNR>
+     <TEXT>Error in &amp;1 text</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>018</MSGNR>
+     <TEXT>Error in value &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>019</MSGNR>
+     <TEXT>The setting &amp;1 - &amp;2 will be overwritten. Continue?</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>020</MSGNR>
+     <TEXT>No package &apos;&amp;1&apos; exist</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>021</MSGNR>
+     <TEXT>Cannot create &apos;&amp;1&apos; type</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>022</MSGNR>
+     <TEXT>Field &apos;&amp;1&apos; already exist</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>023</MSGNR>
+     <TEXT>&amp;1 - &amp;2 option put in request &amp;3</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>024</MSGNR>
+     <TEXT>No case for &amp;1 &amp;2</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>025</MSGNR>
+     <TEXT>Scroll top=&amp;1, skip=&amp;2</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>026</MSGNR>
+     <TEXT>Deleted fields:&amp;1&amp;2&amp;3&amp;4</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>027</MSGNR>
+     <TEXT>Declared in editor only:&amp;1&amp;2&amp;3&amp;4</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>028</MSGNR>
+     <TEXT>&amp;1&amp;2 declaration changed. Delete in editor or use IV_REPAIR = &apos;X&apos; flag!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>029</MSGNR>
+     <TEXT>IV_REPAIR = &apos;X&apos; slows down execution!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>030</MSGNR>
+     <TEXT>No declaration of &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>031</MSGNR>
+     <TEXT>No last value &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>032</MSGNR>
+     <TEXT>New field &amp;1 was inserted successfully</TEXT>
+    </T100>
+   </T100>
+  </asx:values>
+ </asx:abap>
+</abapGit>

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>ZDAQO_USER</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME>ZDAQO_USER</DOMNAME>
+    <HEADLEN>12</HEADLEN>
+    <SCRLEN1>10</SCRLEN1>
+    <SCRLEN2>15</SCRLEN2>
+    <SCRLEN3>20</SCRLEN3>
+    <DDTEXT>Created By</DDTEXT>
+    <REPTEXT>Created By</REPTEXT>
+    <SCRTEXT_S>Created By</SCRTEXT_S>
+    <SCRTEXT_M>Created By</SCRTEXT_M>
+    <SCRTEXT_L>Created By</SCRTEXT_L>
+    <APPLCLASS>SAB4</APPLCLASS>
+    <DTELMASTER>E</DTELMASTER>
+    <SHLPNAME>ZHAQO_USER</SHLPNAME>
+    <SHLPFIELD>BNAME</SHLPFIELD>
+    <REFKIND>D</REFKIND>
+   </DD04V>
+   <I18N_LANGS>
+    <LANGU>D</LANGU>
+    <LANGU>R</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>D</DDLANGUAGE>
+     <DDTEXT>Autor</DDTEXT>
+     <REPTEXT>Anleger</REPTEXT>
+     <SCRTEXT_S>Anleger</SCRTEXT_S>
+     <SCRTEXT_M>Anleger</SCRTEXT_M>
+     <SCRTEXT_L>Anleger</SCRTEXT_L>
+    </item>
+    <item>
+     <DDLANGUAGE>R</DDLANGUAGE>
+     <DDTEXT>Автор</DDTEXT>
+     <REPTEXT>Автор</REPTEXT>
+     <SCRTEXT_S>Автор</SCRTEXT_S>
+     <SCRTEXT_M>Автор</SCRTEXT_M>
+     <SCRTEXT_L>Автор</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

@@ -1,0 +1,62 @@
+<edmx:Edmx xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx"
+           xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
+           xmlns:sap="http://www.sap.com/Protocols/SAPData" Version="1.0">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" Namespace="ODATA_SRV" xml:lang="en"
+                sap:schema-version="1">
+
+            <EntityType Name="AqoOption" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="PACKAGE_ID"/>
+                    <PropertyRef Name="OPTION_ID"/>
+                </Key>
+                <Property Name="PACKAGE_ID" Type="Edm.String" Nullable="false" MaxLength="30"
+                          sap:label="Package" sap:creatable="true"
+                          sap:updatable="true" sap:sortable="true" sap:filterable="true"/>
+                <Property Name="OPTION_ID" Type="Edm.String" Nullable="false" MaxLength="30"
+                          sap:label="Option name" sap:creatable="true"
+                          sap:updatable="true" sap:sortable="true" sap:filterable="true"/>
+            </EntityType>
+
+
+            <EntityType Name="AqoField" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="PACKAGE_ID"/>
+                    <PropertyRef Name="OPTION_ID"/>
+                    <PropertyRef Name="NAME"/>
+                </Key>
+
+                <Property Name="PACKAGE_ID" Type="Edm.String" Nullable="false" MaxLength="30"
+                          sap:label="Package" sap:creatable="true"
+                          sap:updatable="true" sap:sortable="true" sap:filterable="true"/>
+                <Property Name="OPTION_ID" Type="Edm.String" Nullable="false" MaxLength="30"
+                          sap:label="Option name" sap:creatable="true"
+                          sap:updatable="true" sap:sortable="true" sap:filterable="true"/>
+                <Property Name="NAME" Type="Edm.String" Nullable="false" MaxLength="30"
+                          sap:label="Field Name"
+                          sap:creatable="true" sap:updatable="true" sap:sortable="true" sap:filterable="true"/>
+
+                <!--Label-->
+                <Property Name="LABEL" Type="Edm.String" Nullable="false" MaxLength="60"
+                          sap:label="Field description"
+                          sap:creatable="true" sap:updatable="true" sap:sortable="true" sap:filterable="true"/>
+                <Property Name="IS_EDITABLE" Type="Edm.Boolean" Nullable="false"
+                          sap:label="Edit in prod"
+                          sap:creatable="true" sap:updatable="true" sap:sortable="true" sap:filterable="true"/>
+            </EntityType>
+
+            <EntityContainer Name="ODATA_SRV_Entities" m:IsDefaultEntityContainer="true"
+                             sap:supported-formats="atom json xlsx">
+
+                <EntitySet Name="AqoOptions" EntityType="ODATA_SRV.AqoOption"
+                           sap:creatable="true" sap:updatable="true"
+                           sap:deletable="true" sap:pageable="true" sap:content-version="1"/>
+
+                <EntitySet Name="AqoFields" EntityType="ODATA_SRV.AqoField"
+                           sap:creatable="true" sap:updatable="true"
+                           sap:deletable="true" sap:pageable="true" sap:content-version="1"/>
+
+            </EntityContainer>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

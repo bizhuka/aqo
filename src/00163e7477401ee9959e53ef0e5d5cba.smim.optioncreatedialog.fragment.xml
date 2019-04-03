@@ -1,0 +1,64 @@
+<core:FragmentDefinition
+        xmlns="sap.m"
+        xmlns:core="sap.ui.core"
+        xmlns:f="sap.ui.layout.form">
+    <Dialog title="{= ${opt>/IS_NEW_OPTION} ? ${i18n>createNewOption} : ${i18n>editExistingOption} }" afterClose="onOptionCreateAfterClose" type="Message">
+
+        <content>
+            <f:Form editable="false">
+                <f:layout>
+                    <f:ResponsiveGridLayout singleContainerFullSize="false"/>
+                </f:layout>
+                <f:formContainers>
+                    <f:FormContainer>
+                        <f:formElements>
+                            <f:FormElement label="{i18n>package}">
+                                <f:fields>
+                                    <Input id="id_package_name" showValueHelp="true" required="true" maxLength="30"
+                                           value="{opt>/PACKAGE_ID}"
+                                           enabled="{opt>/IS_NEW_OPTION}"
+                                           valueLiveUpdate="true"/>
+                                </f:fields>
+                            </f:FormElement>
+
+                            <f:FormElement label="{i18n>id}">
+                                <f:fields>
+                                    <Input required="true" maxLength="30" value="{opt>/OPTION_ID}"
+                                           enabled="{opt>/IS_NEW_OPTION}"
+                                           valueLiveUpdate="true"/>
+                                </f:fields>
+                            </f:FormElement>
+
+                            <f:FormElement label="{i18n>description}">
+                                <f:fields>
+                                    <TextArea required="true" maxLength="100"
+                                              value="{opt>/DESCRIPTION}"
+                                              valueLiveUpdate="true"/>
+                                </f:fields>
+                            </f:FormElement>
+
+                            <f:FormElement label="{i18n>prev_value_cnt}">
+                                <f:fields>
+                                    <StepInput min="1" max="5" value="{opt>/PREV_VALUE_CNT}"/>
+                                </f:fields>
+                            </f:FormElement>
+
+                        </f:formElements>
+                    </f:FormContainer>
+                </f:formContainers>
+            </f:Form>
+        </content>
+
+        <beginButton>
+            <Button text="{i18n>ok_text}" press="onOptionCreateConfirm"
+                    enabled="{=
+                     ${opt>/PACKAGE_ID}.length > 0 &amp;&amp;
+                     ${opt>/OPTION_ID}.length > 0 &amp;&amp;
+                     ${opt>/DESCRIPTION}.length > 0 }"/>
+        </beginButton>
+
+        <endButton>
+            <Button icon="sap-icon://accept" text="{i18n>cancel_text}" press="onOptionCreateClose"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

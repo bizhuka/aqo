@@ -1,0 +1,43 @@
+<core:FragmentDefinition
+        xmlns="sap.m"
+        xmlns:t="sap.ui.table"
+        xmlns:core="sap.ui.core">
+
+    <Dialog id="id_fc_dialog" title="{fld>NAME} - {fld>LABEL}">
+
+        <content>
+            <t:Table id="id_fc_table" title="{i18n>field_catalog}" selectionMode="None" class="sapUiSmallMarginBeginEnd">
+                <t:columns>
+                    <t:Column label="{i18n>techName}">
+                        <t:template>
+                            <Label text="{fld>NAME}"/>
+                        </t:template>
+                    </t:Column>
+
+                    <t:Column label="{i18n>description}">
+                        <t:template>
+                            <Input value="{fld>LABEL}"
+                                   liveChange="on_set_changed"
+                                   valueLiveUpdate="true"
+                                   enabled="{= ${appView>/IS_READ_ONLY}===true? false : ${appView>/IS_DEV} }"/>
+                        </t:template>
+                    </t:Column>
+
+                    <t:Column label="{i18n>rollname}">
+                        <t:template>
+                            <Input value="{fld>ROLLNAME}"
+                                   liveChange="on_set_changed"
+                                   valueLiveUpdate="true"
+                                   enabled="{= ${appView>/IS_READ_ONLY}===true? false : ${appView>/IS_DEV} }"/>
+                        </t:template>
+                    </t:Column>
+                </t:columns>
+            </t:Table>
+        </content>
+
+        <buttons>
+            <Button icon="sap-icon://accept" press="onFieldCatalogClose"/>
+        </buttons>
+    </Dialog>
+
+</core:FragmentDefinition>

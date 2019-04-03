@@ -1,0 +1,8 @@
+
+.sapMShellBrandingBar {
+    height: 0;
+}
+
+.sapMPageHeader::before {
+    border-top-width: 0;
+}

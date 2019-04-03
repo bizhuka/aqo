@@ -1,0 +1,19 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <QuickView id="id_previous_values" navigate=".onNavigate">
+        <QuickViewPage groups="{
+                 path: 'fld>prevItems',
+                 templateShareable: 'true'}">
+            <QuickViewGroup>
+                <QuickViewGroupElement
+                        label="{fld>CHANGED} - {fld>LOGIN}"
+                        value="{fld>TEXT_VALUE}"
+                        url="{url}"
+                        type="{elementType}"
+                        pageLinkId="{pageLinkId}"
+                        emailSubject="{emailSubject}"
+                        target="{target}">
+                </QuickViewGroupElement>
+            </QuickViewGroup>
+        </QuickViewPage>
+    </QuickView>
+</core:FragmentDefinition>

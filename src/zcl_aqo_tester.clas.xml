@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZCL_AQO_TESTER</CLSNAME>
+    <VERSION>1</VERSION>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Test class based option</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <TPOOL>
+    <item>
+     <ID>I</ID>
+     <KEY>EDT</KEY>
+     <ENTRY>Edit attributes in tr. ZAQO_BSP_EDITOR, ZAQO_EDITOR or ZAQO_EDITOR_OLD</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>OP1</KEY>
+     <ENTRY>Class options</ENTRY>
+     <LENGTH>23</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>WRN</KEY>
+     <ENTRY>Bukrs text not equal to &quot;123&quot;</ENTRY>
+     <LENGTH>58</LENGTH>
+    </item>
+   </TPOOL>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_TESTER</CLSNAME>
+     <CMPNAME>BUKRS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Company Code (Read-only!)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_TESTER</CLSNAME>
+     <CMPNAME>BUKRS_RANGE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Range of BUKRS (Read-only!)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_TESTER</CLSNAME>
+     <CMPNAME>BUKRS_TEXT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>(Read-only!)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_TESTER</CLSNAME>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Just press F8!</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_TESTER</CLSNAME>
+     <CMPNAME>T002_TAB</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Language Keys (Read-only!)</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>
