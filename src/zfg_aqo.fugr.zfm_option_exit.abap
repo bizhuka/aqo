@@ -26,6 +26,13 @@ FUNCTION zfm_option_exit.
     lt_fielddescr TYPE ddfields,
     lv_order_by   TYPE text255.
 
+
+  " Return all fields
+  IF zcl_aqo_helper=>is_in_editor( ) = abap_true.
+    " TODO When ?
+    callcontrol-retallflds = abap_true.
+  ENDIF.
+
   " Only for data selection
   CHECK callcontrol-step = 'SELECT'.
 
