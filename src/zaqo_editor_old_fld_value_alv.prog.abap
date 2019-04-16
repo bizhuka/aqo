@@ -378,13 +378,13 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
        ct_table    = lt_option_db ).
 
     LOOP AT lr_struc_desc->components REFERENCE INTO ls_comp WHERE
-        name = 'PACKAGE_ID'        OR
-        name = 'OPTION_ID'         OR
-        name = 'CREATED_DATE'      OR
-        name = 'CREATED_UNAME'     OR
-        name = 'CREATED_NAME_TEXT' OR
-        name = 'DESCRIPTION'       OR
-        name = 'PREV_VALUE_CNT'.
+        name = 'PACKAGE_ID'        OR  "#EC NOTEXT
+        name = 'OPTION_ID'         OR  "#EC NOTEXT
+        name = 'CREATED_DATE'      OR  "#EC NOTEXT
+        name = 'CREATED_UNAME'     OR  "#EC NOTEXT
+        name = 'CREATED_NAME_TEXT' OR  "#EC NOTEXT
+        name = 'DESCRIPTION'       OR  "#EC NOTEXT
+        name = 'PREV_VALUE_CNT'.       "#EC NOTEXT
 
       " Get text
       READ TABLE lt_fieldcat REFERENCE INTO ls_fieldcat BINARY SEARCH
