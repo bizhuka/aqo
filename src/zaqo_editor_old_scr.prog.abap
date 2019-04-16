@@ -25,13 +25,25 @@ SELECTION-SCREEN BEGIN OF SCREEN 1020.
 SELECTION-SCREEN BEGIN OF BLOCK bl_new_field.
 
 PARAMETERS:
-  p_name   TYPE zcl_aqo_helper=>ts_field_desc-name      MODIF ID obl,
-  p_type   TYPE zcl_aqo_helper=>ts_field_desc-rollname  MODIF ID obl.
+  p_name TYPE zcl_aqo_helper=>ts_field_desc-name      MODIF ID obl,
+  p_type TYPE zcl_aqo_helper=>ts_field_desc-rollname  MODIF ID obl.
 
 SELECTION-SCREEN END OF BLOCK bl_new_field.
 SELECTION-SCREEN END OF SCREEN 1020.
 
 SELECTION-SCREEN FUNCTION KEY 1.
+
+
+
+
+" SH deleted from dictionary (for easy activation)
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_pack.
+  lcl_opt=>on_f4( ). " iv_field = 'PACKAGE_ID' iv_dynpro = 'P_PACK'
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_opt_id.
+  lcl_opt=>on_f4( ). " iv_field = 'OPTION_ID'  iv_dynpro = 'P_OPT_ID'
+
 
 AT SELECTION-SCREEN OUTPUT.
   CASE sy-dynnr.
