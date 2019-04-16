@@ -92,6 +92,13 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
         CASE ls_fieldcat->fieldname.
           WHEN 'ROLLNAME' OR 'LABEL'.
             ls_fieldcat->edit = abap_true.
+
+          " Hide table specific fields
+          WHEN 'TABLE_KIND' OR 'UNIQUE' OR 'KEY_DEFKIND' OR 'SUB_FDESC' OR
+               " Rollname has priority
+               'SYS_TYPE' OR 'LENGTH' OR 'DECIMALS'.
+            ls_fieldcat->tech = abap_true.
+
         ENDCASE.
       ENDLOOP.
     ENDIF.
