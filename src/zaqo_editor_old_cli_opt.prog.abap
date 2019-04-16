@@ -2,7 +2,7 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt IMPLEMENTATION.
-  METHOD pbo. "#EC NEEDED
+  METHOD pbo.                                               "#EC NEEDED
 
   ENDMETHOD.
 
@@ -156,5 +156,55 @@ CLASS lcl_opt IMPLEMENTATION.
       CATCH zcx_aqo_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
     ENDTRY.
+  ENDMETHOD.
+
+  METHOD on_f4.
+    DATA:
+      lt_ret  TYPE STANDARD TABLE OF ddshretval,
+      ls_ret  TYPE REF TO ddshretval,
+      lt_dynp TYPE STANDARD TABLE OF dynpread,
+      ls_dynp TYPE REF TO dynpread.
+
+    " Show SH
+    CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'
+      EXPORTING
+        tabname    = ''             " No need returns all fields in SH exit   "#EC NOTEXT
+        fieldname  = ''             "#EC NOTEXT
+        searchhelp = 'ZHAQO_OPTION' "#EC NOTEXT
+        dynpprog   = sy-repid
+        dynpnr     = sy-dynnr
+      TABLES
+        return_tab = lt_ret
+      EXCEPTIONS
+        OTHERS     = 5.
+    CHECK sy-subrc = 0.
+
+    " Write back
+    CLEAR lt_dynp.
+    LOOP AT lt_ret REFERENCE INTO ls_ret WHERE fieldname = 'PACKAGE_ID' OR fieldname = 'OPTION_ID'.
+      " Update 2 fields
+      APPEND INITIAL LINE TO lt_dynp REFERENCE INTO ls_dynp.
+      ls_dynp->fieldvalue = ls_ret->fieldval.
+
+      CASE ls_ret->fieldname.
+        WHEN 'PACKAGE_ID'.                                  "#EC NOTEXT
+          p_pack   = ls_ret->fieldval.
+          SET PARAMETER ID 'ZAQO_PACKAGE_ID' FIELD ls_ret->fieldval.
+          ls_dynp->fieldname  = 'P_PACK'.
+
+        WHEN 'OPTION_ID'.                                   "#EC NOTEXT
+          p_opt_id = ls_ret->fieldval.
+          SET PARAMETER ID 'ZAQO_OPTION_ID'  FIELD ls_ret->fieldval.
+          ls_dynp->fieldname  = 'P_OPT_ID'.
+      ENDCASE.
+    ENDLOOP.
+
+    " Update both fields
+    CALL FUNCTION 'DYNP_VALUES_UPDATE'
+      EXPORTING
+        dyname     = sy-cprog
+        dynumb     = sy-dynnr
+      TABLES
+        dynpfields = lt_dynp.
   ENDMETHOD.
 ENDCLASS.                    "LCL_MAIN IMPLEMENTATION
