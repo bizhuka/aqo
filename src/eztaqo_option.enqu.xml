@@ -1,10 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <abapGit version="v1.0.0" serializer="LCL_OBJECT_ENQU" serializer_version="v1.0.0">
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <DD25V>
     <VIEWNAME>EZTAQO_OPTION</VIEWNAME>
-    <AS4LOCAL>A</AS4LOCAL>
     <DDLANGUAGE>E</DDLANGUAGE>
     <AGGTYPE>E</AGGTYPE>
     <ROOTTAB>ZTAQO_OPTION</ROOTTAB>
@@ -38,7 +37,7 @@
      <KEYFLAG>X</KEYFLAG>
      <ENQMODE>E</ENQMODE>
      <MEMORYID>DVC</MEMORYID>
-     <SHLPORIGIN>X</SHLPORIGIN>
+     <SHLPORIGIN>D</SHLPORIGIN>
      <SHLPNAME>DEVCLASS</SHLPNAME>
      <SHLPFIELD>DEVCLASS</SHLPFIELD>
     </DD27P>
@@ -50,7 +49,6 @@
      <FIELDNAME>OPTION_ID</FIELDNAME>
      <KEYFLAG>X</KEYFLAG>
      <ENQMODE>E</ENQMODE>
-     <SHLPORIGIN>X</SHLPORIGIN>
      <LOWERCASE>X</LOWERCASE>
     </DD27P>
    </DD27P_TABLE>
