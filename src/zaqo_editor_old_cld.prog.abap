@@ -50,8 +50,9 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
 
       pai
         CHANGING
-          cv_cmd TYPE syucomm.
+          cv_cmd TYPE syucomm,
 
+      on_f4.
 ENDCLASS.                    "LCL_MAIN DEFINITION
 
 *----------------------------------------------------------------------*
