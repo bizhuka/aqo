@@ -194,7 +194,7 @@ sap.ui.define([
                     var filter = [];
 
                     for (var p = 0; p < oParams.length; p++) {
-                        var ranges = oParams[p].getItems()[0]._getReadyRanges();
+                        var ranges = params.uiWrapper._getTokensAsRanges(oParams[p].getItems()[0], false);
 
                         for (var r = 0; r < ranges.length; r++) {
                             var range = ranges[r];

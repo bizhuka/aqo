@@ -44,7 +44,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
   METHOD pai.
     CASE cv_cmd.
-      WHEN 'ESCAPE'.
+      WHEN 'ESCAPE' OR 'CANCEL'.
         IF zcl_aqo_helper=>confirm(
            iv_title    = 'Confirmation'(ext)
            iv_question = 'Close without saving?'(cnf) ) = abap_true.
@@ -884,7 +884,7 @@ CLASS lcl_opt IMPLEMENTATION.
     ls_back_info-kind      = 'I'.
     ls_back_info-info_text = lo_option->save( iv_mandt = iv_mandt ).
 
-    rv_out = zcl_aqo_helper=>to_json( ls_back_info ).
+    rv_out = zcl_aqo_helper=>to_json( ls_back_info ). "#EC CI_VALPAR
   ENDMETHOD.
 
   METHOD sap_get_field_desc.

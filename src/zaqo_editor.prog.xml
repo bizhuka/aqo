@@ -4,8 +4,6 @@
   <asx:values>
    <PROGDIR>
     <NAME>ZAQO_EDITOR</NAME>
-    <STATE>A</STATE>
-    <VARCL>X</VARCL>
     <SUBC>1</SUBC>
     <RLOAD>E</RLOAD>
     <FIXPT>X</FIXPT>
@@ -87,28 +85,31 @@
    </DYNPROS>
    <CUA>
     <ADM>
-     <ACTCODE>000001</ACTCODE>
-     <PFKCODE>000001</PFKCODE>
+     <ACTCODE>000004</ACTCODE>
+     <MENCODE>000002</MENCODE>
+     <PFKCODE>000004</PFKCODE>
     </ADM>
     <STA>
      <RSMPE_STAT>
       <CODE>ST_MAIN</CODE>
       <MODAL>D</MODAL>
-      <ACTCODE>000001</ACTCODE>
-      <PFKCODE>000001</PFKCODE>
+      <ACTCODE>000004</ACTCODE>
+      <PFKCODE>000004</PFKCODE>
       <BUTCODE>0001</BUTCODE>
       <INT_NOTE>Main pf-status</INT_NOTE>
      </RSMPE_STAT>
     </STA>
     <FUN>
      <RSMPE_FUNT>
-      <CODE>BACK</CODE>
+      <CODE>CANCEL</CODE>
       <TEXTNO>001</TEXTNO>
       <TEXT_TYPE>S</TEXT_TYPE>
-      <FUN_TEXT>Back</FUN_TEXT>
+      <TEXT_NAME>ICON_CANCEL</TEXT_NAME>
+      <ICON_ID>@0W@</ICON_ID>
+      <FUN_TEXT>Cancel</FUN_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
-      <CODE>ESCAPE</CODE>
+      <CODE>CANCELE</CODE>
       <TEXTNO>001</TEXTNO>
       <TEXT_TYPE>S</TEXT_TYPE>
       <TEXT_NAME>ICON_CANCEL</TEXT_NAME>
@@ -117,9 +118,20 @@
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>ESCAPE</CODE>
+      <TEXTNO>001</TEXTNO>
+      <TYPE>E</TYPE>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT_NAME>ICON_CANCEL</TEXT_NAME>
+      <ICON_ID>@0W@</ICON_ID>
+      <FUN_TEXT>Cancel</FUN_TEXT>
+     </RSMPE_FUNT>
+     <RSMPE_FUNT>
+      <CODE>ESCAPE</CODE>
       <TEXTNO>002</TEXTNO>
+      <TYPE>E</TYPE>
       <TEXT_TYPE>S</TEXT_TYPE>
       <FUN_TEXT>Exit</FUN_TEXT>
+      <PATH>X</PATH>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>EXIT</CODE>
@@ -127,8 +139,46 @@
       <TYPE>E</TYPE>
       <TEXT_TYPE>S</TEXT_TYPE>
       <FUN_TEXT>Exit</FUN_TEXT>
+      <PATH>X</PATH>
+     </RSMPE_FUNT>
+     <RSMPE_FUNT>
+      <CODE>ZZZ</CODE>
+      <TEXTNO>001</TEXTNO>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT_NAME>ICON_CANCEL</TEXT_NAME>
+      <ICON_ID>@0W@</ICON_ID>
+      <FUN_TEXT>Cancel</FUN_TEXT>
      </RSMPE_FUNT>
     </FUN>
+    <MEN>
+     <RSMPE_MEN>
+      <CODE>000001</CODE>
+      <NO>01</NO>
+      <REF_TYPE>F</REF_TYPE>
+      <REF_CODE>ESCAPE</REF_CODE>
+      <REF_NO>002</REF_NO>
+     </RSMPE_MEN>
+    </MEN>
+    <MTX>
+     <RSMPE_MNLT>
+      <CODE>000001</CODE>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT>Exit</TEXT>
+      <PATH>E</PATH>
+     </RSMPE_MNLT>
+     <RSMPE_MNLT>
+      <CODE>000002</CODE>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT>Cancel</TEXT>
+     </RSMPE_MNLT>
+    </MTX>
+    <ACT>
+     <RSMPE_ACT>
+      <CODE>000004</CODE>
+      <NO>01</NO>
+      <MENUCODE>000001</MENUCODE>
+     </RSMPE_ACT>
+    </ACT>
     <PFK>
      <RSMPE_PFK>
       <CODE>000001</CODE>
@@ -138,15 +188,39 @@
      </RSMPE_PFK>
      <RSMPE_PFK>
       <CODE>000001</CODE>
-      <PFNO>48</PFNO>
+      <PFNO>15</PFNO>
       <FUNCODE>EXIT</FUNCODE>
       <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000002</CODE>
+      <PFNO>12</PFNO>
+      <FUNCODE>ESCAPE</FUNCODE>
+      <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000003</CODE>
+      <PFNO>12</PFNO>
+      <FUNCODE>CANCEL</FUNCODE>
+      <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000004</CODE>
+      <PFNO>12</PFNO>
+      <FUNCODE>CANCEL</FUNCODE>
+      <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000004</CODE>
+      <PFNO>15</PFNO>
+      <FUNCODE>ESCAPE</FUNCODE>
+      <FUNNO>002</FUNNO>
      </RSMPE_PFK>
     </PFK>
     <SET>
      <RSMPE_STAF>
       <STATUS>ST_MAIN</STATUS>
-      <FUNCTION>BACK</FUNCTION>
+      <FUNCTION>CANCEL</FUNCTION>
      </RSMPE_STAF>
      <RSMPE_STAF>
       <STATUS>ST_MAIN</STATUS>
@@ -173,6 +247,63 @@
      <RSMPE_ATRT>
       <OBJ_TYPE>B</OBJ_TYPE>
       <OBJ_CODE>000001</OBJ_CODE>
+      <SUB_CODE>0001</SUB_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>A</OBJ_TYPE>
+      <OBJ_CODE>000002</OBJ_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>P</OBJ_TYPE>
+      <OBJ_CODE>000002</OBJ_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>B</OBJ_TYPE>
+      <OBJ_CODE>000002</OBJ_CODE>
+      <SUB_CODE>0001</SUB_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>A</OBJ_TYPE>
+      <OBJ_CODE>000003</OBJ_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>P</OBJ_TYPE>
+      <OBJ_CODE>000003</OBJ_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>B</OBJ_TYPE>
+      <OBJ_CODE>000003</OBJ_CODE>
+      <SUB_CODE>0001</SUB_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>A</OBJ_TYPE>
+      <OBJ_CODE>000004</OBJ_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>P</OBJ_TYPE>
+      <OBJ_CODE>000004</OBJ_CODE>
+      <MODAL>D</MODAL>
+      <INT_NOTE>Main pf-status</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>B</OBJ_TYPE>
+      <OBJ_CODE>000004</OBJ_CODE>
       <SUB_CODE>0001</SUB_CODE>
       <MODAL>D</MODAL>
       <INT_NOTE>Main pf-status</INT_NOTE>

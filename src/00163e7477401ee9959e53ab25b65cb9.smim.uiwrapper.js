@@ -218,6 +218,7 @@ sap.ui.define([
         },
 
         getFieldValue: function (params) {
+            var _this = this;
             var getMethod = null;
             var value = null;
 
@@ -243,16 +244,7 @@ sap.ui.define([
                     break;
 
                 case "range":
-                    var ranges = params.control._getReadyRanges();
-                    for (var r = 0; r < ranges.length; r++) {
-                        var range = ranges[r];
-
-                        // Save as SAP range
-                        delete range.FIELD;
-                        if (value === null)
-                            value = [];
-                        value.push(range);
-                    }
+                    value = _this._getTokensAsRanges(params.control, true);
                     break;
 
                 case "table":
@@ -350,6 +342,8 @@ sap.ui.define([
         },
 
         _getRangeControl: function (params) {
+            var _this = this;
+
             var tokenInput = new MultiInput({
                 showValueHelp: false,
                 showSuggestion: true,
@@ -411,45 +405,51 @@ sap.ui.define([
                 tooltip: '{i18n>range_tooltip}'
             });
 
-            tokenInput._getReadyRanges = function () {
-                var tokens = tokenInput.getTokens();
+            // instead of constructor
+            _this._initializeRange(tokenInput, params);
 
-                var result = [];
+            // If in table
+            var superClone = MultiInput.prototype.clone;
+            tokenInput.clone = function (index, oContext) {
+                var that = this;
+                that = superClone.apply(that, arguments);
 
-                for (var t = 0; t < tokens.length; t++) {
-                    var range = tokens[t].getCustomData()[0].getValue();
-                    var item = {
-                        FIELD: range.keyField,
-                        SIGN: range.exclude ? 'E' : 'I', // Always 'I'
-                        OPTION: range.operation,
-                        LOW: range.value1,
-                        HIGH: range.value2
-                    };
-
-                    switch (params.field.UI_TYPE) {
-                        case "date": //TODO ALL ?
-                            item.LOW = formatter.toSapDate(item.LOW);
-                            item.HIGH = formatter.toSapDate(item.HIGH);
-                            break;
-
-                        case "time":
-                            item.LOW = formatter.toSapTime(item.LOW);
-                            item.HIGH = formatter.toSapTime(item.HIGH);
-                            break;
-
-                        case "datetime":
-                            item.LOW = formatter.toSapDateTime(item.LOW);
-                            item.HIGH = formatter.toSapDateTime(item.HIGH);
-                            break;
-                    }
-                    if (item.OPTION === "EQ" && item.LOW.substr(0, 1) === '!') {
-                        item.OPTION = "NE"; // Or exclude ?
-                        item.LOW = item.LOW.substr(1);
-                    }
-                    result.push(item);
-                }
-                return result;
+                // Init copy
+                _this._initializeRange(that, params, true);
+                return that;
             };
+
+            return tokenInput;
+        },
+
+        _onRangeChanged: function (oEvent) {
+            var _this = this;
+            var tokenInput = oEvent.getSource();
+
+            // No need in ordinary ranges
+            if (!tokenInput._inTable)
+                return;
+
+            // Path and model
+            var subPath = tokenInput.getBindingContext('fld').sPath;
+            var fldModel = tokenInput._params.owner.getModel('fld');
+
+            // Delete or insert and then update
+            setTimeout(function () {
+                // update in model
+                fldModel.setProperty(subPath + "/" + tokenInput._params.valueField,
+                    _this._getTokensAsRanges(tokenInput, true));
+            }, 300);
+        },
+
+        _initializeRange: function (tokenInput, params, inTable) {
+            var _this = this;
+            tokenInput._params = params;
+            tokenInput._inTable = inTable;
+
+            // For table in table
+            tokenInput.attachTokenUpdate(_this._onRangeChanged.bind(_this));
+            tokenInput.attachLiveChange(_this._onRangeChanged.bind(_this));
 
             // When press enter without any sign use  '='
             var oTokenParser = new TokenParser("EQ");
@@ -464,7 +464,7 @@ sap.ui.define([
                         type: "string",
                         maxLength: params.field.LENGTH,
                         //displayFormat: "UpperCase"
-                        oType: this.getOType(params.field)
+                        oType: _this.getOType(params.field)
                     });
                     break;
 
@@ -474,7 +474,7 @@ sap.ui.define([
                         label: "",
                         type: "numc",
                         maxLength: params.field.LENGTH,
-                        oType: this.getOType(params.field)
+                        oType: _this.getOType(params.field)
                     });
                     break;
 
@@ -491,7 +491,7 @@ sap.ui.define([
                         key: params.field.NAME,
                         label: "",
                         type: "numeric",
-                        oType: this.getOType(params.field)
+                        oType: _this.getOType(params.field)
                     });
                     break;
 
@@ -509,7 +509,7 @@ sap.ui.define([
                         key: params.field.NAME,
                         label: "",
                         type: "date", // "stringdate"
-                        oType: this.getOType(params.field)
+                        oType: _this.getOType(params.field)
                     });
                     break;
 
@@ -518,7 +518,7 @@ sap.ui.define([
                         key: params.field.NAME,
                         label: "",
                         type: "time",
-                        oType: this.getOType(params.field)
+                        oType: _this.getOType(params.field)
                     });
                     break;
 
@@ -527,15 +527,83 @@ sap.ui.define([
                         key: params.field.NAME,
                         label: "",
                         type: "datetime",
-                        oType: this.getOType(params.field)
+                        oType: _this.getOType(params.field)
                     });
                     break;
 
                 default:
                     throw "UI TYPE " + params.field.UI_TYPE;
             }
+        },
 
-            return tokenInput;
+        _getTokensAsRanges: function (tokenInput, forSave) {
+            var tokens = tokenInput.getTokens();
+
+            var result = [];
+
+            for (var t = 0; t < tokens.length; t++) {
+                var range = tokens[t].getCustomData()[0].getValue();
+                var item = {
+                    FIELD: forSave ? undefined : range.keyField,
+                    SIGN: range.exclude ? 'E' : 'I', // Always 'I'
+                    OPTION: range.operation,
+                    LOW: range.value1,
+                    HIGH: range.value2
+                };
+
+                switch (tokenInput._params.field.UI_TYPE) {
+                    case "date": //TODO ALL ?
+                        item.LOW = formatter.toSapDate(item.LOW);
+                        item.HIGH = formatter.toSapDate(item.HIGH);
+                        break;
+
+                    case "time":
+                        item.LOW = formatter.toSapTime(item.LOW);
+                        item.HIGH = formatter.toSapTime(item.HIGH);
+                        break;
+
+                    case "datetime":
+                        item.LOW = formatter.toSapDateTime(item.LOW);
+                        item.HIGH = formatter.toSapDateTime(item.HIGH);
+                        break;
+                }
+
+                if (typeof item.LOW === "string") {
+                    // Use mask
+                    if (item.LOW.indexOf('*') >= 0) {
+                        item.HIGH = '';
+                        item.OPTION = 'CP';
+                    }
+
+                    // Between
+                    var values = item.LOW.split('..');
+                    if (values.length === 2) {
+                        item.LOW = values[0];
+                        item.HIGH = values[1];
+                        item.OPTION = 'BT';
+                    }
+
+                    if (item.LOW.substr(0, 1) === '!') {
+                        var bDel = false;
+                        switch (item.OPTION) {
+                            case "EQ":
+                                bDel = true;
+                                item.OPTION = "NE"; // Or exclude ?
+                                break;
+
+                            case "BT":
+                            case "CP":
+                                bDel = true;
+                                break;
+                        }
+                        if (bDel)
+                            item.LOW = item.LOW.substr(1);
+                    }
+                }
+                // And add
+                result.push(item);
+            }
+            return result;
         },
 
         _getTableControl: function (params) {

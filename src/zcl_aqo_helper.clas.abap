@@ -1181,6 +1181,11 @@ ENDMETHOD.
 
 
 METHOD from_json.
+  DATA:
+    lv_xstring TYPE xstring,
+    lv_length  TYPE i,
+    lt_table   TYPE w3mimetabtype.
+
   " No need
   IF iv_json IS INITIAL.
     ev_ok = abap_false. " Always have {"DATA":}
@@ -1198,7 +1203,27 @@ METHOD from_json.
 
       " Is not procced in caller!
       IF ev_ok IS NOT REQUESTED.
-        MESSAGE 'Oops!' TYPE 'X'. "#EC NOTEXT
+        MESSAGE 'Oops!' TYPE 'X'.                           "#EC NOTEXT
+
+        " For debug
+        lv_xstring = string_to_xstring( iv_json ).
+        xstring_to_binary(
+         EXPORTING
+           iv_xstring = lv_xstring
+         IMPORTING
+           ev_length  = lv_length
+           et_table   = lt_table ).
+
+        CALL FUNCTION 'GUI_DOWNLOAD'
+          EXPORTING
+            filename     = 'c:\temp\dump.json'
+            filetype     = 'BIN'
+            bin_filesize = lv_length
+          TABLES
+            data_tab     = lt_table
+          EXCEPTIONS
+            OTHERS       = 1.
+        CHECK sy-subrc = 0.
       ENDIF.
   ENDTRY.
 ENDMETHOD.
@@ -1320,7 +1345,7 @@ METHOD get_field_desc.
         CHECK lv_cnt = 4.
         " Check by name
         LOOP AT lt_sub_fdesc TRANSPORTING NO FIELDS WHERE
-           name = 'SIGN' OR name = 'OPTION' OR name = 'LOW' OR name = 'HIGH'.
+           name = 'SIGN' OR name = 'OPTION' OR name = 'LOW' OR name = 'HIGH'. "#EC CI_HASHSEQ
           lv_cnt = lv_cnt - 1.
         ENDLOOP.
 
