@@ -15,6 +15,8 @@ TYPES:
     emails  TYPE HASHED TABLE OF ts_email WITH UNIQUE KEY email,
     " Range in table
     bukrs   TYPE RANGE OF t001-bukrs,
+    " and string
+    memo    TYPE string,
 
     " !!! Uncomment for testing purpose
     " natio    TYPE t005t-natio,
@@ -39,6 +41,7 @@ TYPES:
     alt_land_text TYPE SORTED TABLE OF ts_alt_land WITH UNIQUE KEY land1,
     t002_tab      TYPE STANDARD TABLE OF t002 WITH DEFAULT KEY,
     some_text     TYPE string,
+
 *     one_field      TYPE STANDARD TABLE OF char30 WITH DEFAULT KEY,  " Table_line is not structure
   END OF ts_main_opt.
 **********************************************************************
@@ -65,6 +68,7 @@ CLASS lcl_main IMPLEMENTATION.
       lt_empty_field TYPE stringtab,
       lo_error       TYPE REF TO zcx_aqo_exception.
 
+    " Initials values in editor
     set_default_values(
      CHANGING
        cs_opt = ms_opt  ).

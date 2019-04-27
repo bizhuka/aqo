@@ -3,10 +3,26 @@
 
 CLASS lcl_string_memo IMPLEMENTATION.
   METHOD get_instance.
-    IF mo_instance IS INITIAL.
-      CREATE OBJECT mo_instance.
+    DATA:
+      ls_instance    LIKE LINE OF mt_instance.
+    FIELD-SYMBOLS:
+      <ls_instance>  LIKE LINE OF mt_instance.
+
+    " Create by name
+    IF iv_name IS SUPPLIED.
+      READ TABLE mt_instance ASSIGNING <ls_instance>
+       WITH TABLE KEY name = iv_name.
+      IF sy-subrc <> 0.
+        ls_instance-name = iv_name.
+        CREATE OBJECT ls_instance-instance.
+        INSERT ls_instance INTO TABLE mt_instance ASSIGNING <ls_instance>.
+      ENDIF.
+
+      ro_instance = mo_last_instance = <ls_instance>-instance.
+      RETURN.
     ENDIF.
-    ro_instance = mo_instance.
+
+    ro_instance = mo_last_instance.
   ENDMETHOD.
 
   METHOD call_screen.
@@ -77,19 +93,18 @@ CLASS lcl_string_memo IMPLEMENTATION.
 
   METHOD pai.
     DATA:
-      lv_cmd  TYPE syucomm,
       lv_exit TYPE abap_bool.
     FIELD-SYMBOLS:
       <lv_val>      TYPE string.
 
     " Save & clear
-    lv_cmd = cv_cmd.
+    mv_last_cmd = cv_cmd.
     CLEAR cv_cmd.
 
     " Write data back
     "mo_textedit->check_changed_data( ).
 
-    CASE lv_cmd.
+    CASE mv_last_cmd.
       WHEN 'OK'.
         " Destination
         ASSIGN ms_fld_value->cur_value->* TO <lv_val>.
@@ -97,6 +112,7 @@ CLASS lcl_string_memo IMPLEMENTATION.
         mo_textedit->get_textstream(
          IMPORTING
            text = <lv_val> ).
+        cl_gui_cfw=>flush( ).
 
         lv_exit = abap_true.
         MESSAGE s004(zaqo_message).

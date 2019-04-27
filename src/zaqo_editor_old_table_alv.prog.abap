@@ -64,7 +64,6 @@ CLASS lcl_table_alv IMPLEMENTATION.
       lv_ind      TYPE i,
       lv_sum      TYPE num4,
       lt_code     TYPE STANDARD TABLE OF syucomm,
-      lt_subcomps TYPE zcl_aqo_helper=>tt_field_desc,
       ls_subcomp  TYPE REF TO zcl_aqo_helper=>ts_field_desc,
       lv_ok       TYPE abap_bool,
       lv_cnt      TYPE i.
@@ -117,37 +116,42 @@ CLASS lcl_table_alv IMPLEMENTATION.
        ct_table    = <lt_table> ).
 
     " Table to show
+    CLEAR mt_subcomps.
     zcl_aqo_helper=>from_json(
      EXPORTING
       iv_json = ms_fld_value->sub_fdesc
      IMPORTING
       ev_ok   = lv_ok
-      ex_data = lt_subcomps ).
+      ex_data = mt_subcomps ).
     IF lv_ok <> abap_true.
       MESSAGE s017(zaqo_message) WITH ms_fld_value->name DISPLAY LIKE 'E'.
       RETURN.
     ENDIF.
 
     " Change field catalog
-    SORT lt_subcomps BY name.
     LOOP AT lt_fieldcat REFERENCE INTO ls_fieldcat.
       ls_fieldcat->edit = lcl_opt=>is_editable( ms_fld_value->is_editable ).
 
       " Change based options
-      READ TABLE lt_subcomps REFERENCE INTO ls_subcomp
+      READ TABLE mt_subcomps REFERENCE INTO ls_subcomp
        WITH TABLE KEY name = ls_fieldcat->fieldname.
-      IF sy-subrc = 0.
-        " Change text
-        IF ls_subcomp->label IS NOT INITIAL.
-          ls_fieldcat->coltext = ls_subcomp->label.
-        ENDIF.
+      CHECK sy-subrc = 0.
 
-        " For F4
-        IF ls_subcomp->rollname CP '*-*'.
-          SPLIT ls_subcomp->rollname AT '-' INTO
-           ls_fieldcat->ref_table
-           ls_fieldcat->ref_field.
-        ENDIF.
+      " Change text
+      IF ls_subcomp->label IS NOT INITIAL.
+        ls_fieldcat->coltext = ls_subcomp->label.
+      ENDIF.
+
+      " For F4
+      IF ls_subcomp->rollname CP '*-*'.
+        SPLIT ls_subcomp->rollname AT '-' INTO
+         ls_fieldcat->ref_table
+         ls_fieldcat->ref_field.
+      ENDIF.
+
+      " Show as link
+      IF ls_subcomp->ui_type = zcl_aqo_helper=>mc_ui_string.
+        ls_fieldcat->hotspot = abap_true.
       ENDIF.
     ENDLOOP.
 
@@ -167,6 +171,10 @@ CLASS lcl_table_alv IMPLEMENTATION.
     lv_sum = 9999 - lv_sum.
     ls_variant-handle  = lv_sum.
 
+    " Events
+    SET HANDLER:
+     on_hotspot_click  FOR mo_grid.
+
     mo_grid->set_table_for_first_display(
       EXPORTING
         is_variant                    = ls_variant
@@ -181,6 +189,53 @@ CLASS lcl_table_alv IMPLEMENTATION.
       MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     ENDIF.
   ENDMETHOD.                    "pbo
+
+  METHOD on_hotspot_click.
+    DATA:
+      ls_fld_value TYPE REF TO lcl_opt=>ts_fld_value.
+    FIELD-SYMBOLS:
+      <ls_subcomp> LIKE LINE OF mt_subcomps,
+      <lt_table>   TYPE STANDARD TABLE,
+      <ls_item>    TYPE any,
+      <lv_value>   TYPE any.
+
+    " Get current row
+    ASSIGN mr_table->* TO <lt_table>.
+    READ TABLE <lt_table> ASSIGNING <ls_item> INDEX es_row_no-row_id.
+    CHECK sy-subrc = 0.
+
+    " Get from field catalog
+    READ TABLE mt_subcomps ASSIGNING <ls_subcomp>
+     WITH TABLE KEY name = e_column_id.
+    CHECK sy-subrc = 0.
+
+    CASE <ls_subcomp>-ui_type.
+
+      " Edit string in memo editor
+      WHEN zcl_aqo_helper=>mc_ui_string.
+        CREATE DATA ls_fld_value.
+        MOVE-CORRESPONDING <ls_subcomp> To ls_fld_value->*.
+
+        " Edit or not
+        ls_fld_value->is_editable = ms_fld_value->is_editable.
+
+        " Data
+        ASSIGN COMPONENT ls_fld_value->name of STRUCTURE <ls_item> to <lv_value>.
+        CHECK <lv_value> IS ASSIGNED.
+        GET REFERENCE OF <lv_value> INTO ls_fld_value->cur_value.
+
+        " show editor
+        go_string_memo = lcl_string_memo=>get_instance( 'TABLE' ).
+        go_string_memo->call_screen( ls_fld_value ).
+
+        " update in table
+        CHECK go_string_memo->mv_last_cmd = 'OK'.
+        mo_grid->refresh_table_display( ).
+
+      WHEN OTHERS.
+        RETURN.
+    ENDCASE.
+  ENDMETHOD.
 
   METHOD pai.
     DATA:

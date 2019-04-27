@@ -194,7 +194,8 @@ CLASS lcl_table_alv DEFINITION FINAL.
       mr_table     TYPE REF TO data,
       ms_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
       mv_refresh   TYPE abap_bool,
-      mo_grid      TYPE REF TO cl_gui_alv_grid.
+      mo_grid      TYPE REF TO cl_gui_alv_grid,
+      mt_subcomps  TYPE zcl_aqo_helper=>tt_field_desc.
 
     METHODS:
       call_screen
@@ -205,25 +206,39 @@ CLASS lcl_table_alv DEFINITION FINAL.
 
       pai
         CHANGING
-          cv_cmd TYPE syucomm.
+          cv_cmd TYPE syucomm,
+
+      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
+        IMPORTING
+            e_column_id es_row_no.
 ENDCLASS.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 CLASS lcl_string_memo DEFINITION FINAL.
   PUBLIC SECTION.
+    TYPES:
+      BEGIN OF ts_instance,
+        name     TYPE string,
+        instance TYPE REF TO lcl_string_memo,
+      END OF ts_instance.
+
     CLASS-DATA:
-      mo_instance TYPE REF TO lcl_string_memo.
+      mt_instance      TYPE SORTED TABLE OF ts_instance WITH UNIQUE KEY name,
+      mo_last_instance TYPE REF TO lcl_string_memo.
 
     CLASS-METHODS:
       get_instance
+        IMPORTING
+                  iv_name            TYPE string OPTIONAL
         RETURNING VALUE(ro_instance) TYPE REF TO lcl_string_memo.
 
     DATA:
       mv_memo      TYPE string,
       mo_textedit  TYPE REF TO cl_gui_textedit,
       ms_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
-      mv_refresh   TYPE abap_bool.
+      mv_refresh   TYPE abap_bool,
+      mv_last_cmd  TYPE syucomm.
 
     METHODS:
       call_screen

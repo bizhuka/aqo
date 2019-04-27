@@ -244,7 +244,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       ls_field_value TYPE zcl_aqo_helper=>ts_field_value,
       lo_type        TYPE REF TO cl_abap_datadescr,
       lr_data        TYPE REF TO data,
-      lo_err         TYPE REF TO zcx_aqo_exception.
+      lo_err         TYPE REF TO cx_root.
     FIELD-SYMBOLS:
       <lv_data> TYPE any.
 
@@ -281,7 +281,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         lcl_opt=>add_one_field(
          is_field_value = ls_field_value
          ir_data        = lr_data ).
-      CATCH zcx_aqo_exception INTO lo_err.
+      CATCH cx_root INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
@@ -416,8 +416,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     DATA:
       ls_fld_value      TYPE REF TO lcl_opt=>ts_fld_value,
       lo_table_comp_alv TYPE REF TO lcl_table_comp_alv,
-      lo_table_alv      TYPE REF TO lcl_table_alv,
-      lo_string_memo    TYPE REF TO lcl_string_memo.
+      lo_table_alv      TYPE REF TO lcl_table_alv.
 
     " Current item
     READ TABLE lcl_opt=>mt_fld_value REFERENCE INTO ls_fld_value INDEX es_row_no-row_id.
@@ -438,8 +437,8 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
             lo_table_alv->call_screen( ls_fld_value ).
 
           WHEN zcl_aqo_helper=>mc_ui_string.
-            lo_string_memo = lcl_string_memo=>get_instance( ).
-            lo_string_memo->call_screen( ls_fld_value ).
+            go_string_memo = lcl_string_memo=>get_instance( 'FIELD' ).
+            go_string_memo->call_screen( ls_fld_value ).
         ENDCASE.
     ENDCASE.
   ENDMETHOD.

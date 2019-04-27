@@ -12,9 +12,9 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
   METHOD pbo.
     DATA:
       ls_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
-      ls_screen  TYPE screen,
-      lv_edit    TYPE abap_bool,
-      lv_show    TYPE abap_bool.
+      ls_screen    TYPE screen,
+      lv_edit      TYPE abap_bool,
+      lv_show      TYPE abap_bool.
 
     " Prepare screen
     LOOP AT SCREEN.
@@ -62,10 +62,9 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
 
   METHOD pai.
     DATA:
-      lv_grp_n       TYPE numc3,
-      ls_fld_value     TYPE REF TO lcl_opt=>ts_fld_value,
-      lo_table_alv   TYPE REF TO lcl_table_alv,
-      lo_string_memo TYPE REF TO lcl_string_memo.
+      lv_grp_n     TYPE numc3,
+      ls_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
+      lo_table_alv TYPE REF TO lcl_table_alv.
 
     " Only push button of range
     CHECK cv_cmd(1) = '%'.
@@ -87,8 +86,8 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
         lo_table_alv->call_screen( ls_fld_value ).
 
       WHEN zcl_aqo_helper=>mc_ui_string.
-        lo_string_memo = lcl_string_memo=>get_instance( ).
-        lo_string_memo->call_screen( ls_fld_value ).
+        go_string_memo = lcl_string_memo=>get_instance( 'FIELD' ).
+        go_string_memo->call_screen( ls_fld_value ).
 
       WHEN OTHERS.
         RETURN.
