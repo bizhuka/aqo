@@ -3,17 +3,27 @@
 
 CLASS lcl_table_alv IMPLEMENTATION.
   METHOD get_instance.
-    IF mo_instance IS INITIAL.
-      CREATE OBJECT mo_instance.
+    " Create by name
+    IF iv_level IS SUPPLIED.
+      mo_last_instance ?= lcl_nested_instance=>get_instance_by_level(
+       iv_cl_name = 'LCL_TABLE_ALV'
+       iv_level   = iv_level ).
     ENDIF.
-    ro_instance = mo_instance.
+
+    ro_instance = mo_last_instance.
   ENDMETHOD.
 
   METHOD call_screen.
     DATA:
-      lo_tab_desc   TYPE REF TO cl_abap_tabledescr,
       lo_struc_desc TYPE REF TO cl_abap_structdescr,
-      lr_type       TYPE REF TO data.
+      lr_type       TYPE REF TO data,
+      lv_ok         TYPE abap_bool,
+      lo_err        TYPE REF TO zcx_aqo_exception,
+      ls_sub_field  TYPE REF TO zcl_aqo_helper=>ts_field_desc,
+      ls_ui_ext     TYPE zcl_aqo_helper=>ts_field_desc,
+      lv_fld_name   TYPE string,
+      lt_sub_field  TYPE STANDARD TABLE OF zcl_aqo_helper=>ts_field_desc,
+      lv_tabix      TYPE sytabix.
     FIELD-SYMBOLS:
       <lt_table_src>  TYPE ANY TABLE,
       <lt_table_dest> TYPE STANDARD TABLE,
@@ -24,49 +34,153 @@ CLASS lcl_table_alv IMPLEMENTATION.
     mv_refresh = abap_true.
     ms_fld_value = is_fld_value.
 
-    " Source table
-    ASSIGN ms_fld_value->cur_value->* TO <lt_table_src>.
+    " Table to show
+    CLEAR mt_sub_field.
+    zcl_aqo_helper=>from_json(
+     EXPORTING
+      iv_json = ms_fld_value->sub_fdesc
+     IMPORTING
+      ev_ok   = lv_ok
+      ex_data = lt_sub_field ).
+    IF lv_ok <> abap_true.
+      MESSAGE s017(zaqo_message) WITH ms_fld_value->name DISPLAY LIKE 'E'.
+      RETURN.
+    ENDIF.
 
-    " Destination structure
-    CLEAR mr_table.
+    " Create new structure
+    CLEAR mt_sub_field.
+    TRY.
+        " Add new field for each table and range
+        LOOP AT lt_sub_field REFERENCE INTO ls_sub_field
+           WHERE ui_type = zcl_aqo_helper=>mc_ui_table
+              OR ui_type = zcl_aqo_helper=>mc_ui_range.
+          lv_tabix = sy-tabix + 1.
+
+          " New string field
+          CONCATENATE ls_sub_field->name `_UI` INTO lv_fld_name.
+          ls_ui_ext = zcl_aqo_helper=>get_field_desc(
+           iv_data       = lv_fld_name " type string
+           iv_field_name = lv_fld_name ).
+
+          " Add as new subfield
+          ls_ui_ext-label = ls_sub_field->label.
+          INSERT ls_ui_ext INTO lt_sub_field INDEX lv_tabix.
+        ENDLOOP.
+
+        " Add all
+        INSERT LINES OF lt_sub_field INTO TABLE mt_sub_field.
+        lo_struc_desc = zcl_aqo_helper=>create_structure( it_field_desc = mt_sub_field ).
+      CATCH zcx_aqo_exception INTO lo_err.
+        MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
+    ENDTRY.
 
     " Destination structure (based on source)
-    IF mr_table IS INITIAL.
-      lo_tab_desc ?= cl_abap_tabledescr=>describe_by_data( <lt_table_src> ).
-      lo_struc_desc ?= lo_tab_desc->get_table_line_type( ).
-      CREATE DATA lr_type TYPE HANDLE lo_struc_desc.
-
-      ASSIGN lr_type->* TO <ls_dest>.
-      CREATE DATA mr_table LIKE STANDARD TABLE OF <ls_dest>.
-    ENDIF.
+    CREATE DATA lr_type TYPE HANDLE lo_struc_desc.
+    ASSIGN lr_type->* TO <ls_dest>.
+    CREATE DATA mr_table LIKE STANDARD TABLE OF <ls_dest>.
 
     " Create standard table for alv editing
     ASSIGN mr_table->* TO <lt_table_dest>.
 
-    " Copy row by row
+    " Copy row by row form source
+    ASSIGN ms_fld_value->cur_value->* TO <lt_table_src>.
     LOOP AT <lt_table_src> ASSIGNING <ls_src>.
       APPEND INITIAL LINE TO <lt_table_dest> ASSIGNING <ls_dest>.
       MOVE-CORRESPONDING <ls_src> TO <ls_dest>.
     ENDLOOP.
+    refresh_sub_fields( ).
 
     " Show screen
     CALL SCREEN 200 STARTING AT 5 1.
   ENDMETHOD.                    "call_screen
 
+  METHOD refresh_sub_fields.
+    DATA:
+      ls_sub_field TYPE REF TO zcl_aqo_helper=>ts_field_desc,
+      lv_fld_name  TYPE string,
+      lv_rem       TYPE string,
+      BEGIN OF ls_range,
+        sign   TYPE char1,
+        option TYPE char2,
+        low    TYPE text255,
+        high   TYPE text255,
+      END OF ls_range.
+    FIELD-SYMBOLS:
+      <lt_table_dest> TYPE STANDARD TABLE,
+      <ls_dest>       TYPE any,
+      <lv_ui_ext>     TYPE string,
+      <lt_sub_table>  TYPE ANY TABLE,
+      <ls_sub_src>    TYPE any.
+
+    " Create standard table for alv editing
+    ASSIGN mr_table->* TO <lt_table_dest>.
+
+    LOOP AT <lt_table_dest> ASSIGNING <ls_dest>.
+
+      " Show info about sub field
+      LOOP AT mt_sub_field REFERENCE INTO ls_sub_field
+           WHERE ui_type = zcl_aqo_helper=>mc_ui_table
+              OR ui_type = zcl_aqo_helper=>mc_ui_range.
+
+        " Source table
+        ASSIGN COMPONENT ls_sub_field->name OF STRUCTURE <ls_dest> TO <lt_sub_table>.
+
+        " Destination string
+        CONCATENATE ls_sub_field->name `_UI` INTO lv_fld_name.
+        ASSIGN COMPONENT lv_fld_name OF STRUCTURE <ls_dest> TO <lv_ui_ext>.
+
+        " No text
+        CLEAR <lv_ui_ext>.
+
+        CASE ls_sub_field->ui_type.
+            " Show count
+          WHEN zcl_aqo_helper=>mc_ui_table.
+            IF <lt_sub_table>[] IS NOT INITIAL.
+              <lv_ui_ext> = lines( <lt_sub_table> ).
+              CONCATENATE 'Count'(cnt) <lv_ui_ext> INTO <lv_ui_ext> SEPARATED BY space.
+            ENDIF.
+
+            " Show all values in range
+          WHEN zcl_aqo_helper=>mc_ui_range.
+            LOOP AT <lt_sub_table> ASSIGNING <ls_sub_src>.
+              MOVE-CORRESPONDING <ls_sub_src> TO ls_range.
+
+              " Do not show high
+              IF ls_range-high IS INITIAL.
+                CLEAR lv_rem.
+              ELSE.
+                CONCATENATE `:` ls_range-high INTO lv_rem.
+              ENDIF.
+              CONCATENATE <lv_ui_ext> ` ` ls_range-sign `:` ls_range-option `:` ls_range-low lv_rem  INTO <lv_ui_ext>.
+            ENDLOOP.
+
+            " Delete first ` `
+            IF sy-subrc = 0.
+              <lv_ui_ext> = <lv_ui_ext>+1.
+            ENDIF.
+
+        ENDCASE.
+      ENDLOOP.
+    ENDLOOP.
+
+    CHECK mo_grid IS NOT INITIAL.
+    mo_grid->refresh_table_display( ).
+  ENDMETHOD.
+
   METHOD pbo.
     DATA:
-      lr_cont     TYPE REF TO cl_gui_custom_container,
-      lt_fieldcat TYPE lvc_t_fcat,
-      ls_fieldcat TYPE REF TO lvc_s_fcat,
-      ls_layout   TYPE lvc_s_layo,
-      lv_text     TYPE string,
-      ls_variant  TYPE disvariant,
-      lv_ind      TYPE i,
-      lv_sum      TYPE num4,
-      lt_code     TYPE STANDARD TABLE OF syucomm,
-      ls_subcomp  TYPE REF TO zcl_aqo_helper=>ts_field_desc,
-      lv_ok       TYPE abap_bool,
-      lv_cnt      TYPE i.
+      lr_cont      TYPE REF TO cl_gui_custom_container,
+      lt_fieldcat  TYPE lvc_t_fcat,
+      ls_fieldcat  TYPE REF TO lvc_s_fcat,
+      ls_layout    TYPE lvc_s_layo,
+      lv_text      TYPE string,
+      ls_variant   TYPE disvariant,
+      lv_ind       TYPE i,
+      lv_sum       TYPE num4,
+      lt_code      TYPE STANDARD TABLE OF syucomm,
+      ls_sub_field TYPE REF TO zcl_aqo_helper=>ts_field_desc,
+      lv_cnt       TYPE i.
     FIELD-SYMBOLS:
       <lt_table> TYPE STANDARD TABLE.
 
@@ -115,42 +229,29 @@ CLASS lcl_table_alv IMPLEMENTATION.
      CHANGING
        ct_table    = <lt_table> ).
 
-    " Table to show
-    CLEAR mt_subcomps.
-    zcl_aqo_helper=>from_json(
-     EXPORTING
-      iv_json = ms_fld_value->sub_fdesc
-     IMPORTING
-      ev_ok   = lv_ok
-      ex_data = mt_subcomps ).
-    IF lv_ok <> abap_true.
-      MESSAGE s017(zaqo_message) WITH ms_fld_value->name DISPLAY LIKE 'E'.
-      RETURN.
-    ENDIF.
-
     " Change field catalog
     LOOP AT lt_fieldcat REFERENCE INTO ls_fieldcat.
       ls_fieldcat->edit = lcl_opt=>is_editable( ms_fld_value->is_editable ).
 
       " Change based options
-      READ TABLE mt_subcomps REFERENCE INTO ls_subcomp
+      READ TABLE mt_sub_field REFERENCE INTO ls_sub_field
        WITH TABLE KEY name = ls_fieldcat->fieldname.
       CHECK sy-subrc = 0.
 
       " Change text
-      IF ls_subcomp->label IS NOT INITIAL.
-        ls_fieldcat->coltext = ls_subcomp->label.
+      IF ls_sub_field->label IS NOT INITIAL.
+        ls_fieldcat->coltext = ls_sub_field->label.
       ENDIF.
 
       " For F4
-      IF ls_subcomp->rollname CP '*-*'.
-        SPLIT ls_subcomp->rollname AT '-' INTO
+      IF ls_sub_field->rollname CP '*-*'.
+        SPLIT ls_sub_field->rollname AT '-' INTO
          ls_fieldcat->ref_table
          ls_fieldcat->ref_field.
       ENDIF.
 
       " Show as link
-      IF ls_subcomp->ui_type = zcl_aqo_helper=>mc_ui_string.
+      IF ls_sub_field->ui_type = zcl_aqo_helper=>mc_ui_string.
         ls_fieldcat->hotspot = abap_true.
       ENDIF.
     ENDLOOP.
@@ -192,12 +293,19 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
   METHOD on_hotspot_click.
     DATA:
-      ls_fld_value TYPE REF TO lcl_opt=>ts_fld_value.
+      lv_level     TYPE i,
+      ls_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
+      lv_name      TYPE abap_attrname,
+      lv_len       TYPE i,
+      lv_refresh   TYPE abap_bool,
+      ls_tabfld    TYPE rstabfield,
+      lv_title     TYPE SYTITLE.
     FIELD-SYMBOLS:
-      <ls_subcomp> LIKE LINE OF mt_subcomps,
-      <lt_table>   TYPE STANDARD TABLE,
-      <ls_item>    TYPE any,
-      <lv_value>   TYPE any.
+      <ls_sub_field> LIKE LINE OF mt_sub_field,
+      <lt_table>     TYPE STANDARD TABLE,
+      <ls_item>      TYPE any,
+      <lv_value>     TYPE any,
+      <lt_range>     TYPE STANDARD TABLE.
 
     " Get current row
     ASSIGN mr_table->* TO <lt_table>.
@@ -205,42 +313,107 @@ CLASS lcl_table_alv IMPLEMENTATION.
     CHECK sy-subrc = 0.
 
     " Get from field catalog
-    READ TABLE mt_subcomps ASSIGNING <ls_subcomp>
+    READ TABLE mt_sub_field ASSIGNING <ls_sub_field>
      WITH TABLE KEY name = e_column_id.
     CHECK sy-subrc = 0.
 
-    CASE <ls_subcomp>-ui_type.
+    " Is table in table?
+    IF <ls_sub_field>-name CP `*_UI` AND <ls_sub_field>-ui_type = zcl_aqo_helper=>mc_ui_string.
+      " Get length by old abap syntax
+      lv_len = strlen( <ls_sub_field>-name ).
+      lv_len = lv_len - 3.
+      lv_name = <ls_sub_field>-name(lv_len).
+      READ TABLE mt_sub_field ASSIGNING <ls_sub_field>
+       WITH TABLE KEY name = lv_name.
+    ENDIF.
 
-      " Edit string in memo editor
+    " Next level
+    lv_level = me->mv_level + 1.
+
+    " Create reference to data in table
+    CREATE DATA ls_fld_value.
+    MOVE-CORRESPONDING <ls_sub_field> TO ls_fld_value->*.
+
+    " Edit or not
+    ls_fld_value->is_editable = ms_fld_value->is_editable.
+
+    " Data
+    ASSIGN COMPONENT ls_fld_value->name OF STRUCTURE <ls_item> TO <lv_value>.
+    CHECK <lv_value> IS ASSIGNED.
+    GET REFERENCE OF <lv_value> INTO ls_fld_value->cur_value.
+
+
+    CASE <ls_sub_field>-ui_type.
+**********************************************************************
+        " Edit string in memo editor
       WHEN zcl_aqo_helper=>mc_ui_string.
-        CREATE DATA ls_fld_value.
-        MOVE-CORRESPONDING <ls_subcomp> To ls_fld_value->*.
-
-        " Edit or not
-        ls_fld_value->is_editable = ms_fld_value->is_editable.
-
-        " Data
-        ASSIGN COMPONENT ls_fld_value->name of STRUCTURE <ls_item> to <lv_value>.
-        CHECK <lv_value> IS ASSIGNED.
-        GET REFERENCE OF <lv_value> INTO ls_fld_value->cur_value.
-
         " show editor
-        go_string_memo = lcl_string_memo=>get_instance( 'TABLE' ).
+        go_string_memo = lcl_string_memo=>get_instance( lv_level ).
         go_string_memo->call_screen( ls_fld_value ).
 
         " update in table
-        CHECK go_string_memo->mv_last_cmd = 'OK'.
-        mo_grid->refresh_table_display( ).
+        IF go_string_memo->mv_last_cmd = 'OK'.
+          lv_refresh = abap_true.
+        ENDIF.
+        go_string_memo = lcl_string_memo=>get_instance( mv_level ).
+
+**********************************************************************
+        " Edit sub table in alv editor
+      WHEN zcl_aqo_helper=>mc_ui_table.
+        " show editor
+        go_table_alv = lcl_table_alv=>get_instance( lv_level ).
+        go_table_alv->call_screen( ls_fld_value ).
+
+        " update in table
+        IF go_table_alv->mv_last_cmd = 'OK'.
+          lv_refresh = abap_true.
+        ENDIF.
+
+**********************************************************************
+        " Show range for table item
+      WHEN zcl_aqo_helper=>mc_ui_range.
+
+        zcl_aqo_helper=>split_type(
+         EXPORTING
+           iv_datatype = ls_fld_value->rollname
+         IMPORTING
+           ev_table    = ls_tabfld-tablename
+           ev_field    = ls_tabfld-fieldname ).
+        CHECK ls_tabfld-fieldname IS NOT INITIAL.
+
+        " Range table
+        ASSIGN ls_fld_value->cur_value->* TO <lt_range>.
+
+        " Show ranges
+        lv_title = ls_fld_value->label.
+        CALL FUNCTION 'COMPLEX_SELECTIONS_DIALOG'
+          EXPORTING
+            title         = lv_title
+            tab_and_field = ls_tabfld
+            "just_display  = '' TODO
+          TABLES
+            range         = <lt_range>
+          EXCEPTIONS
+            OTHERS        = 1.
+        CHECK sy-subrc = 0.
+        lv_refresh = abap_true.
 
       WHEN OTHERS.
         RETURN.
     ENDCASE.
+
+    " Set current again
+    go_table_alv = lcl_table_alv=>get_instance( mv_level ).
+
+    " Update value
+    IF lv_refresh = abap_true.
+      go_table_alv->refresh_sub_fields( ).
+    ENDIF.
   ENDMETHOD.
 
   METHOD pai.
     DATA:
       lr_data       TYPE REF TO data,
-      lv_cmd        TYPE syucomm,
       lo_tab_desc   TYPE REF TO cl_abap_tabledescr,
       lo_struc_desc TYPE REF TO cl_abap_structdescr.
     FIELD-SYMBOLS:
@@ -251,13 +424,13 @@ CLASS lcl_table_alv IMPLEMENTATION.
       <ls_dest>       TYPE any.
 
     " Save & clear
-    lv_cmd = cv_cmd.
+    mv_last_cmd = cv_cmd.
     CLEAR cv_cmd.
 
     " Write data back
     mo_grid->check_changed_data( ).
 
-    CASE lv_cmd.
+    CASE mv_last_cmd.
       WHEN 'OK'.
         " Source
         ASSIGN mr_table->* TO <lt_table_src>.

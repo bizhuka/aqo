@@ -57,6 +57,60 @@ ENDCLASS.                    "LCL_MAIN DEFINITION
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
+CLASS lcl_nested_instance DEFINITION.
+  PUBLIC SECTION.
+
+    TYPES:
+      BEGIN OF ts_instance,
+        cl_name  TYPE string,
+        level    TYPE i,
+        instance TYPE REF TO lcl_nested_instance,
+      END OF ts_instance.
+
+    CLASS-DATA:
+     mt_instance TYPE SORTED TABLE OF ts_instance WITH UNIQUE KEY cl_name level.
+
+    " Current level
+    DATA:
+     mv_level     TYPE i,
+     mv_last_cmd  TYPE syucomm.
+
+    CLASS-METHODS:
+      get_instance_by_level
+        IMPORTING
+                  iv_cl_name         TYPE string
+                  iv_level           TYPE i
+        RETURNING VALUE(ro_instance) TYPE REF TO lcl_nested_instance.
+ENDCLASS.
+
+CLASS lcl_nested_instance IMPLEMENTATION.
+  METHOD get_instance_by_level.
+    DATA:
+      ls_instance    LIKE LINE OF mt_instance.
+    FIELD-SYMBOLS:
+      <ls_instance>  LIKE LINE OF mt_instance.
+
+    READ TABLE mt_instance ASSIGNING <ls_instance>
+     WITH TABLE KEY cl_name = iv_cl_name
+                    level   = iv_level.
+    IF sy-subrc <> 0.
+      ls_instance-cl_name = iv_cl_name.
+      ls_instance-level   = iv_level.
+
+      " Create new instance by name
+      CREATE OBJECT ls_instance-instance TYPE (iv_cl_name).
+      ls_instance-instance->mv_level = iv_level.
+
+      INSERT ls_instance INTO TABLE mt_instance ASSIGNING <ls_instance>.
+    ENDIF.
+
+    ro_instance = <ls_instance>-instance.
+  ENDMETHOD.
+ENDCLASS.
+
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
 CLASS lcl_fld_value_alv DEFINITION FINAL.
   PUBLIC SECTION.
 
@@ -181,13 +235,15 @@ ENDCLASS.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
-CLASS lcl_table_alv DEFINITION FINAL.
+CLASS lcl_table_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
   PUBLIC SECTION.
     CLASS-DATA:
-      mo_instance TYPE REF TO lcl_table_alv.
+      mo_last_instance TYPE REF TO lcl_table_alv.
 
     CLASS-METHODS:
       get_instance
+        IMPORTING
+                  iv_level           TYPE i OPTIONAL
         RETURNING VALUE(ro_instance) TYPE REF TO lcl_table_alv.
 
     DATA:
@@ -195,12 +251,14 @@ CLASS lcl_table_alv DEFINITION FINAL.
       ms_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
       mv_refresh   TYPE abap_bool,
       mo_grid      TYPE REF TO cl_gui_alv_grid,
-      mt_subcomps  TYPE zcl_aqo_helper=>tt_field_desc.
+      mt_sub_field TYPE zcl_aqo_helper=>tt_field_desc.
 
     METHODS:
       call_screen
         IMPORTING
           is_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
+
+      refresh_sub_fields,
 
       pbo,
 
@@ -215,30 +273,22 @@ ENDCLASS.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
-CLASS lcl_string_memo DEFINITION FINAL.
+CLASS lcl_string_memo DEFINITION INHERITING FROM lcl_nested_instance FINAL.
   PUBLIC SECTION.
-    TYPES:
-      BEGIN OF ts_instance,
-        name     TYPE string,
-        instance TYPE REF TO lcl_string_memo,
-      END OF ts_instance.
-
     CLASS-DATA:
-      mt_instance      TYPE SORTED TABLE OF ts_instance WITH UNIQUE KEY name,
       mo_last_instance TYPE REF TO lcl_string_memo.
 
     CLASS-METHODS:
       get_instance
         IMPORTING
-                  iv_name            TYPE string OPTIONAL
+                  iv_level           TYPE i OPTIONAL
         RETURNING VALUE(ro_instance) TYPE REF TO lcl_string_memo.
 
     DATA:
       mv_memo      TYPE string,
       mo_textedit  TYPE REF TO cl_gui_textedit,
       ms_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
-      mv_refresh   TYPE abap_bool,
-      mv_last_cmd  TYPE syucomm.
+      mv_refresh   TYPE abap_bool.
 
     METHODS:
       call_screen

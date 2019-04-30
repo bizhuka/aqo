@@ -817,6 +817,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>CNT</KEY>
+     <ENTRY>Count</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>CRT</KEY>
      <ENTRY>Create new option</ENTRY>
      <LENGTH>27</LENGTH>

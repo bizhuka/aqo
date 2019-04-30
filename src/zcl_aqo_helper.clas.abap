@@ -94,7 +94,7 @@ public section.
     importing
       !IO_RANGE type ref to CL_ABAP_DATADESCR optional
       !IV_SUB_FDESC type STRING optional
-      !IT_FIELD_VALUE type TT_FIELD_VALUE optional
+      !IT_FIELD_DESC type TT_FIELD_DESC optional
     returning
       value(RO_STRUCT) type ref to CL_ABAP_STRUCTDESCR
     raising
@@ -819,13 +819,13 @@ ENDMETHOD.
 
 METHOD create_structure.
   DATA:
-    lt_comp       TYPE abap_component_tab,
-    lt_sub_fdesc  TYPE tt_field_desc,
-    lv_ok         TYPE abap_bool.
+    lt_comp      TYPE abap_component_tab,
+    lt_sub_fdesc TYPE tt_field_desc,
+    lv_ok        TYPE abap_bool.
   FIELD-SYMBOLS:
-    <ls_field_value> TYPE ts_field_value,
-    <ls_subfield>    TYPE ts_field_desc,
-    <ls_comp>        LIKE LINE OF lt_comp.
+    <ls_field_desc> TYPE ts_field_desc,
+    <ls_subfield>   TYPE ts_field_desc,
+    <ls_comp>       LIKE LINE OF lt_comp.
 
   " №2 For select-options
   IF io_range IS NOT INITIAL.
@@ -865,11 +865,11 @@ METHOD create_structure.
   ENDDO.
 
   " №4 Called from constructor if have in DB cluster
-  LOOP AT it_field_value ASSIGNING <ls_field_value>.
+  LOOP AT it_field_desc ASSIGNING <ls_field_desc>.
     " Create sub levels
     APPEND INITIAL LINE TO lt_comp ASSIGNING <ls_comp>.
-    <ls_comp>-name = <ls_field_value>-name.
-    <ls_comp>-type = create_type_descr( is_field_desc = <ls_field_value>-field_desc ).
+    <ls_comp>-name = <ls_field_desc>-name.
+    <ls_comp>-type = create_type_descr( is_field_desc = <ls_field_desc> ).
   ENDLOOP.
 
 *  TRY.

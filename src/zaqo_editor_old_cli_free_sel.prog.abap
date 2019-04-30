@@ -82,11 +82,11 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
     " Only for tables
     CASE ls_fld_value->ui_type.
       WHEN zcl_aqo_helper=>mc_ui_table.
-        lo_table_alv = lcl_table_alv=>get_instance( ).
+        lo_table_alv = lcl_table_alv=>get_instance( 1 ).
         lo_table_alv->call_screen( ls_fld_value ).
 
       WHEN zcl_aqo_helper=>mc_ui_string.
-        go_string_memo = lcl_string_memo=>get_instance( 'FIELD' ).
+        go_string_memo = lcl_string_memo=>get_instance( 1 ).
         go_string_memo->call_screen( ls_fld_value ).
 
       WHEN OTHERS.

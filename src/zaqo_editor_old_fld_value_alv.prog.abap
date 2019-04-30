@@ -281,7 +281,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         lcl_opt=>add_one_field(
          is_field_value = ls_field_value
          ir_data        = lr_data ).
-      CATCH cx_root INTO lo_err.
+      CATCH cx_root INTO lo_err. "#EC CATCH_ALL
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
@@ -378,13 +378,13 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
        ct_table    = lt_option_db ).
 
     LOOP AT lr_struc_desc->components REFERENCE INTO ls_comp WHERE
-        name = 'PACKAGE_ID'        OR  "#EC NOTEXT
-        name = 'OPTION_ID'         OR  "#EC NOTEXT
-        name = 'CREATED_DATE'      OR  "#EC NOTEXT
-        name = 'CREATED_UNAME'     OR  "#EC NOTEXT
-        name = 'CREATED_NAME_TEXT' OR  "#EC NOTEXT
-        name = 'DESCRIPTION'       OR  "#EC NOTEXT
-        name = 'PREV_VALUE_CNT'.       "#EC NOTEXT
+        name = 'PACKAGE_ID'        OR                       "#EC NOTEXT
+        name = 'OPTION_ID'         OR                       "#EC NOTEXT
+        name = 'CREATED_DATE'      OR                       "#EC NOTEXT
+        name = 'CREATED_UNAME'     OR                       "#EC NOTEXT
+        name = 'CREATED_NAME_TEXT' OR                       "#EC NOTEXT
+        name = 'DESCRIPTION'       OR                       "#EC NOTEXT
+        name = 'PREV_VALUE_CNT'.                            "#EC NOTEXT
 
       " Get text
       READ TABLE lt_fieldcat REFERENCE INTO ls_fieldcat BINARY SEARCH
@@ -433,11 +433,11 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         " Only for tables
         CASE ls_fld_value->ui_type.
           WHEN zcl_aqo_helper=>mc_ui_table.
-            lo_table_alv = lcl_table_alv=>get_instance( ).
+            lo_table_alv = lcl_table_alv=>get_instance( 1 ).
             lo_table_alv->call_screen( ls_fld_value ).
 
           WHEN zcl_aqo_helper=>mc_ui_string.
-            go_string_memo = lcl_string_memo=>get_instance( 'FIELD' ).
+            go_string_memo = lcl_string_memo=>get_instance( 1 ).
             go_string_memo->call_screen( ls_fld_value ).
         ENDCASE.
     ENDCASE.
@@ -825,7 +825,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       EXPORTING
         selection_id    = lv_sel_id
         title           = 'Maintenance parameters'(tit)
-        frame_text      = 'Options'(opt)
+        frame_text      = 'Parameters'(opt)
         as_window       = abap_false
         start_col       = 30
         status          = 0

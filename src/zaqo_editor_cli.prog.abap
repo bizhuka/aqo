@@ -128,8 +128,8 @@ CLASS lcl_opt IMPLEMENTATION.
       lt_shlp_descr_tab TYPE shlp_desct,
       lo_struc          TYPE REF TO cl_abap_structdescr,
       lo_table          TYPE REF TO cl_abap_tabledescr,
-      lt_field_value    TYPE zcl_aqo_helper=>tt_field_value,
-      ls_field_value    TYPE zcl_aqo_helper=>ts_field_value,
+      lt_field_desc     TYPE zcl_aqo_helper=>tt_field_desc,
+      ls_field_desc     TYPE zcl_aqo_helper=>ts_field_desc,
       ls_sh_field       TYPE REF TO ts_sh_field,
       lt_fielddescr     TYPE ddfields,
       ls_fld_prop       TYPE REF TO ddshfprop,
@@ -220,12 +220,12 @@ CLASS lcl_opt IMPLEMENTATION.
       IF lo_struc IS INITIAL.
         " Strucure fields
         LOOP AT lt_fielddescr REFERENCE INTO ls_field.
-          ls_field_value-field_desc = zcl_aqo_helper=>get_field_desc( is_sh_field = ls_field->* ).
-          INSERT ls_field_value INTO TABLE lt_field_value.
+          ls_field_desc = zcl_aqo_helper=>get_field_desc( is_sh_field = ls_field->* ).
+          INSERT ls_field_desc INTO TABLE lt_field_desc.
         ENDLOOP.
 
         " Output table
-        lo_struc = zcl_aqo_helper=>create_structure( it_field_value = lt_field_value ).
+        lo_struc = zcl_aqo_helper=>create_structure( it_field_desc = lt_field_desc ).
       ENDIF.
 
       lo_table = cl_abap_tabledescr=>create( p_line_type = lo_struc ).
@@ -884,7 +884,7 @@ CLASS lcl_opt IMPLEMENTATION.
     ls_back_info-kind      = 'I'.
     ls_back_info-info_text = lo_option->save( iv_mandt = iv_mandt ).
 
-    rv_out = zcl_aqo_helper=>to_json( ls_back_info ). "#EC CI_VALPAR
+    rv_out = zcl_aqo_helper=>to_json( ls_back_info ).    "#EC CI_VALPAR
   ENDMETHOD.
 
   METHOD sap_get_field_desc.

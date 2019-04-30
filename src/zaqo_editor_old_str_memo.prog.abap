@@ -3,23 +3,11 @@
 
 CLASS lcl_string_memo IMPLEMENTATION.
   METHOD get_instance.
-    DATA:
-      ls_instance    LIKE LINE OF mt_instance.
-    FIELD-SYMBOLS:
-      <ls_instance>  LIKE LINE OF mt_instance.
-
     " Create by name
-    IF iv_name IS SUPPLIED.
-      READ TABLE mt_instance ASSIGNING <ls_instance>
-       WITH TABLE KEY name = iv_name.
-      IF sy-subrc <> 0.
-        ls_instance-name = iv_name.
-        CREATE OBJECT ls_instance-instance.
-        INSERT ls_instance INTO TABLE mt_instance ASSIGNING <ls_instance>.
-      ENDIF.
-
-      ro_instance = mo_last_instance = <ls_instance>-instance.
-      RETURN.
+    IF iv_level IS SUPPLIED.
+      mo_last_instance ?= lcl_nested_instance=>get_instance_by_level(
+       iv_cl_name = 'LCL_STRING_MEMO'
+       iv_level   = iv_level ).
     ENDIF.
 
     ro_instance = mo_last_instance.
