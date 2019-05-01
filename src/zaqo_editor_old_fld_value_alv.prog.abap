@@ -281,7 +281,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         lcl_opt=>add_one_field(
          is_field_value = ls_field_value
          ir_data        = lr_data ).
-      CATCH cx_root INTO lo_err. "#EC CATCH_ALL
+      CATCH cx_root INTO lo_err.                         "#EC CATCH_ALL
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
@@ -974,6 +974,127 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       lo_where_used TYPE REF TO lcl_where_used.
     lo_where_used = lcl_where_used=>get_instance( ).
     lo_where_used->call_screen( ).
+  ENDMETHOD.
+
+  METHOD export.
+    DATA:
+      lv_title     TYPE string,
+      lv_file_name TYPE string,
+      lv_path      TYPE string,
+      lv_filename  TYPE string,
+      lv_fullpath  TYPE string.
+
+    lv_title     = 'Save option values'(sov).
+    CONCATENATE p_pack `-` p_opt_id `-` sy-mandt `-` sy-datum `-` sy-uzeit `.aqob` INTO lv_file_name.
+    cl_gui_frontend_services=>file_save_dialog(
+     EXPORTING
+       window_title      = lv_title
+       default_file_name = lv_file_name
+     CHANGING
+       path         = lv_path
+       filename     = lv_filename
+       fullpath     = lv_fullpath
+     EXCEPTIONS
+       OTHERS       = 1 ).
+    CHECK sy-subrc = 0 AND lv_fullpath IS NOT INITIAL.
+
+    " Save to file
+    zcl_aqo_helper=>download(
+     iv_xcontent = lcl_opt=>mo_option->ms_db_item-fields
+     iv_filename = lv_fullpath ).
+  ENDMETHOD.
+
+  METHOD import.
+    DATA:
+      lt_file  TYPE filetable,
+      ls_file  TYPE REF TO file_table,
+      lv_file  TYPE string,
+      lv_rc    TYPE i,
+      lt_data  TYPE solix_tab,
+      lv_len   TYPE i,
+      lv_xdata TYPE xstring.
+
+    cl_gui_frontend_services=>file_open_dialog(
+      EXPORTING
+        " window_title   =
+        multiselection    = abap_false
+        file_filter       = '*.aqob'
+        default_extension = 'aqob'
+      CHANGING
+        file_table        = lt_file
+        rc                = lv_rc ).
+    CHECK lt_file[] IS NOT INITIAL.
+
+    " 1 file only
+    READ TABLE lt_file REFERENCE INTO ls_file INDEX 1.
+    CHECK sy-subrc = 0.
+
+    lv_file = ls_file->filename.
+    CALL FUNCTION 'GUI_UPLOAD'
+      EXPORTING
+        filename   = lv_file
+        filetype   = 'BIN'
+      IMPORTING
+        filelength = lv_len
+      TABLES
+        data_tab   = lt_data
+      EXCEPTIONS
+        OTHERS     = 1.
+    IF sy-subrc <> 0.
+      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      RETURN.
+    ENDIF.
+
+    lv_xdata = zcl_aqo_helper=>binary_to_xstring(
+     it_table  = lt_data
+     iv_length = lv_len ).
+
+    do_update(
+     iv_set    = `FIELDS = IV_FIELDS`
+     iv_fields = lv_xdata ).
+  ENDMETHOD.
+
+  METHOD change_description.
+    DATA:
+      lt_value TYPE STANDARD TABLE OF sval WITH DEFAULT KEY,
+      ls_value TYPE REF TO sval,
+      lv_rc    TYPE char1.
+
+    " Change text of
+    APPEND INITIAL LINE TO lt_value REFERENCE INTO ls_value.
+    ls_value->tabname   = 'ZTAQO_OPTION'.
+    ls_value->fieldname = 'DESCRIPTION'.
+    ls_value->value     = lcl_opt=>mo_option->ms_db_item-description.
+
+    " Get new text
+    CALL FUNCTION 'POPUP_GET_VALUES'
+      EXPORTING
+        popup_title     = 'Enter option description'(eod)
+      IMPORTING
+        returncode      = lv_rc
+      TABLES
+        fields          = lt_value
+      EXCEPTIONS
+        error_in_fields = 1
+        OTHERS          = 2.
+    CHECK sy-subrc = 0 AND lv_rc <> 'A'.
+
+    do_update(
+     iv_set         = `DESCRIPTION = IV_DESCRIPTION`
+     iv_description = ls_value->value  ).
+  ENDMETHOD.
+
+  METHOD do_update.
+    UPDATE ztaqo_option
+     SET (iv_set)
+    WHERE package_id = p_pack
+      AND option_id  = p_opt_id.
+
+    IF sy-subrc = 0.
+      MESSAGE 'Data updated'(upd) TYPE 'S'.
+    ELSE.
+      MESSAGE 'Error during updating!'(edu) TYPE 'S' DISPLAY LIKE 'E'.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.
 

@@ -70,41 +70,43 @@ CLASS lcl_where_used IMPLEMENTATION.
 
   METHOD deep_scan.
     DATA:
-      lt_usage  TYPE zcl_aqo_helper=>tt_usage,
-      ls_usage  TYPE REF TO zcl_aqo_helper=>ts_usage,
-      lt_return TYPE STANDARD TABLE OF ddshretval,
-      ls_return TYPE REF TO ddshretval,
-      lv_index  TYPE zcl_aqo_helper=>ts_usage-index.
+      lt_ret   TYPE STANDARD TABLE OF ddshretval,
+      ls_ret   TYPE REF TO ddshretval,
+      ls_usage TYPE zcl_aqo_helper=>ts_usage.
 
-    " All includes
-    lt_usage = zcl_aqo_helper=>get_usage( iv_package = lcl_opt=>mo_option->ms_db_item-package_id
-                                          iv_option  = lcl_opt=>mo_option->ms_db_item-option_id ).
-
-    " Show all list
-    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    " Show SH
+    CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'
       EXPORTING
-        retfield   = 'INDEX'
-        dynpprog   = sy-cprog
+        tabname    = 'ZSAQO_USER_SH'    " No need returns all fields in SH exit   "#EC NOTEXT
+        fieldname  = 'INDEX'            "#EC NOTEXT
+        searchhelp = 'ZHAQO_USAGE'      "#EC NOTEXT
+        dynpprog   = sy-repid
         dynpnr     = sy-dynnr
-        value_org  = 'S'
       TABLES
-        value_tab  = lt_usage
-        return_tab = lt_return.
-
-    " Fisrt include
-    READ TABLE lt_return REFERENCE INTO ls_return INDEX 1.
+        return_tab = lt_ret
+      EXCEPTIONS
+        OTHERS     = 5.
     CHECK sy-subrc = 0.
 
-    lv_index = ls_return->fieldval.
-    READ TABLE lt_usage REFERENCE INTO ls_usage
-     WITH KEY index = lv_index.
-    CHECK sy-subrc = 0.
+    " Write back
+    LOOP AT lt_ret REFERENCE INTO ls_ret WHERE fieldname = 'INCLUDE' OR fieldname = 'LINE'.
+      CASE ls_ret->fieldname.
+        WHEN 'INCLUDE'.
+          ls_usage-include = ls_ret->fieldval.
+        WHEN 'LINE'.
+          ls_usage-line = ls_ret->fieldval.
+      ENDCASE.
+    ENDLOOP.
 
+    IF ls_usage-include IS INITIAL OR ls_usage-line IS INITIAL.
+      MESSAGE s015(zaqo_message) DISPLAY LIKE 'E'.
+      RETURN.
+    ENDIF.
+
+    " Drilldown
     zcl_aqo_helper=>navigate_to(
-     iv_include  = ls_usage->include
-     iv_position = ls_usage->line ).
-
-*    MESSAGE s015(zaqo_message) DISPLAY LIKE 'E'.
+     iv_include  = ls_usage-include
+     iv_position = ls_usage-line ).
   ENDMETHOD.
 
 ENDCLASS.                    "IMPLEMENTATION

@@ -99,7 +99,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
     DATA:
       ls_sub_field TYPE REF TO zcl_aqo_helper=>ts_field_desc,
       lv_fld_name  TYPE string,
-      lv_rem       TYPE string,
+      lv_beg_txt   TYPE string,
+      lv_end_txt   TYPE string,
       BEGIN OF ls_range,
         sign   TYPE char1,
         option TYPE char2,
@@ -146,13 +147,21 @@ CLASS lcl_table_alv IMPLEMENTATION.
             LOOP AT <lt_sub_table> ASSIGNING <ls_sub_src>.
               MOVE-CORRESPONDING <ls_sub_src> TO ls_range.
 
-              " Do not show high
-              IF ls_range-high IS INITIAL.
-                CLEAR lv_rem.
+              " Do not show SIGN
+              IF ls_range-sign = 'I'.
+                CLEAR lv_beg_txt.
               ELSE.
-                CONCATENATE `:` ls_range-high INTO lv_rem.
+                CONCATENATE ls_range-sign `:` INTO lv_beg_txt.
               ENDIF.
-              CONCATENATE <lv_ui_ext> ` ` ls_range-sign `:` ls_range-option `:` ls_range-low lv_rem  INTO <lv_ui_ext>.
+
+              " Do not show HIGH
+              IF ls_range-high IS INITIAL.
+                CLEAR lv_end_txt.
+              ELSE.
+                CONCATENATE `:` ls_range-high INTO lv_end_txt.
+              ENDIF.
+
+              CONCATENATE <lv_ui_ext> ` ` lv_beg_txt ls_range-option `:` ls_range-low lv_end_txt INTO <lv_ui_ext>.
             ENDLOOP.
 
             " Delete first ` `
@@ -299,7 +308,7 @@ CLASS lcl_table_alv IMPLEMENTATION.
       lv_len       TYPE i,
       lv_refresh   TYPE abap_bool,
       ls_tabfld    TYPE rstabfield,
-      lv_title     TYPE SYTITLE.
+      lv_title     TYPE sytitle.
     FIELD-SYMBOLS:
       <ls_sub_field> LIKE LINE OF mt_sub_field,
       <lt_table>     TYPE STANDARD TABLE,

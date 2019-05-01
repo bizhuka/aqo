@@ -504,25 +504,19 @@
       <PFK_CODE>000001</PFK_CODE>
       <CODE>0001</CODE>
       <NO>03</NO>
-      <PFNO>14</PFNO>
+      <PFNO>16</PFNO>
      </RSMPE_BUT>
      <RSMPE_BUT>
       <PFK_CODE>000001</PFK_CODE>
       <CODE>0001</CODE>
       <NO>04</NO>
-      <PFNO>16</PFNO>
+      <PFNO>14</PFNO>
      </RSMPE_BUT>
      <RSMPE_BUT>
       <PFK_CODE>000001</PFK_CODE>
       <CODE>0001</CODE>
       <NO>05</NO>
       <PFNO>09</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000001</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>06</NO>
-      <PFNO>21</PFNO>
      </RSMPE_BUT>
      <RSMPE_BUT>
       <PFK_CODE>000003</PFK_CODE>
@@ -611,12 +605,6 @@
       <FUNNO>001</FUNNO>
      </RSMPE_PFK>
      <RSMPE_PFK>
-      <CODE>000001</CODE>
-      <PFNO>21</PFNO>
-      <FUNCODE>FIND_REF</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
       <CODE>000003</CODE>
       <PFNO>00</PFNO>
       <FUNCODE>OK</FUNCODE>
@@ -697,10 +685,6 @@
      <RSMPE_STAF>
       <STATUS>0100</STATUS>
       <FUNCTION>EXIT</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>0100</STATUS>
-      <FUNCTION>FIND_REF</FUNCTION>
      </RSMPE_STAF>
      <RSMPE_STAF>
       <STATUS>0100</STATUS>
@@ -829,6 +813,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>CTD</KEY>
+     <ENTRY>Change description</ENTRY>
+     <LENGTH>28</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>DIS</KEY>
      <ENTRY>Fix errors in DEV mandt first</ENTRY>
      <LENGTH>58</LENGTH>
@@ -838,6 +828,24 @@
      <KEY>EDT</KEY>
      <ENTRY>Edit</ENTRY>
      <LENGTH>14</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>EOD</KEY>
+     <ENTRY>Enter option description</ENTRY>
+     <LENGTH>48</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>EXP</KEY>
+     <ENTRY>Export option</ENTRY>
+     <LENGTH>23</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>IMP</KEY>
+     <ENTRY>Import option</ENTRY>
+     <LENGTH>23</LENGTH>
     </item>
     <item>
      <ID>I</ID>

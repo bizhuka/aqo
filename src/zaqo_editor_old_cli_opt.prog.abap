@@ -2,8 +2,43 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt IMPLEMENTATION.
-  METHOD pbo.                                               "#EC NEEDED
+  METHOD pbo.
+    " Macro for creating icons
+    DEFINE get_icon.
+      CALL FUNCTION 'ICON_CREATE'
+        EXPORTING
+          name                  = &1
+          text                  = &2
+          info                  = &3
+        IMPORTING
+          result                = &4
+        EXCEPTIONS
+          icon_not_found        = 1
+          outputfield_too_short = 2
+          OTHERS                = 3.
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+         DISPLAY LIKE 'E'.
+      ENDIF.
+    END-OF-DEFINITION.
 
+    get_icon 'ICON_REFERENCE_LIST'
+             'Where-Used List'(wul) ''
+              sscrfields-functxt_01.
+
+    get_icon 'ICON_EXPORT'
+             ''  'Export option'(exp)
+             sscrfields-functxt_02.
+
+    IF zcl_aqo_helper=>is_dev_mandt( ) = abap_true.
+      get_icon 'ICON_IMPORT'
+               '' 'Import option'(imp)
+               sscrfields-functxt_03.
+    ENDIF.
+
+    get_icon 'ICON_CHANGE_TEXT'
+             '' 'Change description'(ctd)
+             sscrfields-functxt_04.
   ENDMETHOD.
 
   METHOD pai.
@@ -21,6 +56,18 @@ CLASS lcl_opt IMPLEMENTATION.
           WHEN 'DEL_OPT'.
             mo_option->delete( ).
 
+          WHEN 'FC01'.
+            start_of_selection( mc_action_show_usage ).
+
+          WHEN 'FC02'.
+            start_of_selection( mc_action_export ).
+
+          WHEN 'FC03'.
+            start_of_selection( mc_action_import ).
+
+          WHEN 'FC04'.
+            start_of_selection( mc_action_change_description ).
+
           WHEN OTHERS.
             RETURN.
         ENDCASE.
@@ -34,54 +81,81 @@ CLASS lcl_opt IMPLEMENTATION.
 
   METHOD start_of_selection.
     DATA:
-      lo_err TYPE REF TO zcx_aqo_exception.
+      lo_err           TYPE REF TO zcx_aqo_exception,
+      ls_field_value   TYPE REF TO zcl_aqo_helper=>ts_field_value,
+      lo_fld_value_alv TYPE REF TO lcl_fld_value_alv,
+      lv_action        LIKE iv_action.
 
+    " Try to create
     TRY.
-        lcl_opt=>do_create( ).
+        mo_option = zcl_aqo_option=>create(
+           iv_package_id  = p_pack
+           iv_option_id   = p_opt_id ).
+
+        " Is new
+        IF mo_option->ms_db_item-fields IS INITIAL.
+          MESSAGE 'Create new option'(crt) TYPE 'S'.
+        ENDIF.
+
+        " Mandt is open
+        mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
+
+        IF mo_option->lock( ) <> abap_true.
+          mv_read_only = abap_true.
+
+          MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E'
+           WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+        ENDIF.
+
+        " Create new table
+        CLEAR mt_fld_value.
+        LOOP AT mo_option->mt_field_value REFERENCE INTO ls_field_value.
+          add_one_field( ls_field_value->* ).
+        ENDLOOP.
+
       CATCH zcx_aqo_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
     ENDTRY.
 
-  ENDMETHOD.
+    " Choose action
+    lv_action = iv_action.
+    IF lv_action IS INITIAL.
+      CASE mv_is_dev.
+        WHEN abap_true.
+          lv_action = mc_action_tech_view.
 
-  METHOD do_create.
-    DATA:
-      ls_field_value   TYPE REF TO zcl_aqo_helper=>ts_field_value,
-      lo_fld_value_alv TYPE REF TO lcl_fld_value_alv.
-
-    mo_option = zcl_aqo_option=>create(
-       iv_package_id  = p_pack
-       iv_option_id   = p_opt_id ).
-
-    " Is new
-    IF mo_option->ms_db_item-fields IS INITIAL.
-      MESSAGE 'Create new option'(crt) TYPE 'S'.
+          " Show immediately values
+        WHEN abap_false.
+          lv_action = mc_action_edit_values.
+      ENDCASE.
     ENDIF.
 
-    " Mandt is open
-    mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
-
-    IF mo_option->lock( ) <> abap_true.
-      mv_read_only = abap_true.
-
-      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E'
-       WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    ENDIF.
-
-    " Create new table
-    LOOP AT mo_option->mt_field_value REFERENCE INTO ls_field_value.
-      add_one_field( ls_field_value->* ).
-    ENDLOOP.
-
-    " Show immediately
+    " Decide what to do
     lo_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
-    IF mv_is_dev = abap_true.
-      lo_fld_value_alv->call_screen( ).
-    ELSE.
-      " Custom checks
-      CHECK lo_fld_value_alv->data_check( ) = abap_true.
-      lo_fld_value_alv->sel_screen_show( ).
-    ENDIF.
+    CASE lv_action.
+      WHEN mc_action_tech_view.
+        lo_fld_value_alv->call_screen( ).
+
+      WHEN mc_action_edit_values.
+        " Custom checks
+        CHECK lo_fld_value_alv->data_check( ) = abap_true.
+        lo_fld_value_alv->sel_screen_show( ).
+
+      WHEN mc_action_show_usage.
+        lo_fld_value_alv->find_ref( ).
+
+      WHEN mc_action_export.
+        lo_fld_value_alv->export( ).
+
+      WHEN mc_action_import.
+        lo_fld_value_alv->import( ).
+
+      WHEN mc_action_change_description.
+        lo_fld_value_alv->change_description( ).
+
+    ENDCASE.
+
   ENDMETHOD.                    "START_OF_SELECTION
 
   METHOD add_one_field.

@@ -139,7 +139,8 @@
                     <IconTabSeparator icon=""/>
                     <IconTabFilter icon="sap-icon://detail-view">
                         <Toolbar>
-                            <ToggleButton icon="sap-icon://detail-view" press="on_show_last_call"/>
+                            <Button icon="sap-icon://detail-view" press="on_show_last_call"/>
+                            <Button icon="sap-icon://sys-find" press="on_show_usage"/>
                         </Toolbar>
 
                         <f:SimpleForm>

@@ -70,8 +70,8 @@ CLASS lcl_gui_html_viewer DEFINITION INHERITING FROM cl_gui_html_viewer FINAL.
     METHODS:
       constructor
         IMPORTING
-          io_parent     TYPE REF TO cl_gui_container
-          it_sinon_file TYPE string_table
+                  io_parent     TYPE REF TO cl_gui_container
+                  it_sinon_file TYPE string_table
         RAISING   zcx_aqo_exception,
 
       " Execute script in browser
@@ -113,7 +113,7 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL.
 
     CLASS-METHODS:
       pbo
-        RAISING   zcx_aqo_exception,
+        RAISING zcx_aqo_exception,
 
       pai
         CHANGING
@@ -204,8 +204,12 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL.
 
       sap_navigate_to
         IMPORTING
-                  iv_include    TYPE string
-                  iv_line       TYPE string
+                  " 1-st mode
+                  iv_include    TYPE string OPTIONAL
+                  iv_line       TYPE string OPTIONAL
+                  " 2-d mode
+                  iv_index      TYPE string OPTIONAL
+
                   iv_again      TYPE csequence OPTIONAL
         RETURNING VALUE(rv_out) TYPE string,
 

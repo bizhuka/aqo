@@ -644,15 +644,32 @@ CLASS lcl_opt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD sap_navigate_to.
+    DATA:
+      lt_usage TYPE zcl_aqo_helper=>tt_usage,
+      ls_usage TYPE zcl_aqo_helper=>ts_usage,
+      ls_opt   TYPE ztaqo_option.
+
     IF iv_again IS INITIAL.
       rv_out = mc_again.
       RETURN.
     ENDIF.
 
+    " Already set
+    IF iv_include IS NOT INITIAL.
+      ls_usage-include = iv_include.
+      ls_usage-line    = iv_line.
+    ELSE.
+      lt_usage         = zcl_aqo_helper=>get_usage( ).
+      ls_usage-index   = iv_index.
+      " From usage list
+      READ TABLE lt_usage INTO ls_usage
+       WITH KEY index = ls_usage-index.
+    ENDIF.
+
     " Block UI
     zcl_aqo_helper=>navigate_to(
-     iv_include  = iv_include
-     iv_position = iv_line ).
+     iv_include  = ls_usage-include
+     iv_position = ls_usage-line ).
   ENDMETHOD.
 
   METHOD sap_download_file.

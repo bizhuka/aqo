@@ -7,7 +7,7 @@ TYPE-POOLS:
  abap.
 
 PARAMETERS:
-  p_path TYPE string OBLIGATORY DEFAULT 'C:\Users\modek\IntelliJIDEAProjects\aqo2\',
+  p_path TYPE string OBLIGATORY DEFAULT 'd:\Users\MoldaB\Desktop\lib\AQOwww\',
   p_repo TYPE string            DEFAULT '/SAP/BC/BSP/SAP/ZBSP_AQO/',
   p_excl TYPE string            DEFAULT '*sapui5res*'.
 

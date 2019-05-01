@@ -651,19 +651,59 @@ sap.ui.define([
             }])
         },
 
-        on_show_last_call: function () {
-            var item = this.getModel('mstr').getProperty("/");
-
-            if (getHttpType() === HttpType.SAP)
-                postAction("SAP_NAVIGATE_TO", {
+        on_show_last_call: function (params) {
+            if (!params._use_index || !params.index) {
+                var item = this.getModel('mstr').getProperty("/");
+                params = {
                     include: item.INCLUDE,
                     line: item.LINE
-                });
+                }
+            }
+            if (getHttpType() === HttpType.SAP)
+                postAction("SAP_NAVIGATE_TO", params);
             else
                 this.showMessage({
                     i18n: "se38_navigate_to",
-                    i18n_param: [item.INCLUDE]
+                    i18n_param: [params.include ? params.include : params.index]
                 });
+        },
+
+        on_show_usage: function () {
+            var _this = this;
+            var input = new Input();
+
+            f4Helper.addSearchHelps([{
+                owner: _this,
+
+                control: input,
+
+                isRange: false,
+
+                title_i18n: 'show_usage',
+
+                entityName: 'SHLP_ZHAQO_USAGE',
+
+                uiWrapper: _this.uiWrapper,
+
+                shIsReady: function () {
+                    f4Helper.onF4({
+                        getSource: function () {
+                            return input;
+                        },
+
+                        onAfterClose: function () {
+                            // Cancelled
+                            if (!input.getValue())
+                                return;
+
+                            _this.on_show_last_call({
+                                _use_index: true,
+                                index: input.getValue()
+                            })
+                        }
+                    });
+                }
+            }])
         },
 
         on_delete_field: function () {
@@ -680,7 +720,6 @@ sap.ui.define([
 
             oTable.removeSelections();
 
-            var fields = [];
             var indices = [];
             for (var i = items.length - 1; i >= 0; i--) {
                 fields.push(items[i].getBindingContext('fld').getObject().NAME);

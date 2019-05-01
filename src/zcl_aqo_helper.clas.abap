@@ -162,11 +162,8 @@ public section.
   class-methods NAVIGATE_TO
     importing
       !IV_INCLUDE type CSEQUENCE
-      !IV_POSITION type ANY .
+      !IV_POSITION type I .
   class-methods GET_USAGE
-    importing
-      !IV_PACKAGE type ZTAQO_OPTION-PACKAGE_ID
-      !IV_OPTION type ZTAQO_OPTION-OPTION_ID
     returning
       value(RT_USAGE) type TT_USAGE .
   class-methods LOAD_FROM_SMW0
@@ -221,7 +218,8 @@ public section.
       value(RV_OK) type ABAP_BOOL .
   class-methods DOWNLOAD
     importing
-      !IV_CONTENT type STRING
+      !IV_CONTENT type STRING optional
+      !IV_XCONTENT type XSTRING optional
       !IV_ENCODING type ABAP_ENCODING default MC_UTF8
       !IV_FILENAME type STRING .
   class-methods SH_SORT_ORDER
@@ -1020,22 +1018,27 @@ METHOD download.
     lt_xdata   TYPE w3mimetabtype,
     lv_bom     TYPE xstring.
 
-  lv_xstring = string_to_xstring(
-   iv_string   = iv_content
-   iv_encoding = iv_encoding ).
+  lv_xstring = iv_xcontent.
 
-  " Add bom
-  CASE iv_encoding.
-    WHEN '4102'. " UTF-16 BE
-      lv_bom = cl_abap_char_utilities=>byte_order_mark_big.
-    WHEN '4103'. " UTF-16 LE
-      lv_bom = cl_abap_char_utilities=>byte_order_mark_little.
-    WHEN '4110'. " UTF-8
-      lv_bom = cl_abap_char_utilities=>byte_order_mark_utf8.
-  ENDCASE.
+  " Convert from string
+  if iv_content IS SUPPLIED.
+    lv_xstring = string_to_xstring(
+     iv_string   = iv_content
+     iv_encoding = iv_encoding ).
 
-  IF lv_bom IS NOT INITIAL.
-    CONCATENATE lv_bom lv_xstring INTO lv_xstring IN BYTE MODE.
+    " Add bom
+    CASE iv_encoding.
+      WHEN '4102'. " UTF-16 BE
+        lv_bom = cl_abap_char_utilities=>byte_order_mark_big.
+      WHEN '4103'. " UTF-16 LE
+        lv_bom = cl_abap_char_utilities=>byte_order_mark_little.
+      WHEN '4110'. " UTF-8
+        lv_bom = cl_abap_char_utilities=>byte_order_mark_utf8.
+    ENDCASE.
+
+    IF lv_bom IS NOT INITIAL.
+      CONCATENATE lv_bom lv_xstring INTO lv_xstring IN BYTE MODE.
+    ENDIF.
   ENDIF.
 
   " Convert to table
@@ -1499,6 +1502,7 @@ ENDMETHOD.
 
 METHOD get_usage.
   DATA:
+    ls_opt        TYPE ztaqo_option,
     ls_usage      TYPE REF TO ts_usage,
     lv_len        TYPE i,
     lv_class_name TYPE seoclskey,
@@ -1508,6 +1512,12 @@ METHOD get_usage.
     lt_meth       TYPE seop_methods_w_include,
     ls_meth       TYPE REF TO seop_method_w_include.
 
+  " Get from memory
+
+  GET PARAMETER ID:
+   'ZAQO_PACKAGE_ID' FIELD ls_opt-package_id,
+   'ZAQO_OPTION_ID'  FIELD ls_opt-option_id.
+
   " Index for Global Types - Where-Used List Workbench
   SELECT * INTO CORRESPONDING FIELDS OF TABLE rt_usage
   FROM wbcrossgt
@@ -1515,14 +1525,16 @@ METHOD get_usage.
     AND name  = 'ZCL_AQO_OPTION\ME:CREATE'.
 
   LOOP AT rt_usage REFERENCE INTO ls_usage.
-    get_position(
-     EXPORTING
-       iv_include   = ls_usage->include
-       iv_package   = iv_package
-       iv_option    = iv_option
-     IMPORTING
-       ev_line      = ls_usage->line
-       ev_found     = ls_usage->found ).
+    IF ls_opt-package_id IS NOT INITIAL AND ls_opt-option_id IS NOT INITIAL.
+      get_position(
+       EXPORTING
+         iv_include   = ls_usage->include
+         iv_package   = ls_opt-package_id
+         iv_option    = ls_opt-option_id
+       IMPORTING
+         ev_line      = ls_usage->line
+         ev_found     = ls_usage->found ).
+    ENDIF.
 
     " Is class
     lv_len = strlen( ls_usage->include ).
@@ -1682,17 +1694,16 @@ METHOD MESSAGE_WITH_FIELDS.
 ENDMETHOD.
 
 
-METHOD NAVIGATE_TO.
-  DATA:
-   lv_position TYPE i.
+METHOD navigate_to.
+  " No need
+  CHECK iv_include IS NOT INITIAL.
 
-  lv_position = iv_position.
   CALL FUNCTION 'RS_TOOL_ACCESS'
     EXPORTING
       operation   = 'SHOW'
       object_name = iv_include
       object_type = 'REPS'
-      position    = lv_position
+      position    = iv_position
     EXCEPTIONS
       OTHERS      = 3.
   CHECK sy-subrc <> 0.

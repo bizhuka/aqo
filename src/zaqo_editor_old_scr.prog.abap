@@ -31,7 +31,11 @@ PARAMETERS:
 SELECTION-SCREEN END OF BLOCK bl_new_field.
 SELECTION-SCREEN END OF SCREEN 1020.
 
-SELECTION-SCREEN FUNCTION KEY 1.
+SELECTION-SCREEN FUNCTION KEY:
+ 1,
+ 2,
+ 3,
+ 4.
 
 
 
@@ -39,10 +43,10 @@ SELECTION-SCREEN FUNCTION KEY 1.
 " SH deleted from dictionary (for easy activation)
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_pack.
-  lcl_opt=>on_f4( ). " iv_field = 'PACKAGE_ID' iv_dynpro = 'P_PACK'
+  lcl_opt=>on_f4( ).
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_opt_id.
-  lcl_opt=>on_f4( ). " iv_field = 'OPTION_ID'  iv_dynpro = 'P_OPT_ID'
+  lcl_opt=>on_f4( ).
 
 
 AT SELECTION-SCREEN OUTPUT.

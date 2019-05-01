@@ -5,6 +5,14 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
    lcl_fld_value_alv lcl_table_alv lcl_scr_free_sel lcl_table_comp_alv lcl_string_memo lcl_where_used.
   PUBLIC SECTION.
 
+    CONSTANTS:
+      mc_action_tech_view          TYPE string VALUE 'TECH_VIEW',
+      mc_action_edit_values        TYPE string VALUE 'EDIT_VALUES',
+      mc_action_show_usage         TYPE string VALUE 'SHOW_USAGE',
+      mc_action_export             TYPE string VALUE 'EXPORT',
+      mc_action_import             TYPE string VALUE 'IMPORT',
+      mc_action_change_description TYPE string VALUE 'CHANGE_DESCRIPTION'.
+
     TYPES:
       BEGIN OF ts_fld_value,
         icon TYPE icon_d.
@@ -23,10 +31,6 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
       mv_is_dev    TYPE abap_bool.
 
     CLASS-METHODS:
-      do_create
-        RAISING
-          zcx_aqo_exception,
-
       add_one_field
         IMPORTING
           is_field_value TYPE zcl_aqo_helper=>ts_field_value
@@ -44,7 +48,9 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
         IMPORTING
           iv_mandt TYPE symandt,
 
-      start_of_selection,
+      start_of_selection
+        IMPORTING
+          iv_action TYPE string OPTIONAL,
 
       pbo,
 
@@ -72,8 +78,8 @@ CLASS lcl_nested_instance DEFINITION.
 
     " Current level
     DATA:
-     mv_level     TYPE i,
-     mv_last_cmd  TYPE syucomm.
+      mv_level    TYPE i,
+      mv_last_cmd TYPE syucomm.
 
     CLASS-METHODS:
       get_instance_by_level
@@ -172,7 +178,19 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
 
       copy_2_client,
 
-      find_ref.
+      find_ref,
+
+      export,
+
+      import,
+
+      change_description,
+
+      do_update
+        IMPORTING
+          iv_set         TYPE string
+          iv_fields      TYPE ztaqo_option-fields OPTIONAL
+          iv_description TYPE csequence           OPTIONAL.
 
     DATA:
       mo_grid        TYPE REF TO cl_gui_alv_grid,

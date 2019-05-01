@@ -149,6 +149,11 @@ CLASS lcl_main IMPLEMENTATION.
           <ls_bukrs>-low    = sy-index * 1000.
         ENDDO.
       ENDIF.
+
+      lv_mod = lv_tabix MOD 4.
+      IF lv_mod = 0.
+        <ls_alt_land>-memo = 'Press me to edit'(prs).
+      ENDIF.
     ENDLOOP.
 
     APPEND INITIAL LINE TO cs_opt-blocked_bukrs ASSIGNING <ls_bukrs>.
