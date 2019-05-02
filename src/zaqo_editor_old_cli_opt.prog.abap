@@ -187,10 +187,21 @@ CLASS lcl_opt IMPLEMENTATION.
       WHEN OTHERS.
         ls_fld_value->icon = icon_equal_green.
     ENDCASE.
+
+    " Field catalog
+    IF ls_fld_value->ui_type = zcl_aqo_helper=>mc_ui_table.
+      ls_fld_value->catalog = icon_catalog.
+    ENDIF.
+
+    " Show history
+    IF lines( ls_fld_value->value ) > 1.
+      ls_fld_value->history_logs = icon_protocol.
+    ENDIF.
   ENDMETHOD.
 
   METHOD is_editable.
-    CHECK mv_read_only <> abap_true.
+    CHECK mv_read_only <> abap_true
+      AND iv_editable  <> abap_undefined.
 
     IF iv_editable = abap_true OR mv_is_dev = abap_true.
       rv_editable = abap_true.

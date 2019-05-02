@@ -89,7 +89,10 @@ CLASS lcl_table_alv IMPLEMENTATION.
       APPEND INITIAL LINE TO <lt_table_dest> ASSIGNING <ls_dest>.
       MOVE-CORRESPONDING <ls_src> TO <ls_dest>.
     ENDLOOP.
-    refresh_sub_fields( ).
+
+    refresh_sub_fields(
+     ir_table     = mr_table
+     it_sub_field = mt_sub_field ).
 
     " Show screen
     CALL SCREEN 200 STARTING AT 5 1.
@@ -97,6 +100,7 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
   METHOD refresh_sub_fields.
     DATA:
+      lt_sub_field LIKE it_sub_field,
       ls_sub_field TYPE REF TO zcl_aqo_helper=>ts_field_desc,
       lv_fld_name  TYPE string,
       lv_beg_txt   TYPE string,
@@ -115,15 +119,25 @@ CLASS lcl_table_alv IMPLEMENTATION.
       <ls_sub_src>    TYPE any.
 
     " Create standard table for alv editing
-    ASSIGN mr_table->* TO <lt_table_dest>.
+    ASSIGN ir_table->* TO <lt_table_dest>.
 
+    " Show info about sub field
+    LOOP AT it_sub_field REFERENCE INTO ls_sub_field
+         WHERE ui_type = zcl_aqo_helper=>mc_ui_table
+            OR ui_type = zcl_aqo_helper=>mc_ui_range.   "#EC CI_HASHSEQ
+      INSERT ls_sub_field->* INTO TABLE lt_sub_field.
+    ENDLOOP.
+
+    IF is_sub_field IS NOT INITIAL.
+      INSERT is_sub_field INTO TABLE lt_sub_field.
+    ENDIF.
+
+    " No need
+    CHECK lt_sub_field IS NOT INITIAL.
+
+    " Update each row
     LOOP AT <lt_table_dest> ASSIGNING <ls_dest>.
-
-      " Show info about sub field
-      LOOP AT mt_sub_field REFERENCE INTO ls_sub_field
-           WHERE ui_type = zcl_aqo_helper=>mc_ui_table
-              OR ui_type = zcl_aqo_helper=>mc_ui_range.
-
+      LOOP AT lt_sub_field REFERENCE INTO ls_sub_field.
         " Source table
         ASSIGN COMPONENT ls_sub_field->name OF STRUCTURE <ls_dest> TO <lt_sub_table>.
 
@@ -173,12 +187,13 @@ CLASS lcl_table_alv IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
-    CHECK mo_grid IS NOT INITIAL.
-    mo_grid->refresh_table_display( ).
+    CHECK io_grid IS NOT INITIAL.
+    io_grid->refresh_table_display( ).
   ENDMETHOD.
 
   METHOD pbo.
     DATA:
+*      lv_edit_mode TYPE i,
       lr_cont      TYPE REF TO cl_gui_custom_container,
       lt_fieldcat  TYPE lvc_t_fcat,
       ls_fieldcat  TYPE REF TO lvc_s_fcat,
@@ -195,7 +210,10 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
     " 2 buttons
     IF lcl_opt=>is_editable( ms_fld_value->is_editable ) <> abap_true.
+*      lv_edit_mode = 0.
       APPEND 'OK' TO lt_code.
+*    ELSE.
+*      lv_edit_mode = 1.
     ENDIF.
     SET PF-STATUS 'OK_CANCEL' EXCLUDING lt_code.
 
@@ -225,6 +243,9 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
       mo_grid->register_edit_event( i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
     ENDIF.
+
+    " TODO check
+*    mo_grid->set_ready_for_input( lv_edit_mode ).
 
     " Update data
     CHECK mv_refresh = abap_true.
@@ -308,7 +329,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
       lv_len       TYPE i,
       lv_refresh   TYPE abap_bool,
       ls_tabfld    TYPE rstabfield,
-      lv_title     TYPE sytitle.
+      lv_title     TYPE sytitle,
+      lv_display   TYPE abap_bool.
     FIELD-SYMBOLS:
       <ls_sub_field> LIKE LINE OF mt_sub_field,
       <lt_table>     TYPE STANDARD TABLE,
@@ -395,11 +417,14 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
         " Show ranges
         lv_title = ls_fld_value->label.
+        IF lcl_opt=>is_editable( ms_fld_value->is_editable ) <> abap_true.
+          lv_display = abap_true.
+        ENDIF.
         CALL FUNCTION 'COMPLEX_SELECTIONS_DIALOG'
           EXPORTING
             title         = lv_title
             tab_and_field = ls_tabfld
-            "just_display  = '' TODO
+            just_display  = lv_display
           TABLES
             range         = <lt_range>
           EXCEPTIONS
@@ -416,7 +441,10 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
     " Update value
     IF lv_refresh = abap_true.
-      go_table_alv->refresh_sub_fields( ).
+      go_table_alv->refresh_sub_fields(
+       ir_table     = mr_table
+       it_sub_field = mt_sub_field
+       io_grid      = mo_grid ).
     ENDIF.
   ENDMETHOD.
 

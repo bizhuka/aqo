@@ -7,6 +7,7 @@ PARAMETERS : p_pack   TYPE ztaqo_option-package_id OBLIGATORY MEMORY ID zaqo_pac
              p_opt_id TYPE ztaqo_option-option_id  OBLIGATORY MEMORY ID zaqo_option_id.
 SELECTION-SCREEN END OF BLOCK bl_main.
 
+**********************************************************************
 " Where used
 SELECTION-SCREEN BEGIN OF SCREEN 1010.
 SELECTION-SCREEN BEGIN OF BLOCK bl_where_used.
@@ -21,6 +22,7 @@ PARAMETERS:
 SELECTION-SCREEN END OF BLOCK bl_where_used.
 SELECTION-SCREEN END OF SCREEN 1010.
 
+**********************************************************************
 SELECTION-SCREEN BEGIN OF SCREEN 1020.
 SELECTION-SCREEN BEGIN OF BLOCK bl_new_field.
 
@@ -30,6 +32,18 @@ PARAMETERS:
 
 SELECTION-SCREEN END OF BLOCK bl_new_field.
 SELECTION-SCREEN END OF SCREEN 1020.
+
+**********************************************************************
+SELECTION-SCREEN BEGIN OF SCREEN 1030.
+SELECTION-SCREEN BEGIN OF BLOCK bl_change_desc.
+
+PARAMETERS:
+  p_o_desc TYPE ztaqo_option-description     MODIF ID obl,
+  p_o_prev TYPE ztaqo_option-prev_value_cnt  MODIF ID obl.
+
+SELECTION-SCREEN END OF BLOCK bl_change_desc.
+SELECTION-SCREEN END OF SCREEN 1030.
+**********************************************************************
 
 SELECTION-SCREEN FUNCTION KEY:
  1,
@@ -61,6 +75,11 @@ AT SELECTION-SCREEN OUTPUT.
     WHEN 1020.
       go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
       go_fld_value_alv->pbo_1020( ).
+
+    WHEN 1030.
+      go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
+      go_fld_value_alv->pbo_1030( ).
+
   ENDCASE.
 
 AT SELECTION-SCREEN.
@@ -79,6 +98,12 @@ AT SELECTION-SCREEN.
     WHEN 1020.
       go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
       go_fld_value_alv->pai_1020(
+       CHANGING
+         cv_cmd = sy-ucomm ).
+
+    WHEN 1030.
+      go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
+      go_fld_value_alv->pai_1030(
        CHANGING
          cv_cmd = sy-ucomm ).
   ENDCASE.

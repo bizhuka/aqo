@@ -115,8 +115,11 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         WHEN 'ICON'.
           lv_column_text = '---'.
 
+        WHEN 'CATALOG'.
+          lv_column_text = 'Catalog'(cat).
+
         WHEN 'VALUE_BUTTON'.
-          lv_column_text = '...'.
+          lv_column_text = 'Quick edit'(qed).
 
           " Have 'T' or 'M'
           LOOP AT lcl_opt=>mt_fld_value TRANSPORTING NO FIELDS
@@ -128,6 +131,9 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
           IF sy-subrc <> 0.
             ls_fieldcat->tech = abap_true.
           ENDIF.
+
+        WHEN 'HISTORY_LOGS'.
+          lv_column_text = 'Сhange logs'(log).
 
         WHEN OTHERS.
           ls_fieldcat->tech     = abap_true.
@@ -423,11 +429,10 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     CHECK sy-subrc = 0.
 
     CASE e_column_id.
-      WHEN 'ICON'.
-        IF ls_fld_value->ui_type = zcl_aqo_helper=>mc_ui_table.
-          lo_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
-          lo_table_comp_alv->call_screen( ls_fld_value ).
-        ENDIF.
+      WHEN 'CATALOG'.
+        CHECK ls_fld_value->ui_type = zcl_aqo_helper=>mc_ui_table.
+        lo_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
+        lo_table_comp_alv->call_screen( ls_fld_value ).
 
       WHEN 'VALUE_BUTTON'.
         " Only for tables
@@ -440,6 +445,12 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
             go_string_memo = lcl_string_memo=>get_instance( 1 ).
             go_string_memo->call_screen( ls_fld_value ).
         ENDCASE.
+
+      WHEN 'HISTORY_LOGS'.
+        CHECK lines( ls_fld_value->value ) > 1.
+        go_logs_alv = lcl_logs_alv=>get_instance( ).
+        go_logs_alv->call_screen( ls_fld_value ).
+
     ENDCASE.
   ENDMETHOD.
 
@@ -1055,33 +1066,68 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD change_description.
-    DATA:
-      lt_value TYPE STANDARD TABLE OF sval WITH DEFAULT KEY,
-      ls_value TYPE REF TO sval,
-      lv_rc    TYPE char1.
+    " Previous values
+    p_o_desc = lcl_opt=>mo_option->ms_db_item-description.
+    p_o_prev = lcl_opt=>mo_option->ms_db_item-prev_value_cnt.
 
-    " Change text of
-    APPEND INITIAL LINE TO lt_value REFERENCE INTO ls_value.
-    ls_value->tabname   = 'ZTAQO_OPTION'.
-    ls_value->fieldname = 'DESCRIPTION'.
-    ls_value->value     = lcl_opt=>mo_option->ms_db_item-description.
-
-    " Get new text
-    CALL FUNCTION 'POPUP_GET_VALUES'
-      EXPORTING
-        popup_title     = 'Enter option description'(eod)
-      IMPORTING
-        returncode      = lv_rc
-      TABLES
-        fields          = lt_value
-      EXCEPTIONS
-        error_in_fields = 1
-        OTHERS          = 2.
-    CHECK sy-subrc = 0 AND lv_rc <> 'A'.
+    " Show screen
+    CALL SELECTION-SCREEN 1030 STARTING AT 5 1.
+    CHECK p_o_desc IS NOT INITIAL AND p_o_prev IS NOT INITIAL.
 
     do_update(
-     iv_set         = `DESCRIPTION = IV_DESCRIPTION`
-     iv_description = ls_value->value  ).
+     iv_set         = `DESCRIPTION = IV_DESCRIPTION PREV_VALUE_CNT = IV_PREV_COUNT`
+     iv_description = p_o_desc
+     iv_prev_count  = p_o_prev ).
+  ENDMETHOD.
+
+  METHOD pbo_1030.
+    DATA:
+      lt_exclude TYPE STANDARD TABLE OF syucomm.
+
+    " Chaneg title
+    SET TITLEBAR 'ST_MAIN' WITH 'Enter option description'(eod).
+
+    CALL FUNCTION 'RS_SET_SELSCREEN_STATUS'
+      EXPORTING
+        p_status  = 'OK_CANCEL'
+      TABLES
+        p_exclude = lt_exclude.
+
+    " Make like obligatory
+    LOOP AT SCREEN.
+      CHECK screen-group1 = 'OBL'.
+      screen-required = '2'. " recommended
+      MODIFY SCREEN.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD pai_1030.
+    DATA:
+      lv_exit TYPE abap_bool.
+
+    CASE cv_cmd.
+      WHEN 'OK'.
+        IF p_o_desc IS INITIAL OR p_o_prev IS INITIAL.
+          MESSAGE e055(00).
+          RETURN.
+        ENDIF.
+        IF p_o_prev > 5 OR p_o_prev < 1.
+          MESSAGE 'Previous values count have to be from 1 to 5'(f15) TYPE 'E'.
+          RETURN.
+        ENDIF.
+
+        lv_exit = abap_true.
+
+      WHEN 'CANCEL'.
+        lv_exit = abap_true.
+        CLEAR:
+         p_o_desc,
+         p_o_prev.
+    ENDCASE.
+
+    IF lv_exit = abap_true.
+      LEAVE TO SCREEN 0.
+    ENDIF.
   ENDMETHOD.
 
   METHOD do_update.

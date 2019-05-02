@@ -2,7 +2,7 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
-   lcl_fld_value_alv lcl_table_alv lcl_scr_free_sel lcl_table_comp_alv lcl_string_memo lcl_where_used.
+   lcl_fld_value_alv lcl_table_alv lcl_scr_free_sel lcl_table_comp_alv lcl_string_memo lcl_where_used lcl_logs_alv.
   PUBLIC SECTION.
 
     CONSTANTS:
@@ -19,7 +19,9 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
         INCLUDE TYPE zcl_aqo_helper=>ts_field_value.
     TYPES:
       cur_value    TYPE REF TO data,
+      catalog      TYPE icon_d,
       value_button TYPE icon_d,
+      history_logs TYPE icon_d,
       color_line   TYPE char4,
       END OF ts_fld_value.
 
@@ -88,33 +90,6 @@ CLASS lcl_nested_instance DEFINITION.
                   iv_level           TYPE i
         RETURNING VALUE(ro_instance) TYPE REF TO lcl_nested_instance.
 ENDCLASS.
-
-CLASS lcl_nested_instance IMPLEMENTATION.
-  METHOD get_instance_by_level.
-    DATA:
-      ls_instance    LIKE LINE OF mt_instance.
-    FIELD-SYMBOLS:
-      <ls_instance>  LIKE LINE OF mt_instance.
-
-    READ TABLE mt_instance ASSIGNING <ls_instance>
-     WITH TABLE KEY cl_name = iv_cl_name
-                    level   = iv_level.
-    IF sy-subrc <> 0.
-      ls_instance-cl_name = iv_cl_name.
-      ls_instance-level   = iv_level.
-
-      " Create new instance by name
-      CREATE OBJECT ls_instance-instance TYPE (iv_cl_name).
-      ls_instance-instance->mv_level = iv_level.
-
-      INSERT ls_instance INTO TABLE mt_instance ASSIGNING <ls_instance>.
-    ENDIF.
-
-    ro_instance = <ls_instance>-instance.
-  ENDMETHOD.
-ENDCLASS.
-
-
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
 CLASS lcl_fld_value_alv DEFINITION FINAL.
@@ -136,8 +111,12 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
           cv_cmd TYPE syucomm,
 
       pbo_1020,
-
       pai_1020
+        CHANGING
+          cv_cmd TYPE syucomm,
+
+      pbo_1030,
+      pai_1030
         CHANGING
           cv_cmd TYPE syucomm,
 
@@ -189,8 +168,9 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
       do_update
         IMPORTING
           iv_set         TYPE string
-          iv_fields      TYPE ztaqo_option-fields OPTIONAL
-          iv_description TYPE csequence           OPTIONAL.
+          iv_fields      TYPE ztaqo_option-fields         OPTIONAL
+          iv_description TYPE ztaqo_option-description    OPTIONAL
+          iv_prev_count  TYPE ztaqo_option-prev_value_cnt OPTIONAL.
 
     DATA:
       mo_grid        TYPE REF TO cl_gui_alv_grid,
@@ -262,7 +242,14 @@ CLASS lcl_table_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
       get_instance
         IMPORTING
                   iv_level           TYPE i OPTIONAL
-        RETURNING VALUE(ro_instance) TYPE REF TO lcl_table_alv.
+        RETURNING VALUE(ro_instance) TYPE REF TO lcl_table_alv,
+
+     refresh_sub_fields
+      IMPORTING
+        ir_table     TYPE REF TO DATA
+        it_sub_field TYPE zcl_aqo_helper=>tt_field_desc OPTIONAL
+        is_sub_field TYPE zcl_aqo_helper=>ts_field_desc OPTIONAL
+        io_grid      TYPE REF TO cl_gui_alv_grid        OPTIONAL.
 
     DATA:
       mr_table     TYPE REF TO data,
@@ -275,8 +262,6 @@ CLASS lcl_table_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
       call_screen
         IMPORTING
           is_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
-
-      refresh_sub_fields,
 
       pbo,
 
@@ -341,6 +326,39 @@ CLASS lcl_where_used DEFINITION FINAL.
           cv_cmd TYPE syucomm,
 
       deep_scan.
+ENDCLASS.
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+CLASS lcl_logs_alv DEFINITION FINAL.
+  PUBLIC SECTION.
+    CLASS-DATA:
+      mo_instance TYPE REF TO lcl_logs_alv.
+
+    CLASS-METHODS:
+      get_instance
+        RETURNING VALUE(ro_instance) TYPE REF TO lcl_logs_alv.
+
+    DATA:
+      mr_hist_table TYPE REF TO data,
+      ms_fld_value  TYPE REF TO lcl_opt=>ts_fld_value,
+      mv_refresh    TYPE abap_bool,
+      mo_grid       TYPE REF TO cl_gui_alv_grid.
+
+    METHODS:
+      call_screen
+        IMPORTING
+          is_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
+
+      pbo,
+
+      pai
+        CHANGING
+          cv_cmd TYPE syucomm,
+
+      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
+        IMPORTING
+            es_row_no.
 ENDCLASS.
 
 *----------------------------------------------------------------------*

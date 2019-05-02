@@ -3,7 +3,7 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <PROGDIR>
-    <NAME>ZAQO_EDITOR_GID</NAME>
+    <NAME>ZAQO_EDITOR_OLD_LOGS_ALV</NAME>
     <SUBC>I</SUBC>
     <RLOAD>E</RLOAD>
     <UCCHECK>X</UCCHECK>
@@ -11,8 +11,8 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Include ZAQO_EDIT_GID</ENTRY>
-     <LENGTH>21</LENGTH>
+     <ENTRY>History logs</ENTRY>
+     <LENGTH>12</LENGTH>
     </item>
    </TPOOL>
   </asx:values>
