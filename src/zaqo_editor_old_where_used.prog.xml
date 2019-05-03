@@ -11,7 +11,7 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Include ZPARAMS_MAINTAIN_WHERE_USED</ENTRY>
+     <ENTRY>Where-Used List</ENTRY>
      <LENGTH>35</LENGTH>
     </item>
    </TPOOL>

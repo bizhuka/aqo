@@ -11,7 +11,7 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Include ZPARAMS_MAINTAIN_CLI_OPT</ENTRY>
+     <ENTRY>Local ZCL_AQO_OPTION</ENTRY>
      <LENGTH>32</LENGTH>
     </item>
    </TPOOL>

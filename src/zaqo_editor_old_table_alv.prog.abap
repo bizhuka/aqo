@@ -3,14 +3,13 @@
 
 CLASS lcl_table_alv IMPLEMENTATION.
   METHOD get_instance.
-    " Create by name
-    IF iv_level IS SUPPLIED.
-      mo_last_instance ?= lcl_nested_instance=>get_instance_by_level(
-       iv_cl_name = 'LCL_TABLE_ALV'
-       iv_level   = iv_level ).
+    IF iv_level IS INITIAL.
+      iv_level = sy-dynnr - 200 + 1.
     ENDIF.
 
-    ro_instance = mo_last_instance.
+    ro_instance ?= lcl_nested_instance=>get_instance_by_level(
+       iv_cl_name = 'LCL_TABLE_ALV'
+       iv_level   = iv_level ).
   ENDMETHOD.
 
   METHOD call_screen.
@@ -23,7 +22,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
       ls_ui_ext     TYPE zcl_aqo_helper=>ts_field_desc,
       lv_fld_name   TYPE string,
       lt_sub_field  TYPE STANDARD TABLE OF zcl_aqo_helper=>ts_field_desc,
-      lv_tabix      TYPE sytabix.
+      lv_tabix      TYPE sytabix,
+      lv_dynnr      TYPE dynpronr.
     FIELD-SYMBOLS:
       <lt_table_src>  TYPE ANY TABLE,
       <lt_table_dest> TYPE STANDARD TABLE,
@@ -95,7 +95,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
      it_sub_field = mt_sub_field ).
 
     " Show screen
-    CALL SCREEN 200 STARTING AT 5 1.
+    lv_dynnr = 200 + me->mv_level - 1.
+    CALL SCREEN lv_dynnr STARTING AT 5 1.
   ENDMETHOD.                    "call_screen
 
   METHOD refresh_sub_fields.
@@ -191,10 +192,51 @@ CLASS lcl_table_alv IMPLEMENTATION.
     io_grid->refresh_table_display( ).
   ENDMETHOD.
 
+  METHOD show_range.
+    DATA:
+      ls_tabfld  TYPE rstabfield,
+      lv_title   TYPE sytitle,
+      lv_display TYPE abap_bool.
+    FIELD-SYMBOLS:
+      <lt_range>     TYPE STANDARD TABLE.
+
+    " Table name and field
+    zcl_aqo_helper=>split_type(
+     EXPORTING
+       iv_datatype = is_fld_value->rollname
+     IMPORTING
+       ev_table    = ls_tabfld-tablename
+       ev_field    = ls_tabfld-fieldname ).
+    CHECK ls_tabfld-fieldname IS NOT INITIAL.
+
+    " Range table
+    ASSIGN is_fld_value->cur_value->* TO <lt_range>.
+
+    " Show ranges
+    lv_title = is_fld_value->label.
+    IF lcl_opt=>is_editable( is_fld_value->is_editable ) <> abap_true.
+      lv_display = abap_true.
+    ENDIF.
+
+    CALL FUNCTION 'COMPLEX_SELECTIONS_DIALOG'
+      EXPORTING
+        title         = lv_title
+        tab_and_field = ls_tabfld
+        just_display  = lv_display
+      TABLES
+        range         = <lt_range>
+      EXCEPTIONS
+        OTHERS        = 1.
+    CHECK sy-subrc = 0.
+
+    " ok
+    rv_update = abap_true.
+  ENDMETHOD.
+
   METHOD pbo.
     DATA:
-*      lv_edit_mode TYPE i,
       lr_cont      TYPE REF TO cl_gui_custom_container,
+      lv_name      TYPE text40,
       lt_fieldcat  TYPE lvc_t_fcat,
       ls_fieldcat  TYPE REF TO lvc_s_fcat,
       ls_layout    TYPE lvc_s_layo,
@@ -210,10 +252,7 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
     " 2 buttons
     IF lcl_opt=>is_editable( ms_fld_value->is_editable ) <> abap_true.
-*      lv_edit_mode = 0.
       APPEND 'OK' TO lt_code.
-*    ELSE.
-*      lv_edit_mode = 1.
     ENDIF.
     SET PF-STATUS 'OK_CANCEL' EXCLUDING lt_code.
 
@@ -225,10 +264,11 @@ CLASS lcl_table_alv IMPLEMENTATION.
     " One time only
     IF mo_grid IS INITIAL.
       " Header and grid
+      CONCATENATE 'EMPTY_' sy-dynnr INTO lv_name.
       CREATE OBJECT:
        lr_cont
         EXPORTING
-          container_name = 'EMPTY_200',
+          container_name = lv_name,
 
       " Show at first SCREEN
        mo_grid
@@ -243,9 +283,6 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
       mo_grid->register_edit_event( i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
     ENDIF.
-
-    " TODO check
-*    mo_grid->set_ready_for_input( lv_edit_mode ).
 
     " Update data
     CHECK mv_refresh = abap_true.
@@ -327,16 +364,12 @@ CLASS lcl_table_alv IMPLEMENTATION.
       ls_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
       lv_name      TYPE abap_attrname,
       lv_len       TYPE i,
-      lv_refresh   TYPE abap_bool,
-      ls_tabfld    TYPE rstabfield,
-      lv_title     TYPE sytitle,
-      lv_display   TYPE abap_bool.
+      lv_refresh   TYPE abap_bool.
     FIELD-SYMBOLS:
       <ls_sub_field> LIKE LINE OF mt_sub_field,
       <lt_table>     TYPE STANDARD TABLE,
       <ls_item>      TYPE any,
-      <lv_value>     TYPE any,
-      <lt_range>     TYPE STANDARD TABLE.
+      <lv_value>     TYPE any.
 
     " Get current row
     ASSIGN mr_table->* TO <lt_table>.
@@ -403,34 +436,7 @@ CLASS lcl_table_alv IMPLEMENTATION.
 **********************************************************************
         " Show range for table item
       WHEN zcl_aqo_helper=>mc_ui_range.
-
-        zcl_aqo_helper=>split_type(
-         EXPORTING
-           iv_datatype = ls_fld_value->rollname
-         IMPORTING
-           ev_table    = ls_tabfld-tablename
-           ev_field    = ls_tabfld-fieldname ).
-        CHECK ls_tabfld-fieldname IS NOT INITIAL.
-
-        " Range table
-        ASSIGN ls_fld_value->cur_value->* TO <lt_range>.
-
-        " Show ranges
-        lv_title = ls_fld_value->label.
-        IF lcl_opt=>is_editable( ms_fld_value->is_editable ) <> abap_true.
-          lv_display = abap_true.
-        ENDIF.
-        CALL FUNCTION 'COMPLEX_SELECTIONS_DIALOG'
-          EXPORTING
-            title         = lv_title
-            tab_and_field = ls_tabfld
-            just_display  = lv_display
-          TABLES
-            range         = <lt_range>
-          EXCEPTIONS
-            OTHERS        = 1.
-        CHECK sy-subrc = 0.
-        lv_refresh = abap_true.
+        lv_refresh = show_range( ls_fld_value ).
 
       WHEN OTHERS.
         RETURN.
@@ -452,7 +458,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
     DATA:
       lr_data       TYPE REF TO data,
       lo_tab_desc   TYPE REF TO cl_abap_tabledescr,
-      lo_struc_desc TYPE REF TO cl_abap_structdescr.
+      lo_struc_desc TYPE REF TO cl_abap_structdescr,
+      lv_close      TYPE abap_bool.
     FIELD-SYMBOLS:
       <lt_table_src>  TYPE STANDARD TABLE,
       <lt_table_dest> TYPE ANY TABLE,
@@ -497,16 +504,20 @@ CLASS lcl_table_alv IMPLEMENTATION.
 
           " Go baack
           MESSAGE s004(zaqo_message).
-          LEAVE TO SCREEN 0.
+          lv_close = abap_true.
         ELSE.
           MESSAGE s005(zaqo_message) WITH ms_fld_value->name DISPLAY LIKE 'E'.
         ENDIF.
 
       WHEN 'CANCEL'.
         MESSAGE s130(ed) WITH 'Edit'(edt) DISPLAY LIKE 'E'.
-        LEAVE TO SCREEN 0.
+        lv_close = abap_true.
 
     ENDCASE.
+
+    IF lv_close = abap_true.
+      LEAVE TO SCREEN 0.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.
 

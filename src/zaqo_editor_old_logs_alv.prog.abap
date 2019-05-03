@@ -104,12 +104,12 @@ CLASS lcl_logs_alv IMPLEMENTATION.
 
   METHOD pbo.
     DATA:
-      lr_cont      TYPE REF TO cl_gui_custom_container,
-      lt_fieldcat  TYPE lvc_t_fcat,
-      ls_fieldcat  TYPE REF TO lvc_s_fcat,
-      ls_layout    TYPE lvc_s_layo,
-      lv_text      TYPE string,
-      lt_code      TYPE STANDARD TABLE OF syucomm.
+      lr_cont     TYPE REF TO cl_gui_custom_container,
+      lt_fieldcat TYPE lvc_t_fcat,
+      ls_fieldcat TYPE REF TO lvc_s_fcat,
+      ls_layout   TYPE lvc_s_layo,
+      lv_text     TYPE string,
+      lt_code     TYPE STANDARD TABLE OF syucomm.
     FIELD-SYMBOLS:
       <lt_hist_table> TYPE STANDARD TABLE.
 
@@ -187,14 +187,12 @@ CLASS lcl_logs_alv IMPLEMENTATION.
   ENDMETHOD.                    "pbo
 
   METHOD on_hotspot_click.
-*    DATA:
-*      ls_fld_value      TYPE REF TO lcl_opt=>ts_fld_value,.
     FIELD-SYMBOLS:
       <lt_hist_table> TYPE STANDARD TABLE,
-      <ls_hist_table> TYPE ANY,
-      <mv_value>      TYPE ANY.
+      <ls_hist_table> TYPE any,
+      <mv_value>      TYPE any.
 
-    ASSIGN mr_hist_table->* to <lt_hist_table>.
+    ASSIGN mr_hist_table->* TO <lt_hist_table>.
     CHECK sy-subrc = 0.
 
     " Current item
@@ -202,11 +200,20 @@ CLASS lcl_logs_alv IMPLEMENTATION.
     CHECK sy-subrc = 0.
 
     " Get reafarence to data (ms_fld_value is copy to data)
-    ASSIGN COMPONENT '_VALUE' OF STRUCTURE <ls_hist_table> to <mv_value>.
+    ASSIGN COMPONENT '_VALUE' OF STRUCTURE <ls_hist_table> TO <mv_value>.
     GET REFERENCE OF <mv_value> INTO ms_fld_value->cur_value.
 
-    go_table_alv = lcl_table_alv=>get_instance( 99 ).
-    go_table_alv->call_screen( ms_fld_value ).
+    CASE ms_fld_value->ui_type.
+        " Change logs of table
+      WHEN zcl_aqo_helper=>mc_ui_table.
+        go_table_alv = lcl_table_alv=>get_instance( 6 ).
+        go_table_alv->call_screen( ms_fld_value ).
+
+        " Change logs of range
+      WHEN zcl_aqo_helper=>mc_ui_range.
+        lcl_table_alv=>show_range( ms_fld_value ).
+
+    ENDCASE.
   ENDMETHOD.
 
   METHOD pai.

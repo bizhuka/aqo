@@ -11,8 +11,8 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Include ZPARAMS_MAINTAIN_CLI_FREE_SEL</ENTRY>
-     <LENGTH>37</LENGTH>
+     <ENTRY>Event handlers for dynamic selection screens</ENTRY>
+     <LENGTH>44</LENGTH>
     </item>
    </TPOOL>
   </asx:values>

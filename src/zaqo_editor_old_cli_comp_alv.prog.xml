@@ -11,7 +11,7 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Include ZPARAMS_MAINTAIN_CLI_COMP_ALV</ENTRY>
+     <ENTRY>Edit field-catalog</ENTRY>
      <LENGTH>37</LENGTH>
     </item>
    </TPOOL>

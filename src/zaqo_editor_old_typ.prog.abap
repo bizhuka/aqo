@@ -1,14 +1,14 @@
 *&---------------------------------------------------------------------*
 *&---------------------------------------------------------------------*
 
-CLASS lcl_opt              DEFINITION DEFERRED.
-CLASS lcl_fld_value_alv    DEFINITION DEFERRED.
-CLASS lcl_scr_free_sel     DEFINITION DEFERRED.
-CLASS lcl_table_comp_alv   DEFINITION DEFERRED.
-CLASS lcl_table_alv        DEFINITION DEFERRED.
-CLASS lcl_string_memo      DEFINITION DEFERRED.
-CLASS lcl_where_used       DEFINITION DEFERRED.
-CLASS lcl_logs_alv         DEFINITION DEFERRED.
+CLASS lcl_opt                  DEFINITION DEFERRED.
+CLASS lcl_fld_value_alv        DEFINITION DEFERRED.
+CLASS lcl_scr_free_sel         DEFINITION DEFERRED.
+CLASS lcl_table_comp_alv       DEFINITION DEFERRED.
+CLASS lcl_table_alv            DEFINITION DEFERRED.
+CLASS lcl_string_memo          DEFINITION DEFERRED.
+CLASS lcl_where_used           DEFINITION DEFERRED.
+CLASS lcl_logs_alv             DEFINITION DEFERRED.
 
 TABLES:
   sscrfields.

@@ -11,7 +11,7 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Include ZPARAMS_MAINTAIN_TYP</ENTRY>
+     <ENTRY>Global data</ENTRY>
      <LENGTH>28</LENGTH>
     </item>
    </TPOOL>

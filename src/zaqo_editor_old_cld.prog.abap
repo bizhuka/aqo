@@ -235,21 +235,24 @@ ENDCLASS.
 *----------------------------------------------------------------------*
 CLASS lcl_table_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
   PUBLIC SECTION.
-    CLASS-DATA:
-      mo_last_instance TYPE REF TO lcl_table_alv.
 
     CLASS-METHODS:
       get_instance
         IMPORTING
-                  iv_level           TYPE i OPTIONAL
+                  VALUE(iv_level)    TYPE i OPTIONAL
         RETURNING VALUE(ro_instance) TYPE REF TO lcl_table_alv,
 
-     refresh_sub_fields
-      IMPORTING
-        ir_table     TYPE REF TO DATA
-        it_sub_field TYPE zcl_aqo_helper=>tt_field_desc OPTIONAL
-        is_sub_field TYPE zcl_aqo_helper=>ts_field_desc OPTIONAL
-        io_grid      TYPE REF TO cl_gui_alv_grid        OPTIONAL.
+      refresh_sub_fields
+        IMPORTING
+          ir_table     TYPE REF TO data
+          it_sub_field TYPE zcl_aqo_helper=>tt_field_desc OPTIONAL
+          is_sub_field TYPE zcl_aqo_helper=>ts_field_desc OPTIONAL
+          io_grid      TYPE REF TO cl_gui_alv_grid        OPTIONAL,
+
+      show_range
+        IMPORTING
+                  is_fld_value     TYPE REF TO lcl_opt=>ts_fld_value
+        RETURNING VALUE(rv_update) TYPE abap_bool.
 
     DATA:
       mr_table     TYPE REF TO data,

@@ -11,7 +11,7 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Include ZPARAMS_MAINTAIN_TABLE_ALV</ENTRY>
+     <ENTRY>Edit table with CL_GUI_ALV_GRID</ENTRY>
      <LENGTH>34</LENGTH>
     </item>
    </TPOOL>

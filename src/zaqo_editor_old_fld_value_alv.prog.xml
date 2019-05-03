@@ -11,7 +11,7 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Include ZPARAMS_MAINTAIN_FLD_OPT_ALV</ENTRY>
+     <ENTRY>Technical attributes of fields</ENTRY>
      <LENGTH>36</LENGTH>
     </item>
    </TPOOL>
