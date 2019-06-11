@@ -466,7 +466,11 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     CHECK sy-subrc = 0.
 
     " Check is table and field name
-    CHECK ls_fld_value->rollname CP '*-*' AND zcl_aqo_helper=>create_type_descr( iv_rollname = ls_fld_value->rollname ) IS NOT INITIAL.
+    TRY.
+        CHECK ls_fld_value->rollname CP '*-*' AND zcl_aqo_helper=>create_type_descr( iv_rollname = ls_fld_value->rollname ) IS NOT INITIAL.
+      CATCH zcx_aqo_exception.
+        RETURN.
+    ENDTRY.
 
     " Drill down
     SPLIT ls_fld_value->rollname AT '-' INTO lv_tab lv_fld.
@@ -545,22 +549,32 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         INSERT lv_unq INTO TABLE lt_unq.
 
         " Have unique name
-        IF sy-subrc <> 0 OR
+        CLEAR sy-msgli.
+        TRY.
+            IF sy-subrc <> 0 OR
 
-           " Is table and field name
-           ls_fld_value->rollname NP '*-*' OR
+               " Is table and field name
+               ls_fld_value->rollname NP '*-*' OR
 
-           " In dictionary
-           zcl_aqo_helper=>create_type_descr( iv_rollname = ls_fld_value->rollname ) IS INITIAL.
+               " In dictionary
+               zcl_aqo_helper=>create_type_descr( iv_rollname = ls_fld_value->rollname ) IS INITIAL.
 
-          MESSAGE e002(zaqo_message) WITH ls_fld_value->name INTO sy-msgli.
+              " Specify unique table name
+              MESSAGE e002(zaqo_message) WITH ls_fld_value->name INTO sy-msgli.
+            ENDIF.
+          CATCH zcx_aqo_exception.
+            " Error during ROLLNAME creation
+            MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO sy-msgli.
+        ENDTRY.
+
+        IF sy-msgli IS NOT INITIAL.
           er_data_changed->add_protocol_entry(
-            i_msgid     = sy-msgid
-            i_msgno     = sy-msgno
-            i_msgty     = sy-msgty
-            i_msgv1     = sy-msgv1
-            i_fieldname = 'ROLLNAME'
-            i_row_id    = lv_row ).
+              i_msgid     = sy-msgid
+              i_msgno     = sy-msgno
+              i_msgty     = sy-msgty
+              i_msgv1     = sy-msgv1
+              i_fieldname = 'ROLLNAME'
+              i_row_id    = lv_row ).
         ENDIF.
       ENDIF.
     ENDLOOP.

@@ -89,7 +89,9 @@ public section.
       !IS_FIELD_DESC type TS_FIELD_DESC optional
       value(IR_TYPE) type ref to DATA optional
     returning
-      value(RO_TYPE) type ref to CL_ABAP_DATADESCR .
+      value(RO_TYPE) type ref to CL_ABAP_DATADESCR
+    raising
+      ZCX_AQO_EXCEPTION .
   class-methods CREATE_STRUCTURE
     importing
       !IO_RANGE type ref to CL_ABAP_DATADESCR optional
@@ -1006,7 +1008,7 @@ METHOD create_type_descr.
       ro_type ?= lo_type.
     CATCH cx_root INTO lo_prev_error.
       CLEAR ro_type.
-      " RAISE EXCEPTION TYPE zcx_aqo_exception EXPORTING previous = lo_prev_error.
+      zcx_aqo_exception=>raise_sys_error( ).
   ENDTRY.
 ENDMETHOD.
 

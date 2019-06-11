@@ -3,40 +3,35 @@
 
 CLASS lcl_opt IMPLEMENTATION.
   METHOD pbo.
+    DATA:
+      ls_icon TYPE smp_dyntxt.
+
     " Macro for creating icons
     DEFINE get_icon.
-      CALL FUNCTION 'ICON_CREATE'
-        EXPORTING
-          name                  = &1
-          text                  = &2
-          info                  = &3
-        IMPORTING
-          result                = &4
-        EXCEPTIONS
-          icon_not_found        = 1
-          outputfield_too_short = 2
-          OTHERS                = 3.
-      IF sy-subrc <> 0.
-        MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
-         DISPLAY LIKE 'E'.
-      ENDIF.
+      CLEAR ls_icon.
+
+      ls_icon-icon_id   = &1.
+      ls_icon-text      = &2.
+      ls_icon-ICON_TEXT = &2.
+      ls_icon-quickinfo = &3.
+      &4                = ls_icon.
     END-OF-DEFINITION.
 
-    get_icon 'ICON_REFERENCE_LIST'
+    get_icon icon_reference_list
              'Where-Used List'(wul) ''
               sscrfields-functxt_01.
 
-    get_icon 'ICON_EXPORT'
+    get_icon icon_export
              ''  'Export option'(exp)
              sscrfields-functxt_02.
 
     IF zcl_aqo_helper=>is_dev_mandt( ) = abap_true.
-      get_icon 'ICON_IMPORT'
+      get_icon icon_import
                '' 'Import option'(imp)
                sscrfields-functxt_03.
     ENDIF.
 
-    get_icon 'ICON_CHANGE_TEXT'
+    get_icon icon_change_text
              '' 'Change description'(ctd)
              sscrfields-functxt_04.
   ENDMETHOD.
