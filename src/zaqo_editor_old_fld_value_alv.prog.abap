@@ -660,7 +660,8 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       lv_name          TYPE zcl_aqo_helper=>ts_field_value-rollname,
       lr_data          TYPE REF TO data,
       lt_unique_type   TYPE zcl_aqo_helper=>tt_unique_type,
-      lr_unique_type   TYPE REF TO zcl_aqo_helper=>tt_unique_type.
+      lr_unique_type   TYPE REF TO zcl_aqo_helper=>tt_unique_type,
+      lv_just_display  TYPE abap_bool.
     FIELD-SYMBOLS:
       <lt_val> TYPE STANDARD TABLE,
       <ls_val> TYPE any,
@@ -845,6 +846,13 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       RETURN.
     ENDIF.
 
+    " Detect mode
+    " ! lcl_opt=>is_editable( ) <> abap_true
+    " just show IF locked by another user
+    IF lcl_opt=>mv_read_only = abap_true.
+      lv_just_display = abap_true.
+    ENDIF.
+
     " call dialog.
     CALL FUNCTION 'FREE_SELECTIONS_DIALOG'
       EXPORTING
@@ -854,7 +862,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         as_window       = abap_false
         start_col       = 30
         status          = 0
-        just_display    = space
+        just_display    = lv_just_display
         tree_visible    = space
       IMPORTING
         field_ranges    = lt_range_ret

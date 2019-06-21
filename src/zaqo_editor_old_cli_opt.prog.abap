@@ -12,7 +12,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
       ls_icon-icon_id   = &1.
       ls_icon-text      = &2.
-      ls_icon-ICON_TEXT = &2.
+      ls_icon-icon_text = &2.
       ls_icon-quickinfo = &3.
       &4                = ls_icon.
     END-OF-DEFINITION.
@@ -211,6 +211,8 @@ CLASS lcl_opt IMPLEMENTATION.
       lv_new_value   TYPE string.
     FIELD-SYMBOLS:
       <lv_value> TYPE any.
+    " IF locked by another user
+    CHECK lcl_opt=>mv_read_only <> abap_true.
 
     CLEAR mo_option->mt_field_value.
     LOOP AT mt_fld_value REFERENCE INTO ls_fld_value.

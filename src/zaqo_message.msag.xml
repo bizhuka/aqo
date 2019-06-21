@@ -206,6 +206,12 @@
      <MSGNR>032</MSGNR>
      <TEXT>New field &amp;1 was inserted successfully</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>033</MSGNR>
+     <TEXT>Cannot read &amp;1 field</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

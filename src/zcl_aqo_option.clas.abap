@@ -521,7 +521,8 @@ METHOD get_field_value.
     lv_last_index   TYPE i,
     ls_history_prev TYPE REF TO zcl_aqo_helper=>ts_history_value,
     lo_type         TYPE REF TO cl_abap_datadescr,
-    lr_value        TYPE REF TO data.
+    lr_value        TYPE REF TO data,
+    lv_ok           TYPE abap_bool.
   FIELD-SYMBOLS:
     <ls_field_value> LIKE LINE OF mt_field_value,
     <lv_value>       TYPE any.
@@ -553,7 +554,12 @@ METHOD get_field_value.
    EXPORTING
      iv_json = ls_history_prev->h_value
    IMPORTING
-     ex_data = <lv_value> ).
+     ex_data = <lv_value>
+     ev_ok   = lv_ok ).
+  IF lv_ok <> abap_true.
+    MESSAGE s033(zaqo_message) WITH iv_name INTO sy-msgli.
+    zcx_aqo_exception=>raise_sys_error( ).
+  ENDIF.
 
   " Return it
   GET REFERENCE OF <lv_value> INTO rr_data.
