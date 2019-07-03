@@ -102,6 +102,11 @@ CLASS lcl_opt IMPLEMENTATION.
            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
         ENDIF.
 
+        " Just show values
+        IF zcl_aqo_helper=>is_in_editor( iv_is_viewer = abap_true ) = abap_true.
+          mv_read_only = abap_true.
+        ENDIF.
+
         " Create new table
         CLEAR mt_fld_value.
         LOOP AT mo_option->mt_field_value REFERENCE INTO ls_field_value.

@@ -105,8 +105,9 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
         WHEN 'IS_EDITABLE'.
           ls_fieldcat->edit     = abap_true.
-          ls_fieldcat->checkbox = abap_true.
           ls_fieldcat->col_pos  = 12.
+          "  alerady in zcl_aqo_helper=>create_field_catalog
+          " ls_fieldcat->checkbox = abap_true.
 
         WHEN 'ROLLNAME'.
           ls_fieldcat->edit     = lcl_opt=>is_editable( ).

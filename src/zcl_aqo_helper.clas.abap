@@ -755,7 +755,7 @@ METHOD CONVERT_TO_TIMESTAMP.
 ENDMETHOD.
 
 
-METHOD CREATE_FIELD_CATALOG.
+METHOD create_field_catalog.
   DATA:
     lr_table        TYPE REF TO data,
     lr_salv         TYPE REF TO cl_salv_table,
@@ -810,6 +810,10 @@ METHOD CREATE_FIELD_CATALOG.
 
         IF <ls_fieldcat>-coltext IS INITIAL.
           <ls_fieldcat>-coltext = <ls_fieldcat>-scrtext_l.
+        ENDIF.
+
+        IF <ls_fieldcat>-domname = 'XSDBOOLEAN'.
+          <ls_fieldcat>-checkbox = abap_true.
         ENDIF.
       ENDLOOP.
     CATCH cx_salv_error.                                "#EC NO_HANDLER
