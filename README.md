@@ -6,11 +6,6 @@ The main purpose of the library is to avoid [magic numbers](https://en.wikipedia
 
 #### Due to installation problems the [aqo_ui5](https://github.com/bizhuka/aqo_ui5) version should installed separately as an add-in
 
-| EXTENSION        | TYPE           | 
-| ------------- |:-------------:|
-| json    | application/json |
-
-
 Accounts by specific mask or texts in generated FI documents or range of BLART in selections are all good examples of options to maintain.
 
 The best way to describe the library,it is something like tr. STVARV but all parameters and select-options are grouped together as in tr. SLG1, with the interface similar to SAP Fiori and displayed directly in SAP GUI via CL_GUI_HTML_VIEWER.
