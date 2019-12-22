@@ -7,11 +7,11 @@ CLASS lcl_scr_free_sel         DEFINITION DEFERRED.
 CLASS lcl_table_comp_alv       DEFINITION DEFERRED.
 CLASS lcl_table_alv            DEFINITION DEFERRED.
 CLASS lcl_string_memo          DEFINITION DEFERRED.
-CLASS lcl_where_used           DEFINITION DEFERRED.
 CLASS lcl_logs_alv             DEFINITION DEFERRED.
 
 TABLES:
-  sscrfields.
+  sscrfields,
+  zsaqo_new_field.
 
 TYPE-POOLS:
   abap,
@@ -28,7 +28,6 @@ DATA:
   go_fld_value_alv  TYPE REF TO lcl_fld_value_alv,
   go_string_memo    TYPE REF TO lcl_string_memo,
   go_table_alv      TYPE REF TO lcl_table_alv,
-  go_where_used     TYPE REF TO lcl_where_used,
   go_logs_alv       TYPE REF TO lcl_logs_alv.
 
 TYPES:

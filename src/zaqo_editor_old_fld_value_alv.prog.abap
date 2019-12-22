@@ -17,62 +17,79 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
   METHOD pbo.
     DATA:
       lr_cont        TYPE REF TO cl_gui_custom_container,
-      lr_splitter    TYPE REF TO cl_gui_splitter_container,
-      lr_alv_cont    TYPE REF TO cl_gui_container,
+*      lr_splitter    TYPE REF TO cl_gui_splitter_container,
+*      lr_alv_cont    TYPE REF TO cl_gui_container,
       lt_fieldcat    TYPE lvc_t_fcat,
       ls_fieldcat    TYPE REF TO lvc_s_fcat,
       ls_layout      TYPE lvc_s_layo,
-      lt_toolbar_ex  TYPE ui_functions,
       ls_variant     TYPE disvariant,
       lr_dd_doc      TYPE REF TO cl_dd_document,
       lt_exclude     TYPE STANDARD TABLE OF syucomm,
-      lv_column_text TYPE string.
+      lv_column_text TYPE string,
+      lv_hide        TYPE abap_bool,
+      ls_fld_value   TYPE REF TO lcl_opt=>ts_fld_value,
+      lv_title       TYPE string,
+      lt_toolbar_ex  TYPE ui_functions,
+      lv_editable    TYPE abap_bool,
+      lv_desc        TYPE ztaqo_option-description.
 
     " Own buttons
     IF lcl_opt=>is_editable( ) = abap_true.
       APPEND 'VIEW'       TO lt_exclude.
+      lv_title = 'Edit option'(eop).
     ELSE.
-      APPEND: 'CHANGE'    TO lt_exclude,
-              'TRANSPORT' TO lt_exclude,
-              'CLNT_COPY' TO lt_exclude,
-              'DEL_OPT'   TO lt_exclude,
-              'FIND_REF'  TO lt_exclude.
+      APPEND 'CHANGE'     TO lt_exclude.
+      lv_title = 'View option'(vop).
+    ENDIF.
+
+    " Add tech info
+    CONCATENATE lv_title ` ` lcl_opt=>mo_option->ms_db_item-package_id ` - ` lcl_opt=>mo_option->ms_db_item-option_id INTO lv_title.
+
+    " Add texts info
+    lv_desc = lcl_opt=>mo_option->ms_db_item-description.
+    IF lv_desc IS INITIAL.
+      SELECT SINGLE ctext INTO lv_desc
+      FROM tdevct
+      WHERE devclass = lcl_opt=>mo_option->ms_db_item-package_id
+        AND spras    = sy-langu.
+    ENDIF.
+    IF lv_desc IS NOT INITIAL.
+      CONCATENATE lv_title ` (` lv_desc `)` INTO lv_title.
     ENDIF.
 
     SET:
       PF-STATUS '0100'    EXCLUDING lt_exclude,
-      TITLEBAR  'ST_MAIN' WITH 'Maintenance parameters'(tit).
+      TITLEBAR  'ST_MAIN' WITH lv_title.
 
     " Create 1 time only
     CHECK mo_grid IS INITIAL.
 
     " Header and grid
-    CREATE OBJECT:
-     lr_cont
+    CREATE OBJECT lr_cont
       EXPORTING
-        container_name = 'EMPTY_100',
+        container_name = 'EMPTY_100'.
 
-     lr_splitter
-      EXPORTING
-        parent  = lr_cont " cl_gui_container=>screen0
-        rows    = 2
-        columns = 1.
-
-    lr_splitter->set_row_height(
-         id     = 1
-         height = 23 ).
-    mo_header_cont = lr_splitter->get_container(
-         row       = 1
-         column    = 1 ).
-
-    lr_alv_cont = lr_splitter->get_container(
-         row       = 2
-         column    = 1 ).
+*     lr_splitter
+*      EXPORTING
+*        parent  = lr_cont " cl_gui_container=>screen0
+*        rows    = 2
+*        columns = 1.
+*
+*    lr_splitter->set_row_height(
+*         id     = 1
+*         height = 23 ).
+*    mo_header_cont = lr_splitter->get_container(
+*         row       = 1
+*         column    = 1 ).
+*
+*    lr_alv_cont = lr_splitter->get_container(
+*         row       = 2
+*         column    = 1 ).
 
     " Show at first SCREEN
     CREATE OBJECT mo_grid
       EXPORTING
-        i_parent = lr_alv_cont
+        i_parent = lr_cont " lr_alv_cont
       EXCEPTIONS
         OTHERS   = 1.
     IF sy-subrc <> 0.
@@ -89,15 +106,11 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
     " Addtional options
     LOOP AT lt_fieldcat REFERENCE INTO ls_fieldcat.
-      CLEAR lv_column_text.
+      CLEAR:
+       lv_column_text,
+       lv_hide.
       CASE ls_fieldcat->fieldname.
-        WHEN 'NAME'.
-          ls_fieldcat->scrtext_s = ls_fieldcat->scrtext_m = ls_fieldcat->scrtext_l =
-            ls_fieldcat->reptext = ls_fieldcat->coltext = 'Name'(nam).
-
-        WHEN 'UI_TYPE'.
-          ls_fieldcat->scrtext_s = ls_fieldcat->scrtext_m = ls_fieldcat->scrtext_l =
-            ls_fieldcat->reptext = ls_fieldcat->coltext = 'Kind'(knd).
+        WHEN 'NAME' OR 'UI_TYPE'.
 
         WHEN 'LABEL'.
           ls_fieldcat->edit     = lcl_opt=>is_editable( ).
@@ -119,26 +132,45 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         WHEN 'CATALOG'.
           lv_column_text = 'Catalog'(cat).
 
-        WHEN 'VALUE_BUTTON'.
-          lv_column_text = 'Quick edit'(qed).
-
-          " Have 'T' or 'M'
+          lv_hide = abap_true.
+          " If have 'T'
           LOOP AT lcl_opt=>mt_fld_value TRANSPORTING NO FIELDS
-            WHERE ui_type = zcl_aqo_helper=>mc_ui_table OR ui_type = zcl_aqo_helper=>mc_ui_string.
+            WHERE ui_type = zcl_aqo_helper=>mc_ui_table.
+            lv_hide = abap_false.
             EXIT.
           ENDLOOP.
 
-          " No need
-          IF sy-subrc <> 0.
-            ls_fieldcat->tech = abap_true.
-          ENDIF.
+        WHEN 'VALUE_BUTTON'.
+          lv_column_text = 'Quick edit'(qed).
+
+*          " Now show for all types
+*          lv_hide = abap_true.
+*          LOOP AT lcl_opt=>mt_fld_value TRANSPORTING NO FIELDS WHERE .
+*            lv_hide = abap_false.
+*            EXIT.
+*          ENDLOOP.
 
         WHEN 'HISTORY_LOGS'.
           lv_column_text = 'Сhange logs'(log).
 
+          lv_hide = abap_true.
+          " If have history
+          LOOP AT lcl_opt=>mt_fld_value REFERENCE INTO ls_fld_value.
+            CHECK lines( ls_fld_value->value ) > 1.
+
+            " Show history
+            lv_hide = abap_false.
+            EXIT.
+          ENDLOOP.
+
         WHEN OTHERS.
           ls_fieldcat->tech     = abap_true.
       ENDCASE.
+
+      " No need
+      IF lv_hide = abap_true.
+        ls_fieldcat->tech = lv_hide.
+      ENDIF.
 
       " As hotspot
       IF lv_column_text IS NOT INITIAL.
@@ -164,31 +196,6 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ls_layout-sel_mode   = 'C'.
     ls_layout-info_fname = 'COLOR_LINE'.
 
-    " Disable buttons
-    IF lcl_opt=>is_editable( ) <> abap_true.
-      APPEND cl_gui_alv_grid=>mc_fc_loc_delete_row TO lt_toolbar_ex.
-    ENDIF.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_insert_row    TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_graph             TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_info              TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_append_row    TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_copy          TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_copy_row      TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_cut           TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_move_row      TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_paste         TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_paste_new_row TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_loc_undo          TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_print             TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_refresh           TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_mb_export            TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_mb_view              TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_views             TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_check             TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_call_master_data  TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_call_more         TO lt_toolbar_ex.
-    APPEND cl_gui_alv_grid=>mc_fc_call_lineitems    TO lt_toolbar_ex.
-
     " Variant
     CONCATENATE p_pack p_opt_id INTO ls_variant-report.
     ls_variant-handle  = '0001'.
@@ -201,6 +208,10 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
      on_top_of_page    FOR mo_grid,
      on_hotspot_click  FOR mo_grid,
      on_double_click   FOR mo_grid.
+
+    " Exclude buttons
+    lv_editable = lcl_opt=>is_editable( ).
+    lt_toolbar_ex = get_exclude_toolbar( lv_editable ).
 
     mo_grid->set_table_for_first_display(
       EXPORTING
@@ -233,6 +244,68 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       i_dyndoc_id  = lr_dd_doc ).
   ENDMETHOD.                    "pbo
 
+  METHOD get_exclude_toolbar.
+    " Disable buttons
+    IF  iv_editable <> abap_true.
+      APPEND cl_gui_alv_grid=>mc_fc_loc_delete_row TO rt_toolbar_ex.
+    ENDIF.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_insert_row    TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_graph             TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_info              TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_append_row    TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_copy          TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_copy_row      TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_cut           TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_move_row      TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_paste         TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_paste_new_row TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_loc_undo          TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_print             TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_refresh           TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_mb_export            TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_mb_view              TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_views             TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_check             TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_call_master_data  TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_call_more         TO rt_toolbar_ex.
+    APPEND cl_gui_alv_grid=>mc_fc_call_lineitems    TO rt_toolbar_ex.
+  ENDMETHOD.
+
+  METHOD add_new_field.
+    DATA:
+      lo_type TYPE REF TO cl_abap_datadescr,
+      lo_err  TYPE REF TO cx_root.
+    FIELD-SYMBOLS:
+      <lv_data> TYPE any.
+
+    CLEAR:
+      er_data,
+      es_field_desc.
+
+    " Show screen
+    CALL SCREEN 920 STARTING AT 5 1.
+    CHECK zsaqo_new_field-f_name IS NOT INITIAL AND zsaqo_new_field-f_type IS NOT INITIAL.
+
+    " Capital case
+    TRANSLATE:
+     zsaqo_new_field-f_name TO UPPER CASE,
+     zsaqo_new_field-f_type TO UPPER CASE.
+
+    TRY.
+        " Create by text description
+        lo_type = zcl_aqo_helper=>create_type_descr( iv_rollname = zsaqo_new_field-f_type ).
+        CREATE DATA er_data TYPE HANDLE lo_type.
+
+        ASSIGN er_data->* TO <lv_data>.
+        es_field_desc = zcl_aqo_helper=>get_field_desc(
+         iv_field_name = zsaqo_new_field-f_name
+         iv_data       = <lv_data> ).
+      CATCH cx_root INTO lo_err.                         "#EC CATCH_ALL
+        MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
+    ENDTRY.
+  ENDMETHOD.
+
   METHOD on_toolbar.
     DATA:
       ls_toolbar TYPE stb_button.
@@ -248,43 +321,27 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
   METHOD on_user_command.
     DATA:
-      ls_field_value TYPE zcl_aqo_helper=>ts_field_value,
-      lo_type        TYPE REF TO cl_abap_datadescr,
       lr_data        TYPE REF TO data,
+      ls_field_value TYPE zcl_aqo_helper=>ts_field_value,
       lo_err         TYPE REF TO cx_root.
-    FIELD-SYMBOLS:
-      <lv_data> TYPE any.
-
     CHECK e_ucomm = 'ADD_NEW_FIELD'.
 
-    " Show screen
-    CALL SELECTION-SCREEN 1020 STARTING AT 5 1.
-    CHECK p_name IS NOT INITIAL AND p_type IS NOT INITIAL.
-
-    " Capital case
-    TRANSLATE:
-     p_name TO UPPER CASE,
-     p_type TO UPPER CASE.
+    " Get full description
+    add_new_field(
+     IMPORTING
+       er_data       = lr_data
+       es_field_desc = ls_field_value-field_desc ).
+    CHECK ls_field_value-field_desc IS NOT INITIAL.
 
     " Already exist
     READ TABLE lcl_opt=>mt_fld_value TRANSPORTING NO FIELDS
-     WITH KEY name = p_name.
+     WITH KEY name = zsaqo_new_field-f_name.
     IF sy-subrc = 0.
-      MESSAGE s002(zaqo_message) WITH p_name DISPLAY LIKE 'E'.
+      MESSAGE s002(zaqo_message) WITH zsaqo_new_field-f_name DISPLAY LIKE 'E'.
       RETURN.
     ENDIF.
 
     TRY.
-        " Create by text description
-        lo_type = zcl_aqo_helper=>create_type_descr( iv_rollname = p_type ).
-        CREATE DATA lr_data TYPE HANDLE lo_type.
-
-        " Get full description
-        ASSIGN lr_data->* TO <lv_data>.
-        ls_field_value-field_desc = zcl_aqo_helper=>get_field_desc(
-         iv_field_name = p_name
-         iv_data       = <lv_data> ).
-
         lcl_opt=>add_one_field(
          is_field_value = ls_field_value
          ir_data        = lr_data ).
@@ -294,38 +351,31 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ENDTRY.
 
     mo_grid->refresh_table_display( ).
-    MESSAGE s032(zaqo_message) WITH p_name.
+    MESSAGE s032(zaqo_message) WITH zsaqo_new_field-f_name.
   ENDMETHOD.
 
-  METHOD pbo_1020.
+  METHOD pbo_0920.
     DATA:
-      lt_exclude TYPE STANDARD TABLE OF syucomm.
+      lt_code TYPE STANDARD TABLE OF syucomm.
 
     " Chaneg title
     SET TITLEBAR 'ST_MAIN' WITH 'Add new field'(anf).
 
-    CALL FUNCTION 'RS_SET_SELSCREEN_STATUS'
-      EXPORTING
-        p_status  = 'OK_CANCEL'
-      TABLES
-        p_exclude = lt_exclude.
-
-    " Make like obligatory
-    LOOP AT SCREEN.
-      CHECK screen-group1 = 'OBL'.
-      screen-required = '2'. " recommended
-      MODIFY SCREEN.
-    ENDLOOP.
+    " 2 buttons
+    IF lcl_opt=>is_editable( ) <> abap_true.
+      APPEND 'OK' TO lt_code.
+    ENDIF.
+    SET PF-STATUS 'OK_CANCEL' EXCLUDING lt_code.
   ENDMETHOD.
 
-  METHOD pai_1020.
+  METHOD pai_0920.
     DATA:
       lv_exit TYPE abap_bool.
 
     CASE cv_cmd.
       WHEN 'OK'.
-        IF p_name IS INITIAL OR p_type IS INITIAL.
-          MESSAGE e055(00).
+        IF zsaqo_new_field-f_name IS INITIAL OR zsaqo_new_field-f_type IS INITIAL.
+          MESSAGE s055(00) DISPLAY LIKE 'E'.
           RETURN.
         ENDIF.
         lv_exit = abap_true.
@@ -333,9 +383,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       WHEN 'CANCEL'.
         lv_exit = abap_true.
         MESSAGE s130(ed) WITH 'Add new field'(anf) DISPLAY LIKE 'E'.
-        CLEAR:
-         p_name,
-         p_type.
+        CLEAR zsaqo_new_field.
     ENDCASE.
 
     IF lv_exit = abap_true.
@@ -344,86 +392,88 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD on_top_of_page.
-    DATA:
-      lr_table      TYPE REF TO cl_dd_table_element,
-      lr_col_01     TYPE REF TO cl_dd_area,
-      lr_col_02     TYPE REF TO cl_dd_area,
-      lr_struc_desc TYPE REF TO cl_abap_structdescr,
-      ls_comp       TYPE REF TO abap_compdescr,
-      lv_text       TYPE sdydo_text_element,
-      lt_option_db  TYPE STANDARD TABLE OF ztaqo_option WITH DEFAULT KEY,
-      lt_fieldcat   TYPE lvc_t_fcat,
-      ls_fieldcat   TYPE REF TO lvc_s_fcat.
-    FIELD-SYMBOLS:
-      <lv_fld>          TYPE any.
-
-    " Options' description
-    e_dyndoc_id->add_table( EXPORTING no_of_columns = 2
-                                      border        = '0'
-                                      width         = '70%'
-                            IMPORTING table         = lr_table ).
-
-    lr_table->add_column(
-      EXPORTING
-        width   = '35%'
-      IMPORTING
-        column  = lr_col_01 ).
-    lr_table->add_column(
-      EXPORTING
-        width   = '65%'
-      IMPORTING
-        column  = lr_col_02 ).
-
-    " Fields of cluster
-    lr_struc_desc ?= cl_abap_structdescr=>describe_by_data( lcl_opt=>mo_option->ms_db_item ).
-    zcl_aqo_helper=>create_field_catalog(
-     EXPORTING
-       iv_sort     = abap_true
-     IMPORTING
-       et_fieldcat = lt_fieldcat
-     CHANGING
-       ct_table    = lt_option_db ).
-
-    LOOP AT lr_struc_desc->components REFERENCE INTO ls_comp WHERE
-        name = 'PACKAGE_ID'        OR                       "#EC NOTEXT
-        name = 'OPTION_ID'         OR                       "#EC NOTEXT
-        name = 'CREATED_DATE'      OR                       "#EC NOTEXT
-        name = 'CREATED_UNAME'     OR                       "#EC NOTEXT
-        name = 'CREATED_NAME_TEXT' OR                       "#EC NOTEXT
-        name = 'DESCRIPTION'       OR                       "#EC NOTEXT
-        name = 'PREV_VALUE_CNT'.                            "#EC NOTEXT
-
-      " Get text
-      READ TABLE lt_fieldcat REFERENCE INTO ls_fieldcat BINARY SEARCH
-       WITH KEY fieldname = ls_comp->name.
-      CHECK sy-subrc = 0.
-
-      " Text
-      CONCATENATE ls_fieldcat->scrtext_l `:` INTO lv_text.
-      lr_col_01->add_text(
-       text         = lv_text
-       sap_emphasis = cl_dd_document=>strong ).
-
-      " Value
-      ASSIGN COMPONENT ls_comp->name OF STRUCTURE lcl_opt=>mo_option->ms_db_item TO <lv_fld>.
-      WRITE <lv_fld> TO lv_text.                        "#EC WRITE_MOVE
-      lr_col_02->add_text( text = lv_text ).
-
-      lr_table->new_row( ).
-    ENDLOOP.
-
-    " And show data
-    e_dyndoc_id->merge_document( ).
-    e_dyndoc_id->display_document(
-     reuse_control      = abap_true
-     parent = mo_header_cont ).
+**    DATA:
+**      lr_table      TYPE REF TO cl_dd_table_element,
+**      lr_col_01     TYPE REF TO cl_dd_area,
+**      lr_col_02     TYPE REF TO cl_dd_area,
+**      lr_struc_desc TYPE REF TO cl_abap_structdescr,
+**      ls_comp       TYPE REF TO abap_compdescr,
+**      lv_text       TYPE sdydo_text_element,
+**      lt_option_db  TYPE STANDARD TABLE OF ztaqo_option WITH DEFAULT KEY,
+**      lt_fieldcat   TYPE lvc_t_fcat,
+**      ls_fieldcat   TYPE REF TO lvc_s_fcat.
+**    FIELD-SYMBOLS:
+**      <lv_fld>          TYPE any.
+**
+**    " Options' description
+**    e_dyndoc_id->add_table( EXPORTING no_of_columns = 2
+**                                      border        = '0'
+**                                      width         = '70%'
+**                            IMPORTING table         = lr_table ).
+**
+**    lr_table->add_column(
+**      EXPORTING
+**        width   = '35%'
+**      IMPORTING
+**        column  = lr_col_01 ).
+**    lr_table->add_column(
+**      EXPORTING
+**        width   = '65%'
+**      IMPORTING
+**        column  = lr_col_02 ).
+**
+**    " Fields of cluster
+**    lr_struc_desc ?= cl_abap_structdescr=>describe_by_data( lcl_opt=>mo_option->ms_db_item ).
+**    zcl_aqo_helper=>create_field_catalog(
+**     EXPORTING
+**       iv_sort     = abap_true
+**     IMPORTING
+**       et_fieldcat = lt_fieldcat
+**     CHANGING
+**       ct_table    = lt_option_db ).
+**
+**    LOOP AT lr_struc_desc->components REFERENCE INTO ls_comp WHERE
+**        name = 'PACKAGE_ID'        OR                       "#EC NOTEXT
+**        name = 'OPTION_ID'         OR                       "#EC NOTEXT
+**        name = 'CREATED_DATE'      OR                       "#EC NOTEXT
+**        name = 'CREATED_UNAME'     OR                       "#EC NOTEXT
+**        name = 'CREATED_NAME_TEXT' OR                       "#EC NOTEXT
+**        name = 'DESCRIPTION'       OR                       "#EC NOTEXT
+**        name = 'PREV_VALUE_CNT'.                            "#EC NOTEXT
+**
+**      " Get text
+**      READ TABLE lt_fieldcat REFERENCE INTO ls_fieldcat BINARY SEARCH
+**       WITH KEY fieldname = ls_comp->name.
+**      CHECK sy-subrc = 0.
+**
+**      " Text
+**      CONCATENATE ls_fieldcat->scrtext_l `:` INTO lv_text.
+**      lr_col_01->add_text(
+**       text         = lv_text
+**       sap_emphasis = cl_dd_document=>strong ).
+**
+**      " Value
+**      ASSIGN COMPONENT ls_comp->name OF STRUCTURE lcl_opt=>mo_option->ms_db_item TO <lv_fld>.
+**      WRITE <lv_fld> TO lv_text.                        "#EC WRITE_MOVE
+**      lr_col_02->add_text( text = lv_text ).
+**
+**      lr_table->new_row( ).
+**    ENDLOOP.
+**
+**    " And show data
+**    e_dyndoc_id->merge_document( ).
+**    e_dyndoc_id->display_document(
+**     reuse_control      = abap_true
+**     parent = mo_header_cont ).
   ENDMETHOD.
 
   METHOD on_hotspot_click.
     DATA:
       ls_fld_value      TYPE REF TO lcl_opt=>ts_fld_value,
       lo_table_comp_alv TYPE REF TO lcl_table_comp_alv,
-      lo_table_alv      TYPE REF TO lcl_table_alv.
+      lo_table_alv      TYPE REF TO lcl_table_alv,
+      lr_field_desc     TYPE REF TO zcl_aqo_helper=>ts_field_desc,
+      lv_editable       TYPE abap_bool.
 
     " Current item
     READ TABLE lcl_opt=>mt_fld_value REFERENCE INTO ls_fld_value INDEX es_row_no-row_id.
@@ -432,12 +482,23 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     CASE e_column_id.
       WHEN 'CATALOG'.
         CHECK ls_fld_value->ui_type = zcl_aqo_helper=>mc_ui_table.
-        lo_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
-        lo_table_comp_alv->call_screen( ls_fld_value ).
+        lo_table_comp_alv = lcl_table_comp_alv=>get_instance( 1 ).
+
+        " Prepare IMPORTING params
+        GET REFERENCE OF ls_fld_value->field_desc INTO lr_field_desc.
+        lv_editable = lcl_opt=>is_editable( ls_fld_value->is_editable ).
+
+        lo_table_comp_alv->call_screen(
+         is_field_desc = lr_field_desc
+         iv_editable   = lv_editable ).
 
       WHEN 'VALUE_BUTTON'.
         " Only for tables
         CASE ls_fld_value->ui_type.
+            " Select option
+          WHEN zcl_aqo_helper=>mc_ui_range.
+            lcl_table_alv=>show_range( ls_fld_value ).
+
           WHEN zcl_aqo_helper=>mc_ui_table.
             lo_table_alv = lcl_table_alv=>get_instance( 1 ).
             lo_table_alv->call_screen( ls_fld_value ).
@@ -445,6 +506,11 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
           WHEN zcl_aqo_helper=>mc_ui_string.
             go_string_memo = lcl_string_memo=>get_instance( 1 ).
             go_string_memo->call_screen( ls_fld_value ).
+
+            " Parameters
+          WHEN OTHERS.
+            edit_parameter( ls_fld_value ).
+
         ENDCASE.
 
       WHEN 'HISTORY_LOGS'.
@@ -505,19 +571,13 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     CHECK data_check( ) = abap_true OR lv_cmd = 'VIEW'.
 
     CASE lv_cmd.
-      WHEN 'SAVE' OR 'TRANSPORT' OR 'DEL_OPT'.
+      WHEN 'SAVE'.
         lcl_opt=>pai(
          CHANGING
            cv_cmd = lv_cmd ).
 
       WHEN 'VIEW' OR 'CHANGE'.
         me->sel_screen_show( ).
-
-      WHEN 'CLNT_COPY'.
-        me->copy_2_client( ).
-
-      WHEN 'FIND_REF'.
-        me->find_ref( ).
 
     ENDCASE.
   ENDMETHOD.                    "pai
@@ -662,7 +722,8 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       lr_data          TYPE REF TO data,
       lt_unique_type   TYPE zcl_aqo_helper=>tt_unique_type,
       lr_unique_type   TYPE REF TO zcl_aqo_helper=>tt_unique_type,
-      lv_just_display  TYPE abap_bool.
+      lv_just_display  TYPE abap_bool,
+      lv_subrc         TYPE sysubrc.
     FIELD-SYMBOLS:
       <lt_val> TYPE STANDARD TABLE,
       <ls_val> TYPE any,
@@ -855,6 +916,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ENDIF.
 
     " call dialog.
+    lcl_opt=>mo_menu->set_visible( abap_false ).
     CALL FUNCTION 'FREE_SELECTIONS_DIALOG'
       EXPORTING
         selection_id    = lv_sel_id
@@ -875,8 +937,12 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         selid_not_found = 3
         illegal_status  = 4
         OTHERS          = 5.
-    IF sy-subrc <> 0.
-      IF sy-subrc <> 2.
+    lv_subrc = sy-subrc.
+    " Show again
+    lcl_opt=>mo_menu->set_visible( abap_true ).
+
+    IF lv_subrc <> 0.
+      IF lv_subrc <> 2.
         MESSAGE s003(zaqo_message) DISPLAY LIKE 'E' WITH 'FREE_SELECTIONS_DIALOG' sy-subrc.
       ENDIF.
 
@@ -960,211 +1026,21 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ENDCASE.
   ENDMETHOD.
 
-  METHOD copy_2_client.
-    DATA : lt_field TYPE STANDARD TABLE OF sval,
-           ls_field TYPE REF TO sval,
-           lv_rc    TYPE char1,
-           lv_mandt TYPE sy-mandt.
-
-    APPEND INITIAL LINE TO lt_field REFERENCE INTO ls_field.
-    ls_field->fieldname = 'MANDT'.
-    ls_field->tabname   = 'T001'.
-    ls_field->value     = sy-mandt.
-
-    CALL FUNCTION 'POPUP_GET_VALUES'
-      EXPORTING
-        no_value_check  = abap_true
-        popup_title     = 'Specify the client number'(cln)
-      IMPORTING
-        returncode      = lv_rc
-      TABLES
-        fields          = lt_field
-      EXCEPTIONS
-        error_in_fields = 1
-        OTHERS          = 2.
-    IF sy-subrc <> 0 OR lv_rc = 'A'.
-      MESSAGE s118(ed) DISPLAY LIKE 'E'.
-      RETURN.
-    ENDIF.
-
-    READ TABLE lt_field REFERENCE INTO ls_field INDEX 1.
+  METHOD edit_parameter.
+    FIELD-SYMBOLS:
+      <lv_value> TYPE any.
+    " Get value
+    ASSIGN is_fld_value->cur_value->* TO <lv_value>.
     CHECK sy-subrc = 0.
-    lv_mandt = ls_field->value.
 
-    "check client
-    CHECK lv_mandt <> sy-mandt.
-
-**   check unsaved data exist
-*    IF check_unsaved_data( ) EQ abap_true.
-**     save data
-*      data_save( ).
-*    ENDIF.
-
-    lcl_opt=>do_save( iv_mandt = lv_mandt ).
-  ENDMETHOD.
-
-  METHOD find_ref.
-    DATA:
-      lo_where_used TYPE REF TO lcl_where_used.
-    lo_where_used = lcl_where_used=>get_instance( ).
-    lo_where_used->call_screen( ).
-  ENDMETHOD.
-
-  METHOD export.
-    DATA:
-      lv_title     TYPE string,
-      lv_file_name TYPE string,
-      lv_path      TYPE string,
-      lv_filename  TYPE string,
-      lv_fullpath  TYPE string.
-
-    lv_title     = 'Save option values'(sov).
-    CONCATENATE p_pack `-` p_opt_id `-` sy-mandt `-` sy-datum `-` sy-uzeit `.aqob` INTO lv_file_name.
-    cl_gui_frontend_services=>file_save_dialog(
+    zcl_aqo_helper=>edit_in_popup(
      EXPORTING
-       window_title      = lv_title
-       default_file_name = lv_file_name
+      iv_type   = is_fld_value->rollname
+      iv_title  = is_fld_value->label
      CHANGING
-       path         = lv_path
-       filename     = lv_filename
-       fullpath     = lv_fullpath
-     EXCEPTIONS
-       OTHERS       = 1 ).
-    CHECK sy-subrc = 0 AND lv_fullpath IS NOT INITIAL.
-
-    " Save to file
-    zcl_aqo_helper=>download(
-     iv_xcontent = lcl_opt=>mo_option->ms_db_item-fields
-     iv_filename = lv_fullpath ).
+       cv_value = <lv_value> ).
   ENDMETHOD.
 
-  METHOD import.
-    DATA:
-      lt_file  TYPE filetable,
-      ls_file  TYPE REF TO file_table,
-      lv_file  TYPE string,
-      lv_rc    TYPE i,
-      lt_data  TYPE solix_tab,
-      lv_len   TYPE i,
-      lv_xdata TYPE xstring.
-
-    cl_gui_frontend_services=>file_open_dialog(
-      EXPORTING
-        " window_title   =
-        multiselection    = abap_false
-        file_filter       = '*.aqob'
-        default_extension = 'aqob'
-      CHANGING
-        file_table        = lt_file
-        rc                = lv_rc ).
-    CHECK lt_file[] IS NOT INITIAL.
-
-    " 1 file only
-    READ TABLE lt_file REFERENCE INTO ls_file INDEX 1.
-    CHECK sy-subrc = 0.
-
-    lv_file = ls_file->filename.
-    CALL FUNCTION 'GUI_UPLOAD'
-      EXPORTING
-        filename   = lv_file
-        filetype   = 'BIN'
-      IMPORTING
-        filelength = lv_len
-      TABLES
-        data_tab   = lt_data
-      EXCEPTIONS
-        OTHERS     = 1.
-    IF sy-subrc <> 0.
-      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-      RETURN.
-    ENDIF.
-
-    lv_xdata = zcl_aqo_helper=>binary_to_xstring(
-     it_table  = lt_data
-     iv_length = lv_len ).
-
-    do_update(
-     iv_set    = `FIELDS = IV_FIELDS`
-     iv_fields = lv_xdata ).
-  ENDMETHOD.
-
-  METHOD change_description.
-    " Previous values
-    p_o_desc = lcl_opt=>mo_option->ms_db_item-description.
-    p_o_prev = lcl_opt=>mo_option->ms_db_item-prev_value_cnt.
-
-    " Show screen
-    CALL SELECTION-SCREEN 1030 STARTING AT 5 1.
-    CHECK p_o_desc IS NOT INITIAL AND p_o_prev IS NOT INITIAL.
-
-    do_update(
-     iv_set         = `DESCRIPTION = IV_DESCRIPTION PREV_VALUE_CNT = IV_PREV_COUNT`
-     iv_description = p_o_desc
-     iv_prev_count  = p_o_prev ).
-  ENDMETHOD.
-
-  METHOD pbo_1030.
-    DATA:
-      lt_exclude TYPE STANDARD TABLE OF syucomm.
-
-    " Chaneg title
-    SET TITLEBAR 'ST_MAIN' WITH 'Enter option description'(eod).
-
-    CALL FUNCTION 'RS_SET_SELSCREEN_STATUS'
-      EXPORTING
-        p_status  = 'OK_CANCEL'
-      TABLES
-        p_exclude = lt_exclude.
-
-    " Make like obligatory
-    LOOP AT SCREEN.
-      CHECK screen-group1 = 'OBL'.
-      screen-required = '2'. " recommended
-      MODIFY SCREEN.
-    ENDLOOP.
-  ENDMETHOD.
-
-  METHOD pai_1030.
-    DATA:
-      lv_exit TYPE abap_bool.
-
-    CASE cv_cmd.
-      WHEN 'OK'.
-        IF p_o_desc IS INITIAL OR p_o_prev IS INITIAL.
-          MESSAGE e055(00).
-          RETURN.
-        ENDIF.
-        IF p_o_prev > 5 OR p_o_prev < 1.
-          MESSAGE 'Previous values count have to be from 1 to 5'(f15) TYPE 'E'.
-          RETURN.
-        ENDIF.
-
-        lv_exit = abap_true.
-
-      WHEN 'CANCEL'.
-        lv_exit = abap_true.
-        CLEAR:
-         p_o_desc,
-         p_o_prev.
-    ENDCASE.
-
-    IF lv_exit = abap_true.
-      LEAVE TO SCREEN 0.
-    ENDIF.
-  ENDMETHOD.
-
-  METHOD do_update.
-    UPDATE ztaqo_option
-     SET (iv_set)
-    WHERE package_id = p_pack
-      AND option_id  = p_opt_id.
-
-    IF sy-subrc = 0.
-      MESSAGE 'Data updated'(upd) TYPE 'S'.
-    ELSE.
-      MESSAGE 'Error during updating!'(edu) TYPE 'S' DISPLAY LIKE 'E'.
-    ENDIF.
-  ENDMETHOD.
 ENDCLASS.
 
 
@@ -1182,4 +1058,20 @@ MODULE pai_0100 INPUT.
   go_fld_value_alv->pai(
    CHANGING
      cv_cmd = gv_ok_code ).
+ENDMODULE.
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+MODULE pbo_0920 OUTPUT.
+  go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
+  go_fld_value_alv->pbo_0920( ).
+ENDMODULE.
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+MODULE pai_0920 INPUT.
+  go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
+  go_fld_value_alv->pai_0920(
+   CHANGING
+     cv_cmd = sy-ucomm ).
 ENDMODULE.

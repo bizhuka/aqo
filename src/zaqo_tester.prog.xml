@@ -37,7 +37,7 @@
     <item>
      <ID>I</ID>
      <KEY>T02</KEY>
-     <ENTRY>Now edit option in tr ZAQO_BSP_EDITOR, ZAQO_EDITOR or ZAQO_EDITOR_OLD</ENTRY>
+     <ENTRY>Now edit option by menu or in tr ZAQO_EDITOR_OLD, ZAQO_EDITOR, ZAQO_BSP_EDITOR</ENTRY>
      <LENGTH>132</LENGTH>
     </item>
    </TPOOL>

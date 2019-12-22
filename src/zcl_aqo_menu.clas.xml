@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>GOS based menu</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+     <CMPNAME>CONSTRUCT_BUTTONS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Buttons constructor</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+     <CMPNAME>GET_MENU</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Create menu</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+     <CMPNAME>MO_CONTAINER</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Generic Object Services Container</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+     <CMPNAME>MO_TOOLBAR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Toolbar Control</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+     <CMPNAME>ON_FUNCTION_SELECTED</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>if a Pushbutton or a Menu Entry is Selected</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+     <CMPNAME>SET_VISIBLE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Show or Hide toolbar</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+     <CMPNAME>TS_MENU</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>1 menu item</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_MENU</CLSNAME>
+     <CMPNAME>TT_MENU</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Menus</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

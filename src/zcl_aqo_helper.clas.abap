@@ -10,10 +10,10 @@ public section.
     abap_attrname_tab TYPE HASHED TABLE OF abap_attrname WITH UNIQUE KEY table_line .
   types:
     BEGIN OF ts_field_desc,
-        name        TYPE abap_attrname, " 61 char
+        name        TYPE zdaqo_attr_name, " abap_attrname, " 61 char
         sys_type    TYPE abap_typekind, " SYSTEM
         " kind        TYPE rsscr_kind, TODO delete everywhere   " P S T
-        ui_type     TYPE string,        " Only for KIND = P
+        ui_type     TYPE zdaqo_ui_type, " Only for KIND = P
         length      TYPE i,             " Only for KIND = P
         decimals    TYPE i,             " Only for KIND = P
         " For editing in ALV
@@ -25,15 +25,15 @@ public section.
         key         TYPE abap_keydescr_tab,
         key_defkind TYPE abap_keydefkind,
         sub_fdesc   TYPE string,
-    END OF ts_field_desc .
+      END OF ts_field_desc .
   types:
     tt_field_desc TYPE HASHED TABLE OF ts_field_desc WITH UNIQUE KEY name .
   types:
     BEGIN OF ts_history_value,
-     changed type sydatum,
-     login   type syuname,
-     h_value type string,
-    END OF ts_history_value .
+        changed TYPE sydatum,
+        login   TYPE syuname,
+        h_value TYPE string,
+      END OF ts_history_value .
   types:
     tt_history_value TYPE SORTED TABLE OF ts_history_value WITH UNIQUE KEY changed .
   types:
@@ -47,19 +47,26 @@ public section.
     tt_field_value TYPE HASHED TABLE OF ts_field_value WITH UNIQUE KEY name .
   types:
     BEGIN OF ts_usage,
-        index   TYPE syindex,
-        include TYPE wbcrossgt-include,
-        meth    TYPE seocpdname,
-        uname   TYPE syuname, "wbcrossgt-uname,
-        udate   TYPE sydatum, "wbcrossgt-udate,
-        uzeit   TYPE syuzeit, "wbcrossgt-uzeit,
-        line    TYPE i,
-        found   TYPE xsdboolean,
+        index      TYPE syindex,
+        package_id TYPE devclass,
+        option_id  TYPE zdaqo_option_id,
+        include    TYPE wbcrossgt-include,
+        line       TYPE i,
+        meth       TYPE seocpdname,
+        uname      TYPE syuname, "wbcrossgt-uname,
+        udate      TYPE sydatum, "wbcrossgt-udate,
+        uzeit      TYPE syuzeit, "wbcrossgt-uzeit,
+        found      TYPE xsdboolean,
       END OF ts_usage .
   types:
     tt_usage TYPE STANDARD TABLE OF ts_usage WITH DEFAULT KEY .
   types:
-    tt_unique_type TYPE SORTED TABLE OF STRING WITH UNIQUE KEY TABLE_LINE .
+    tt_unique_type TYPE SORTED TABLE OF string WITH UNIQUE KEY table_line .
+  types:
+    tt_e071 TYPE STANDARD TABLE OF e071 WITH DEFAULT KEY .
+  types TS_OAOR_FILE type ZSAQO_OAOR_FILE .
+  types:
+    tt_oaor_file TYPE STANDARD TABLE OF ts_oaor_file WITH DEFAULT KEY .
 
   constants MC_UTF8 type ABAP_ENCODING value '4110' ##NO_TEXT.
   constants MC_UI_CHAR type STRING value 'char' ##NO_TEXT.
@@ -72,6 +79,7 @@ public section.
   constants MC_UI_DATETIME type STRING value 'datetime' ##NO_TEXT.
   constants MC_UI_RANGE type STRING value 'range' ##NO_TEXT.
   constants MC_UI_TABLE type STRING value 'table' ##NO_TEXT.
+  constants MC_OAOR_OTHER type BAPIBDS01-CLASSTYPE value 'OT' ##NO_TEXT.
 
   class-methods GET_FIELD_DESC
     importing
@@ -164,7 +172,9 @@ public section.
   class-methods NAVIGATE_TO
     importing
       !IV_INCLUDE type CSEQUENCE
-      !IV_POSITION type I .
+      !IV_POSITION type I
+    returning
+      value(RV_OK) type ABAP_BOOL .
   class-methods GET_USAGE
     returning
       value(RT_USAGE) type TT_USAGE .
@@ -175,6 +185,13 @@ public section.
     exporting
       !ET_TABLE type W3MIMETABTYPE
       !EV_SIZE type I .
+  class-methods EDIT_IN_POPUP
+    importing
+      !IV_TYPE type CSEQUENCE
+      !IV_TITLE type CSEQUENCE
+    changing
+      !CV_OK type ABAP_BOOL optional
+      !CV_VALUE type ANY .
   class-methods BINARY_TO_STRING
     importing
       !IT_TABLE type STANDARD TABLE
@@ -242,6 +259,46 @@ public section.
       !IV_NUMBER type SYMSGNO
     returning
       value(RV_INFO) type STRING .
+  class-methods SPLIT_FILE_PATH
+    importing
+      !IV_FULLPATH type CSEQUENCE
+    exporting
+      !EV_PATH type CSEQUENCE
+      !EV_FILENAME type CSEQUENCE
+      !EV_FILENAME_NOEXT type CSEQUENCE
+      !EV_EXTENSION type CSEQUENCE .
+  class-methods CHECK_IN_REQUEST
+    importing
+      !IV_TABLE_NAME type CSEQUENCE optional
+      !IV_KEY1 type CLIKE optional
+      !IV_KEY2 type CLIKE optional
+      !IV_KEY3 type CLIKE optional
+      !IS_OAOR_FILE type TS_OAOR_FILE optional
+    changing
+      !CV_TASK type E070-TRKORR optional
+    raising
+      ZCX_AQO_EXCEPTION .
+  class-methods OAOR_CHECK_EXISTS
+    importing
+      !IV_PACK_ID type ZTAQO_OPTION-PACKAGE_ID
+      !IV_OPTION_ID type ZTAQO_OPTION-OPTION_ID
+    exporting
+      !EV_TASK type E070-TRKORR .
+  class-methods OAOR_GET_FILES
+    importing
+      !IV_PACK_ID type ZTAQO_OPTION-PACKAGE_ID
+      !IV_OPTION_ID type ZTAQO_OPTION-OPTION_ID
+      !IV_FILENAME type CSEQUENCE optional
+    exporting
+      !ES_OAOR_LAST type TS_OAOR_FILE
+      !ET_OAOR_FILE type TT_OAOR_FILE .
+  class-methods OAOR_DELETE_FILE
+    importing
+      !IV_PACK_ID type ZTAQO_OPTION-PACKAGE_ID
+      !IV_OPTION_ID type ZTAQO_OPTION-OPTION_ID
+      !IS_OAOR_FILE type TS_OAOR_FILE
+    changing
+      !CV_TASK type E070-TRKORR .
 protected section.
 private section.
 
@@ -292,7 +349,6 @@ METHOD ABAP_2_JSON.
   FIELD-SYMBOLS:
     <abap_data>     TYPE any,
     <itab>          TYPE ANY TABLE,
-    <stru>          TYPE ANY TABLE,
     <comp>          TYPE any,
     <abapcomp>      TYPE abap_compdescr,
     <lt_xsdboolean> TYPE stringtab.
@@ -560,6 +616,157 @@ METHOD BINARY_TO_XSTRING.
       buffer       = rv_xstring
     TABLES
       binary_tab   = it_table.
+ENDMETHOD.
+
+
+METHOD check_in_request.
+  DATA:
+    lt_e071            TYPE STANDARD TABLE OF e071  WITH DEFAULT KEY,
+    lt_e071k           TYPE STANDARD TABLE OF e071k WITH DEFAULT KEY,
+    ls_e071            TYPE e071,
+    lr_e071            TYPE REF TO e071,
+    ls_e071k           TYPE e071k,
+    lv_index           TYPE char1,
+    lv_name            TYPE string,
+    lv_len             TYPE i,
+    lv_off             TYPE i,
+    lv_where           TYPE string.
+  FIELD-SYMBOLS:
+    <lv_key> TYPE clike.
+
+  " Always the same
+  ls_e071-pgmid = ls_e071k-pgmid = 'R3TR'.
+
+  " Current user + Not released (trstatus<>R) + strkorr <> space Task or sub-request has parent item
+  " ? e070~trfunction = 'S'
+  lv_where = `e070~as4user = sy-uname AND ( e070~trstatus = 'D' OR e070~trstatus = 'L' ) AND e070~strkorr <> space`.
+
+**********************************************************************
+  " Table row
+**********************************************************************
+  DO 1 TIMES.
+    CHECK iv_table_name IS SUPPLIED.
+
+    " Create key for table
+    CLEAR lv_off.
+    DO 3 TIMES.
+      " Create name
+      lv_index = sy-index.
+      CONCATENATE 'IV_KEY' lv_index INTO lv_name.
+
+      " Is supplied
+      ASSIGN (lv_name) TO <lv_key>.
+      CHECK sy-subrc = 0 AND <lv_key> IS NOT INITIAL.
+
+      " Create key
+      DESCRIBE FIELD <lv_key> LENGTH lv_len IN CHARACTER MODE.
+      ls_e071k-tabkey+lv_off(lv_len)  = <lv_key>.
+
+      " Move to next
+      ADD lv_len TO lv_off.
+    ENDDO.
+
+    " Struc 1
+    ls_e071-object      = 'TABU'.
+    ls_e071-obj_name    = iv_table_name.
+    ls_e071-objfunc     = 'K'.
+
+    " Struc 2
+    ls_e071k-object     = ls_e071k-mastertype = 'TABU'.
+    ls_e071k-objname    = ls_e071k-mastername = iv_table_name.
+
+    APPEND:
+     ls_e071  TO lt_e071,
+     ls_e071k TO lt_e071k.
+
+    " Check in DB
+    CHECK cv_task IS INITIAL.
+
+    " Try to find
+    SELECT SINGLE e070~trkorr INTO cv_task " e070~strkorr cv_request
+    FROM e070 INNER JOIN e071k ON e071k~trkorr     = e070~trkorr
+                              AND e071k~pgmid      = ls_e071k-pgmid
+                              AND e071k~object     = ls_e071k-object
+                              AND e071k~objname    = ls_e071k-objname
+                              AND e071k~mastertype = ls_e071k-mastertype
+                              AND e071k~mastername = ls_e071k-mastername
+                              AND e071k~tabkey     = ls_e071k-tabkey
+    WHERE (lv_where).
+  ENDDO.
+
+**********************************************************************
+  " OAOR file
+**********************************************************************
+  DO 1 TIMES.
+    CHECK is_oaor_file IS SUPPLIED.
+
+    " Logical information object for BDS
+    ls_e071-object      = 'SBDL'.
+    ls_e071-obj_name    = is_oaor_file-doc_id+10(32).
+    APPEND ls_e071 TO lt_e071.
+
+    " Physical information object
+    ls_e071-object      = 'SBDP'.
+    ls_e071-obj_name    = is_oaor_file-objid.
+    APPEND ls_e071 TO lt_e071.
+
+    " Check in DB
+    CHECK cv_task IS INITIAL.
+
+    " Try to find
+    LOOP AT lt_e071 REFERENCE INTO lr_e071.
+      SELECT SINGLE e070~trkorr INTO cv_task
+      FROM e070 INNER JOIN e071 ON e071~trkorr = e070~trkorr
+      WHERE e071~pgmid    = lr_e071->pgmid
+        AND e071~object   = lr_e071->object
+        AND e071~obj_name = lr_e071->obj_name
+        AND (lv_where).
+
+      CHECK cv_task IS NOT INITIAL.
+      EXIT.
+    ENDLOOP.
+  ENDDO.
+
+  " Show dialog if task is empty and in old editor
+  IF cv_task IS INITIAL AND zcl_aqo_helper=>is_in_editor( iv_is_sapui5 = abap_true ) <> abap_true.
+    " select request/task
+    CALL FUNCTION 'TR_ORDER_CHOICE_CORRECTION'
+      EXPORTING
+        iv_category = 'SYST'                                "#EC NOTEXT
+      IMPORTING
+        " ev_order    = cv_request
+        ev_task     = cv_task " Can be empty
+      EXCEPTIONS
+        OTHERS      = 1.
+    IF sy-subrc <> 0.
+      zcx_aqo_exception=>raise_sys_error( ).
+    ENDIF.
+  ENDIF.
+
+  " include data to request
+  CALL FUNCTION 'TR_APPEND_TO_COMM_OBJS_KEYS'
+    EXPORTING
+      wi_trkorr = cv_task
+    TABLES
+      wt_e071   = lt_e071
+      wt_e071k  = lt_e071k
+    EXCEPTIONS
+      OTHERS    = 1.
+  IF sy-subrc <> 0.
+    zcx_aqo_exception=>raise_sys_error( ).
+  ENDIF.
+
+  " Ok 1
+  IF iv_table_name IS SUPPLIED.
+    MESSAGE s023(zaqo_message) WITH iv_key1 iv_key2 iv_key3 cv_task.
+    RETURN.
+  ENDIF.
+
+  " Ok 2
+  IF is_oaor_file IS SUPPLIED.
+    MESSAGE s039(zaqo_message) WITH is_oaor_file-file_name is_oaor_file-doc_ver_no cv_task.
+    RETURN.
+  ENDIF.
 ENDMETHOD.
 
 
@@ -1101,6 +1308,51 @@ METHOD DRILL_DOWN.
 ENDMETHOD.
 
 
+METHOD edit_in_popup.
+  " TODO use synamic screen instead (bug with P)
+  DATA:
+    lt_field TYPE STANDARD TABLE OF sval,
+    ls_field TYPE REF TO sval,
+    lv_rc    TYPE char1.
+
+  CLEAR cv_ok.
+  APPEND INITIAL LINE TO lt_field REFERENCE INTO ls_field.
+
+  " For F4
+  SPLIT iv_type AT '-' INTO ls_field->tabname ls_field->fieldname.
+  CHECK sy-subrc = 0
+   AND ls_field->tabname IS NOT INITIAL
+   AND ls_field->fieldname IS NOT INITIAL.
+
+  ls_field->value = cv_value.
+
+  CALL FUNCTION 'POPUP_GET_VALUES'
+    EXPORTING
+      no_value_check  = abap_true
+      popup_title     = iv_title
+    IMPORTING
+      returncode      = lv_rc
+    TABLES
+      fields          = lt_field
+    EXCEPTIONS
+      error_in_fields = 1
+      OTHERS          = 2.
+  IF sy-subrc <> 0 OR lv_rc = 'A'.
+    MESSAGE s118(ed) DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  " First row
+  READ TABLE lt_field REFERENCE INTO ls_field INDEX 1.
+  CHECK sy-subrc = 0.
+
+  " Set new value
+  cv_value = ls_field->value.
+  MESSAGE s004(zaqo_message).
+  cv_ok = abap_true.
+ENDMETHOD.
+
+
 METHOD find_table_fieldname.
   TYPES:
     BEGIN OF ts_dd03l,
@@ -1450,7 +1702,8 @@ METHOD get_position.
     ls_result TYPE REF TO match_result,
     lv_string TYPE string,
     lv_from   TYPE i,
-    lv_index  TYPE syindex.
+    lv_index  TYPE syindex,
+    lv_ok_cnt TYPE i.
 
   " Read whole text
   READ REPORT iv_include INTO lt_report.
@@ -1472,12 +1725,12 @@ METHOD get_position.
     " Found or not
     READ TABLE lt_result INDEX 1 REFERENCE INTO ls_result.
     IF sy-subrc = 0.
-      EXIT.
+      ADD 1 TO lv_ok_cnt.
     ENDIF.
   ENDDO.
 
   " Second one
-  CHECK ls_result IS NOT INITIAL.
+  CHECK ls_result IS NOT INITIAL AND lv_ok_cnt = 2.
   lv_from = ls_result->line - 4.
   IF lv_from <= 0.
     lv_from = 1.
@@ -1519,7 +1772,6 @@ METHOD get_usage.
     ls_meth       TYPE REF TO seop_method_w_include.
 
   " Get from memory
-
   GET PARAMETER ID:
    'ZAQO_PACKAGE_ID' FIELD ls_opt-package_id,
    'ZAQO_OPTION_ID'  FIELD ls_opt-option_id.
@@ -1540,6 +1792,10 @@ METHOD get_usage.
        IMPORTING
          ev_line      = ls_usage->line
          ev_found     = ls_usage->found ).
+      IF ls_usage->found = abap_true.
+        ls_usage->package_id = ls_opt-package_id.
+        ls_usage->option_id  = ls_opt-option_id.
+      ENDIF.
     ENDIF.
 
     " Is class
@@ -1585,9 +1841,9 @@ METHOD is_dev_mandt.
   SELECT SINGLE cccoractiv INTO lv_cccoractiv
   FROM t000
   WHERE mandt = sy-mandt.
-  IF lv_cccoractiv <> '2'.
-    rv_editable = abap_true.
-  ENDIF.
+  CHECK lv_cccoractiv <> '2'.
+
+  rv_editable = abap_true.
 ENDMETHOD.
 
 
@@ -1712,8 +1968,221 @@ METHOD navigate_to.
       position    = iv_position
     EXCEPTIONS
       OTHERS      = 3.
+
+  IF sy-subrc <> 0.
+    MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    RETURN.
+  ENDIF.
+
+  " All ok
+  rv_ok = abap_true.
+ENDMETHOD.
+
+
+METHOD oaor_check_exists.
+  DATA:
+    ls_bds_locl TYPE bds_locl,
+    lo_error    TYPE REF TO zcx_aqo_exception.
+
+  " select request/task
+  CLEAR ev_task.
+  TRY.
+      zcl_aqo_helper=>check_in_request(
+       EXPORTING
+         iv_table_name = 'BDS_LOCL'
+         iv_key1       = iv_pack_id
+         iv_key2       = mc_oaor_other
+      CHANGING
+         cv_task       = ev_task
+         " cv_request    = rv_request
+         ).
+    CATCH zcx_aqo_exception INTO lo_error.
+      CLEAR: "rv_request,
+       ev_task.
+      MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
+  ENDTRY.
+
+  " If ok
+  CHECK ev_task IS NOT INITIAL.
+
+  " exist ?
+  SELECT SINGLE * INTO ls_bds_locl
+  FROM bds_locl
+  WHERE classname = iv_pack_id
+    AND classtype = mc_oaor_other.
   CHECK sy-subrc <> 0.
-  MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+
+  " Create new
+  ls_bds_locl-classname = iv_pack_id.
+  ls_bds_locl-classtype = mc_oaor_other.
+  ls_bds_locl-lo_class  = 'BDS_LOC2'.
+  ls_bds_locl-ph_class  = 'BDS_POC2'.
+  ls_bds_locl-re_class  = 'BDS_REC2'.
+  ls_bds_locl-tabname   = 'BDS_CONN05'.
+  ls_bds_locl-log_level = 0. " Or 2 ?
+  ls_bds_locl-crea_user = sy-uname.
+  CONCATENATE sy-datum sy-uzeit INTO ls_bds_locl-crea_time.
+
+  " Update DB
+  INSERT bds_locl FROM ls_bds_locl.
+ENDMETHOD.
+
+
+METHOD oaor_delete_file.
+  DATA:
+    lv_key           TYPE sbdst_object_key,
+    lt_bds_signature TYPE sbdst_signature,
+    ls_bds_signature TYPE bapisignat,
+    lo_error         TYPE REF TO zcx_aqo_exception.
+
+  " Subfolder in OAOR (and classname = package_id)
+  lv_key = iv_option_id.
+
+  " Prepare signature
+  MOVE-CORRESPONDING is_oaor_file TO ls_bds_signature.
+  APPEND ls_bds_signature TO lt_bds_signature.
+
+  cl_bds_document_set=>delete(
+    EXPORTING
+      classname      = iv_pack_id
+      classtype      = mc_oaor_other
+      object_key     = lv_key
+      x_force_delete = abap_true
+    CHANGING
+      signature      = lt_bds_signature
+    EXCEPTIONS
+      OTHERS         = 7 ).
+  IF sy-subrc <> 0.
+    MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  " Delete old file
+  TRY.
+      check_in_request(
+         EXPORTING
+          is_oaor_file = is_oaor_file
+         CHANGING
+          cv_task      = cv_task ).
+    CATCH zcx_aqo_exception INTO lo_error.
+      MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
+      RETURN.
+  ENDTRY.
+ENDMETHOD.
+
+
+METHOD oaor_get_files.
+  DATA:
+    lv_key               TYPE sbdst_object_key,
+    lt_sbdst_signature   TYPE sbdst_signature,
+    ls_sbdst_signature   TYPE REF TO bapisignat,
+    lt_sbdst_components2 TYPE sbdst_components2,
+    ls_sbdst_components2 TYPE REF TO bapicompo2,
+*    lt_connect           TYPE srm_bdsconn_t,
+*    ls_connect           TYPE REF TO bapiconnec,
+    ls_oaor_file         TYPE REF TO ts_oaor_file,
+    lt_doc_id            TYPE SORTED TABLE OF ts_oaor_file-doc_id WITH UNIQUE KEY table_line,
+    lv_field             TYPE string.
+  FIELD-SYMBOLS:
+    <l_val>              TYPE any.
+
+  CLEAR:
+    es_oaor_last,
+    et_oaor_file.
+
+  " Subfolder in OAOR (and classname = package_id)
+  lv_key = iv_option_id.
+
+  " Finding the right documents
+  cl_bds_document_set=>get_info(
+   EXPORTING
+    classname           = iv_pack_id
+    classtype           = mc_oaor_other
+    object_key          = lv_key
+   IMPORTING
+    extended_components = lt_sbdst_components2
+    " connections         = lt_connect
+   CHANGING
+    signature           = lt_sbdst_signature
+   EXCEPTIONS
+    OTHERS              = 7 ).
+  CHECK sy-subrc = 0.
+
+  " lt_sbdst_signature structure is complex
+  LOOP AT lt_sbdst_signature REFERENCE INTO ls_sbdst_signature.
+
+    AT NEW doc_count.
+      " Create new item
+      APPEND INITIAL LINE TO et_oaor_file REFERENCE INTO ls_oaor_file.
+      ls_oaor_file->doc_id     = ls_sbdst_signature->doc_id.
+      ls_oaor_file->doc_ver_no = ls_sbdst_signature->doc_ver_no.
+      ls_oaor_file->doc_var_id = ls_sbdst_signature->doc_var_id.
+      ls_oaor_file->comp_count = ls_sbdst_signature->comp_count.
+
+      " Concatenate 2 tables
+      READ TABLE lt_sbdst_components2 REFERENCE INTO ls_sbdst_components2
+       INDEX ls_sbdst_signature->doc_count.
+      ls_oaor_file->objid     = ls_sbdst_components2->objid.
+      ls_oaor_file->file_name = ls_sbdst_components2->file_name.
+      ls_oaor_file->class     = ls_sbdst_components2->class.
+    ENDAT.
+
+    " Find field by name
+    lv_field = ls_sbdst_signature->prop_name.
+    IF lv_field = 'BDS_KEYWORD'.
+      lv_field = ls_sbdst_signature->prop_value.
+    ENDIF.
+
+    ASSIGN COMPONENT lv_field OF STRUCTURE ls_oaor_file->* TO <l_val>.
+    CHECK sy-subrc = 0.
+
+    " Set flag
+    IF ls_sbdst_signature->prop_name = 'BDS_KEYWORD'.
+      <l_val> = abap_true.
+    ELSE.
+      <l_val> = ls_sbdst_signature->prop_value.
+    ENDIF.
+  ENDLOOP.
+
+  " Apply filters
+  IF iv_filename IS NOT INITIAL.
+    DELETE et_oaor_file WHERE file_name <> iv_filename.
+  ENDIF.
+
+  " Max versions first
+  SORT et_oaor_file BY doc_id doc_ver_no DESCENDING.
+
+  " Fill other fields
+  LOOP AT et_oaor_file REFERENCE INTO ls_oaor_file.
+    " Mark current version
+    READ TABLE lt_doc_id TRANSPORTING NO FIELDS
+     WITH TABLE KEY table_line = ls_oaor_file->doc_id.
+    IF sy-subrc <> 0.
+      INSERT ls_oaor_file->doc_id INTO TABLE lt_doc_id.
+      ls_oaor_file->last_version = abap_true.
+    ENDIF.
+  ENDLOOP.
+
+  " Max versions last
+  SORT et_oaor_file BY doc_id doc_ver_no ASCENDING.
+
+  LOOP AT et_oaor_file REFERENCE INTO ls_oaor_file.
+    ls_oaor_file->tabix = sy-tabix.
+
+    " Create at
+    ls_oaor_file->created_at_date      = ls_oaor_file->created_at(8).
+    ls_oaor_file->created_at_time      = ls_oaor_file->created_at+8(6).
+
+    " Changed at
+    ls_oaor_file->last_changed_at_date = ls_oaor_file->last_changed_at(8).
+    ls_oaor_file->last_changed_at_time = ls_oaor_file->last_changed_at+8(6).
+  ENDLOOP.
+
+  " Get last version for 1 file
+  CHECK iv_filename IS NOT INITIAL
+    AND es_oaor_last IS REQUESTED.
+
+  READ TABLE et_oaor_file INTO es_oaor_last WITH KEY last_version = abap_true.
 ENDMETHOD.
 
 
@@ -1722,6 +2191,65 @@ METHOD SH_SORT_ORDER.
     SET PARAMETER ID 'ZAQO_SH_SORT_ORDER' FIELD iv_value.
   ELSEIF ev_value IS REQUESTED.
     GET PARAMETER ID 'ZAQO_SH_SORT_ORDER' FIELD ev_value.
+  ENDIF.
+ENDMETHOD.
+
+
+METHOD split_file_path.
+  DATA:
+    lv_ind     TYPE i,
+    lv_cnt     TYPE i,
+    lv_dot_pos TYPE i.
+
+********************
+  DEFINE set_if_requested.
+    IF &1 IS REQUESTED.
+      &1 = &2.
+    ENDIF.
+  END-OF-DEFINITION.
+********************
+
+  " What ?
+  CHECK iv_fullpath IS NOT INITIAL.
+
+  " Prepare vars
+  "  set_if_requested ev_ev_tension ''.
+  lv_ind = strlen( iv_fullpath ) - 1.
+  TRY.
+      WHILE lv_ind > 0 AND iv_fullpath+lv_ind(1) <> '\' AND iv_fullpath+lv_ind(1) <> '/'.
+        IF iv_fullpath+lv_ind(1) = '.' AND lv_dot_pos IS INITIAL. " Only 1 time
+          lv_dot_pos = lv_ind + 1.
+          set_if_requested ev_extension iv_fullpath+lv_dot_pos.
+        ENDIF.
+        lv_ind = lv_ind - 1.
+        lv_cnt = sy-index.
+      ENDWHILE.
+    CATCH cx_sy_range_out_of_bounds.
+      EXIT.
+  ENDTRY.
+
+  " Fill ev_path, ev_filename, ev_filename_noext, ev_ev_tension
+  IF lv_ind = 0.
+    set_if_requested ev_filename iv_fullpath.
+    set_if_requested ev_path     ''.
+
+    IF lv_dot_pos IS INITIAL.
+      set_if_requested ev_filename_noext iv_fullpath.
+    ELSE.
+      lv_cnt = lv_dot_pos - 1.
+      set_if_requested ev_filename_noext iv_fullpath(lv_cnt).
+    ENDIF.
+  ELSE.
+    lv_ind = lv_ind + 1.
+    set_if_requested ev_filename iv_fullpath+lv_ind(lv_cnt).
+    set_if_requested ev_path     iv_fullpath(lv_ind).
+
+    IF lv_dot_pos IS INITIAL.
+      set_if_requested ev_filename_noext iv_fullpath+lv_ind(lv_cnt).
+    ELSE.
+      lv_cnt = lv_dot_pos - lv_ind - 1.
+      set_if_requested ev_filename_noext iv_fullpath+lv_ind(lv_cnt).
+    ENDIF.
   ENDIF.
 ENDMETHOD.
 

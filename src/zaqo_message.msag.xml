@@ -150,7 +150,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>023</MSGNR>
-     <TEXT>&amp;1 - &amp;2 option put in request &amp;3</TEXT>
+     <TEXT>&amp;1 - &amp;2 &amp;3 put in request &amp;4</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -211,6 +211,42 @@
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>033</MSGNR>
      <TEXT>Cannot read &amp;1 field</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>034</MSGNR>
+     <TEXT>Locked by &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>035</MSGNR>
+     <TEXT>Mandant is the same!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>036</MSGNR>
+     <TEXT>Creating new file (first version)</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>037</MSGNR>
+     <TEXT>Next version of &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>038</MSGNR>
+     <TEXT>Updating version &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>039</MSGNR>
+     <TEXT>The file &amp;1 - &amp;2 was put to request &amp;3</TEXT>
     </T100>
    </T100>
   </asx:values>

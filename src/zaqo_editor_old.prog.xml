@@ -951,7 +951,362 @@
       </RPY_DYCATT>
       <RPY_DYCATT>
        <TYPE>CUST_CTRL</TYPE>
-       <NAME>EMPTY_300</NAME>
+       <NAME>EMPTY_0300</NAME>
+       <ELEMENT_OF>SCREEN</ELEMENT_OF>
+       <LINE>001</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>120</LENGTH>
+       <HEIGHT>024</HEIGHT>
+       <C_RESIZE_V>X</C_RESIZE_V>
+       <C_RESIZE_H>X</C_RESIZE_H>
+       <C_LINE_MIN>001</C_LINE_MIN>
+       <C_COLN_MIN>001</C_COLN_MIN>
+      </RPY_DYCATT>
+     </CONTAINERS>
+     <FIELDS>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>OKCODE</TYPE>
+       <NAME>GV_OK_CODE</NAME>
+       <TEXT>____________________</TEXT>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+      </RPY_DYFATC>
+     </FIELDS>
+     <FLOW_LOGIC>
+      <RPY_DYFLOW>
+       <LINE>PROCESS BEFORE OUTPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PBO_0300.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW/>
+      <RPY_DYFLOW>
+       <LINE>PROCESS AFTER INPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_EXIT AT EXIT-COMMAND.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_0300.</LINE>
+      </RPY_DYFLOW>
+     </FLOW_LOGIC>
+     <SPACES>
+      <item>0</item>
+      <item>1</item>
+      <item>0</item>
+      <item>0</item>
+      <item>1</item>
+      <item>1</item>
+     </SPACES>
+    </item>
+    <item>
+     <HEADER>
+      <PROGRAM>ZAQO_EDITOR_OLD</PROGRAM>
+      <SCREEN>0301</SCREEN>
+      <LANGUAGE>E</LANGUAGE>
+      <DESCRIPT>Edit table components</DESCRIPT>
+      <TYPE>M</TYPE>
+      <NEXTSCREEN>0301</NEXTSCREEN>
+      <LINES>024</LINES>
+      <COLUMNS>121</COLUMNS>
+     </HEADER>
+     <CONTAINERS>
+      <RPY_DYCATT>
+       <TYPE>SCREEN</TYPE>
+       <NAME>SCREEN</NAME>
+      </RPY_DYCATT>
+      <RPY_DYCATT>
+       <TYPE>CUST_CTRL</TYPE>
+       <NAME>EMPTY_0301</NAME>
+       <ELEMENT_OF>SCREEN</ELEMENT_OF>
+       <LINE>001</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>120</LENGTH>
+       <HEIGHT>024</HEIGHT>
+       <C_RESIZE_V>X</C_RESIZE_V>
+       <C_RESIZE_H>X</C_RESIZE_H>
+       <C_LINE_MIN>001</C_LINE_MIN>
+       <C_COLN_MIN>001</C_COLN_MIN>
+      </RPY_DYCATT>
+     </CONTAINERS>
+     <FIELDS>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>OKCODE</TYPE>
+       <NAME>GV_OK_CODE</NAME>
+       <TEXT>____________________</TEXT>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+      </RPY_DYFATC>
+     </FIELDS>
+     <FLOW_LOGIC>
+      <RPY_DYFLOW>
+       <LINE>PROCESS BEFORE OUTPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PBO_0300.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW/>
+      <RPY_DYFLOW>
+       <LINE>PROCESS AFTER INPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_EXIT AT EXIT-COMMAND.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_0300.</LINE>
+      </RPY_DYFLOW>
+     </FLOW_LOGIC>
+     <SPACES>
+      <item>0</item>
+      <item>1</item>
+      <item>0</item>
+      <item>0</item>
+      <item>1</item>
+      <item>1</item>
+     </SPACES>
+    </item>
+    <item>
+     <HEADER>
+      <PROGRAM>ZAQO_EDITOR_OLD</PROGRAM>
+      <SCREEN>0302</SCREEN>
+      <LANGUAGE>E</LANGUAGE>
+      <DESCRIPT>Edit table components</DESCRIPT>
+      <TYPE>M</TYPE>
+      <NEXTSCREEN>0302</NEXTSCREEN>
+      <LINES>024</LINES>
+      <COLUMNS>120</COLUMNS>
+     </HEADER>
+     <CONTAINERS>
+      <RPY_DYCATT>
+       <TYPE>SCREEN</TYPE>
+       <NAME>SCREEN</NAME>
+      </RPY_DYCATT>
+      <RPY_DYCATT>
+       <TYPE>CUST_CTRL</TYPE>
+       <NAME>EMPTY_0302</NAME>
+       <ELEMENT_OF>SCREEN</ELEMENT_OF>
+       <LINE>001</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>120</LENGTH>
+       <HEIGHT>024</HEIGHT>
+       <C_RESIZE_V>X</C_RESIZE_V>
+       <C_RESIZE_H>X</C_RESIZE_H>
+       <C_LINE_MIN>001</C_LINE_MIN>
+       <C_COLN_MIN>001</C_COLN_MIN>
+      </RPY_DYCATT>
+     </CONTAINERS>
+     <FIELDS>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>OKCODE</TYPE>
+       <NAME>GV_OK_CODE</NAME>
+       <TEXT>____________________</TEXT>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+      </RPY_DYFATC>
+     </FIELDS>
+     <FLOW_LOGIC>
+      <RPY_DYFLOW>
+       <LINE>PROCESS BEFORE OUTPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PBO_0300.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW/>
+      <RPY_DYFLOW>
+       <LINE>PROCESS AFTER INPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_EXIT AT EXIT-COMMAND.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_0300.</LINE>
+      </RPY_DYFLOW>
+     </FLOW_LOGIC>
+     <SPACES>
+      <item>0</item>
+      <item>1</item>
+      <item>0</item>
+      <item>0</item>
+      <item>1</item>
+      <item>1</item>
+     </SPACES>
+    </item>
+    <item>
+     <HEADER>
+      <PROGRAM>ZAQO_EDITOR_OLD</PROGRAM>
+      <SCREEN>0303</SCREEN>
+      <LANGUAGE>E</LANGUAGE>
+      <DESCRIPT>Edit table components</DESCRIPT>
+      <TYPE>M</TYPE>
+      <NEXTSCREEN>0303</NEXTSCREEN>
+      <LINES>024</LINES>
+      <COLUMNS>120</COLUMNS>
+     </HEADER>
+     <CONTAINERS>
+      <RPY_DYCATT>
+       <TYPE>SCREEN</TYPE>
+       <NAME>SCREEN</NAME>
+      </RPY_DYCATT>
+      <RPY_DYCATT>
+       <TYPE>CUST_CTRL</TYPE>
+       <NAME>EMPTY_0303</NAME>
+       <ELEMENT_OF>SCREEN</ELEMENT_OF>
+       <LINE>001</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>120</LENGTH>
+       <HEIGHT>024</HEIGHT>
+       <C_RESIZE_V>X</C_RESIZE_V>
+       <C_RESIZE_H>X</C_RESIZE_H>
+       <C_LINE_MIN>001</C_LINE_MIN>
+       <C_COLN_MIN>001</C_COLN_MIN>
+      </RPY_DYCATT>
+     </CONTAINERS>
+     <FIELDS>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>OKCODE</TYPE>
+       <NAME>GV_OK_CODE</NAME>
+       <TEXT>____________________</TEXT>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+      </RPY_DYFATC>
+     </FIELDS>
+     <FLOW_LOGIC>
+      <RPY_DYFLOW>
+       <LINE>PROCESS BEFORE OUTPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PBO_0300.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW/>
+      <RPY_DYFLOW>
+       <LINE>PROCESS AFTER INPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_EXIT AT EXIT-COMMAND.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_0300.</LINE>
+      </RPY_DYFLOW>
+     </FLOW_LOGIC>
+     <SPACES>
+      <item>0</item>
+      <item>1</item>
+      <item>0</item>
+      <item>0</item>
+      <item>1</item>
+      <item>1</item>
+     </SPACES>
+    </item>
+    <item>
+     <HEADER>
+      <PROGRAM>ZAQO_EDITOR_OLD</PROGRAM>
+      <SCREEN>0304</SCREEN>
+      <LANGUAGE>E</LANGUAGE>
+      <DESCRIPT>Edit table components</DESCRIPT>
+      <TYPE>M</TYPE>
+      <NEXTSCREEN>0304</NEXTSCREEN>
+      <LINES>024</LINES>
+      <COLUMNS>120</COLUMNS>
+     </HEADER>
+     <CONTAINERS>
+      <RPY_DYCATT>
+       <TYPE>SCREEN</TYPE>
+       <NAME>SCREEN</NAME>
+      </RPY_DYCATT>
+      <RPY_DYCATT>
+       <TYPE>CUST_CTRL</TYPE>
+       <NAME>EMPTY_0304</NAME>
+       <ELEMENT_OF>SCREEN</ELEMENT_OF>
+       <LINE>001</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>120</LENGTH>
+       <HEIGHT>024</HEIGHT>
+       <C_RESIZE_V>X</C_RESIZE_V>
+       <C_RESIZE_H>X</C_RESIZE_H>
+       <C_LINE_MIN>001</C_LINE_MIN>
+       <C_COLN_MIN>001</C_COLN_MIN>
+      </RPY_DYCATT>
+     </CONTAINERS>
+     <FIELDS>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>OKCODE</TYPE>
+       <NAME>GV_OK_CODE</NAME>
+       <TEXT>____________________</TEXT>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+      </RPY_DYFATC>
+     </FIELDS>
+     <FLOW_LOGIC>
+      <RPY_DYFLOW>
+       <LINE>PROCESS BEFORE OUTPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PBO_0300.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW/>
+      <RPY_DYFLOW>
+       <LINE>PROCESS AFTER INPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_EXIT AT EXIT-COMMAND.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE PAI_0300.</LINE>
+      </RPY_DYFLOW>
+     </FLOW_LOGIC>
+     <SPACES>
+      <item>0</item>
+      <item>1</item>
+      <item>0</item>
+      <item>0</item>
+      <item>1</item>
+      <item>1</item>
+     </SPACES>
+    </item>
+    <item>
+     <HEADER>
+      <PROGRAM>ZAQO_EDITOR_OLD</PROGRAM>
+      <SCREEN>0305</SCREEN>
+      <LANGUAGE>E</LANGUAGE>
+      <DESCRIPT>Edit table components</DESCRIPT>
+      <TYPE>M</TYPE>
+      <NEXTSCREEN>0305</NEXTSCREEN>
+      <LINES>024</LINES>
+      <COLUMNS>120</COLUMNS>
+     </HEADER>
+     <CONTAINERS>
+      <RPY_DYCATT>
+       <TYPE>SCREEN</TYPE>
+       <NAME>SCREEN</NAME>
+      </RPY_DYCATT>
+      <RPY_DYCATT>
+       <TYPE>CUST_CTRL</TYPE>
+       <NAME>EMPTY_0305</NAME>
        <ELEMENT_OF>SCREEN</ELEMENT_OF>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
@@ -1146,12 +1501,142 @@
       <item>1</item>
      </SPACES>
     </item>
+    <item>
+     <HEADER>
+      <PROGRAM>ZAQO_EDITOR_OLD</PROGRAM>
+      <SCREEN>0920</SCREEN>
+      <LANGUAGE>E</LANGUAGE>
+      <DESCRIPT>Add new field</DESCRIPT>
+      <TYPE>M</TYPE>
+      <NEXTSCREEN>0920</NEXTSCREEN>
+      <LINES>004</LINES>
+      <COLUMNS>065</COLUMNS>
+     </HEADER>
+     <CONTAINERS>
+      <RPY_DYCATT>
+       <TYPE>SCREEN</TYPE>
+       <NAME>SCREEN</NAME>
+      </RPY_DYCATT>
+     </CONTAINERS>
+     <FIELDS>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>ZSAQO_NEW_FIELD-F_NAME</NAME>
+       <TEXT>Name________________</TEXT>
+       <LINE>001</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>2</MODIFIC>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>ZSAQO_NEW_FIELD-F_NAME</NAME>
+       <TEXT>_____________________________________________________________</TEXT>
+       <ROLLING>X</ROLLING>
+       <LINE>001</LINE>
+       <COLUMN>022</COLUMN>
+       <LENGTH>061</LENGTH>
+       <VISLENGTH>043</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <GROUP1>OBL</GROUP1>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>X</MODIFIC>
+       <FOREIGNKEY>X</FOREIGNKEY>
+       <INPUT_FLD>X</INPUT_FLD>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>R</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>ZSAQO_NEW_FIELD-F_TYPE</NAME>
+       <TEXT>Table_&amp;_field_______</TEXT>
+       <LINE>002</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>2</MODIFIC>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>ZSAQO_NEW_FIELD-F_TYPE</NAME>
+       <TEXT>_____________________________________________________________</TEXT>
+       <ROLLING>X</ROLLING>
+       <LINE>002</LINE>
+       <COLUMN>022</COLUMN>
+       <LENGTH>061</LENGTH>
+       <VISLENGTH>043</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <GROUP1>OBL</GROUP1>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>X</MODIFIC>
+       <FOREIGNKEY>X</FOREIGNKEY>
+       <INPUT_FLD>X</INPUT_FLD>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>R</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>OKCODE</TYPE>
+       <NAME>GV_OK_CODE</NAME>
+       <TEXT>____________________</TEXT>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+      </RPY_DYFATC>
+     </FIELDS>
+     <FLOW_LOGIC>
+      <RPY_DYFLOW>
+       <LINE>PROCESS BEFORE OUTPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE pbo_0920.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW/>
+      <RPY_DYFLOW>
+       <LINE>PROCESS AFTER INPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>MODULE pai_0920.</LINE>
+      </RPY_DYFLOW>
+     </FLOW_LOGIC>
+     <SPACES>
+      <item>0</item>
+      <item>2</item>
+      <item>0</item>
+      <item>0</item>
+      <item>2</item>
+     </SPACES>
+    </item>
    </DYNPROS>
    <CUA>
     <ADM>
      <ACTCODE>000002</ACTCODE>
      <MENCODE>000011</MENCODE>
-     <PFKCODE>000004</PFKCODE>
+     <PFKCODE>000005</PFKCODE>
     </ADM>
     <STA>
      <RSMPE_STAT>
@@ -1161,13 +1646,6 @@
       <PFKCODE>000001</PFKCODE>
       <BUTCODE>0001</BUTCODE>
       <INT_NOTE>0100</INT_NOTE>
-     </RSMPE_STAT>
-     <RSMPE_STAT>
-      <CODE>1010</CODE>
-      <MODAL>P</MODAL>
-      <PFKCODE>000004</PFKCODE>
-      <BUTCODE>0001</BUTCODE>
-      <INT_NOTE>Where used list</INT_NOTE>
      </RSMPE_STAT>
      <RSMPE_STAT>
       <CODE>OK_CANCEL</CODE>
@@ -1195,11 +1673,11 @@
      <RSMPE_FUNT>
       <CODE>CANCEL</CODE>
       <TEXTNO>001</TEXTNO>
-      <TYPE>E</TYPE>
       <TEXT_TYPE>S</TEXT_TYPE>
       <TEXT_NAME>ICON_CANCEL</TEXT_NAME>
       <ICON_ID>@0W@</ICON_ID>
       <FUN_TEXT>Cancel</FUN_TEXT>
+      <ICON_TEXT>Cancel</ICON_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>CHANGE</CODE>
@@ -1207,8 +1685,8 @@
       <TEXT_TYPE>S</TEXT_TYPE>
       <TEXT_NAME>ICON_CHANGE</TEXT_NAME>
       <ICON_ID>@0Z@</ICON_ID>
-      <FUN_TEXT>Change parameters</FUN_TEXT>
-      <INFO_TEXT>Change parameters...</INFO_TEXT>
+      <FUN_TEXT>Change all parameters</FUN_TEXT>
+      <ICON_TEXT>Change all parameters</ICON_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>CLNT_COPY</CODE>
@@ -1220,29 +1698,12 @@
       <INFO_TEXT>Copy to another client ...</INFO_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
-      <CODE>DEEP_SCAN</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_SEARCH</TEXT_NAME>
-      <ICON_ID>@13@</ICON_ID>
-      <FUN_TEXT>Code scan</FUN_TEXT>
-      <ICON_TEXT>Code scan</ICON_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
       <CODE>DEL_OPT</CODE>
       <TEXTNO>001</TEXTNO>
       <TEXT_TYPE>S</TEXT_TYPE>
       <TEXT_NAME>ICON_DELETE</TEXT_NAME>
       <ICON_ID>@11@</ICON_ID>
       <FUN_TEXT>Delete option</FUN_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
-      <CODE>ENTER</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_OKAY</TEXT_NAME>
-      <ICON_ID>@0V@</ICON_ID>
-      <FUN_TEXT>Ok</FUN_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>EXIT</CODE>
@@ -1255,38 +1716,13 @@
       <PATH>A</PATH>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
-      <CODE>FIND_REF</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_REFERENCE_LIST</TEXT_NAME>
-      <ICON_ID>@3A@</ICON_ID>
-      <FUN_TEXT>Where-Used List</FUN_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
-      <CODE>LAST_CALL</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_ABAP</TEXT_NAME>
-      <ICON_ID>@9U@</ICON_ID>
-      <FUN_TEXT>Last call</FUN_TEXT>
-      <ICON_TEXT>Last call</ICON_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
-      <CODE>MANUAL</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_USERGROUP</TEXT_NAME>
-      <ICON_ID>@ID@</ICON_ID>
-      <FUN_TEXT>Manual search</FUN_TEXT>
-      <ICON_TEXT>Manual search</ICON_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
       <CODE>OK</CODE>
       <TEXTNO>001</TEXTNO>
       <TEXT_TYPE>S</TEXT_TYPE>
       <TEXT_NAME>ICON_OKAY</TEXT_NAME>
       <ICON_ID>@0V@</ICON_ID>
       <FUN_TEXT>Ok</FUN_TEXT>
+      <ICON_TEXT>Ok</ICON_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>SAVE</CODE>
@@ -1295,15 +1731,6 @@
       <TEXT_NAME>ICON_SYSTEM_SAVE</TEXT_NAME>
       <ICON_ID>@2L@</ICON_ID>
       <FUN_TEXT>Save</FUN_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
-      <CODE>SCAN</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_SEARCH</TEXT_NAME>
-      <ICON_ID>@13@</ICON_ID>
-      <FUN_TEXT>Code scan</FUN_TEXT>
-      <ICON_TEXT>Code scan</ICON_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>TRANSPORT</CODE>
@@ -1320,8 +1747,8 @@
       <TEXT_TYPE>S</TEXT_TYPE>
       <TEXT_NAME>ICON_DISPLAY</TEXT_NAME>
       <ICON_ID>@10@</ICON_ID>
-      <FUN_TEXT>Display parameters</FUN_TEXT>
-      <INFO_TEXT>Display parameters ...</INFO_TEXT>
+      <FUN_TEXT>Display all parameters</FUN_TEXT>
+      <ICON_TEXT>Display all parameters</ICON_TEXT>
      </RSMPE_FUNT>
     </FUN>
     <MEN>
@@ -1362,24 +1789,6 @@
       <PFNO>13</PFNO>
      </RSMPE_BUT>
      <RSMPE_BUT>
-      <PFK_CODE>000001</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>03</NO>
-      <PFNO>16</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000001</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>04</NO>
-      <PFNO>14</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000001</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>05</NO>
-      <PFNO>09</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
       <PFK_CODE>000003</PFK_CODE>
       <CODE>0001</CODE>
       <NO>01</NO>
@@ -1389,24 +1798,6 @@
       <PFK_CODE>000003</PFK_CODE>
       <CODE>0001</CODE>
       <NO>02</NO>
-      <PFNO>12</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000004</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>01</NO>
-      <PFNO>13</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000004</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>02</NO>
-      <PFNO>18</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000004</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>03</NO>
       <PFNO>12</PFNO>
      </RSMPE_BUT>
     </BUT>
@@ -1477,36 +1868,6 @@
       <FUNCODE>CANCEL</FUNCODE>
       <FUNNO>001</FUNNO>
      </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000004</CODE>
-      <PFNO>12</PFNO>
-      <FUNCODE>CANCEL</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000004</CODE>
-      <PFNO>13</PFNO>
-      <FUNCODE>LAST_CALL</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000004</CODE>
-      <PFNO>14</PFNO>
-      <FUNCODE>DEEP_SCAN</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000004</CODE>
-      <PFNO>16</PFNO>
-      <FUNCODE>MANUAL</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000004</CODE>
-      <PFNO>18</PFNO>
-      <FUNCODE>SCAN</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
     </PFK>
     <SET>
      <RSMPE_STAF>
@@ -1540,26 +1901,6 @@
      <RSMPE_STAF>
       <STATUS>0100</STATUS>
       <FUNCTION>VIEW</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>1010</STATUS>
-      <FUNCTION>CANCEL</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>1010</STATUS>
-      <FUNCTION>DEEP_SCAN</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>1010</STATUS>
-      <FUNCTION>LAST_CALL</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>1010</STATUS>
-      <FUNCTION>MANUAL</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>1010</STATUS>
-      <FUNCTION>SCAN</FUNCTION>
      </RSMPE_STAF>
      <RSMPE_STAF>
       <STATUS>OK_CANCEL</STATUS>
@@ -1607,19 +1948,6 @@
       <SUB_CODE>0001</SUB_CODE>
       <MODAL>P</MODAL>
       <INT_NOTE>Dialog screen</INT_NOTE>
-     </RSMPE_ATRT>
-     <RSMPE_ATRT>
-      <OBJ_TYPE>P</OBJ_TYPE>
-      <OBJ_CODE>000004</OBJ_CODE>
-      <MODAL>P</MODAL>
-      <INT_NOTE>Where used list</INT_NOTE>
-     </RSMPE_ATRT>
-     <RSMPE_ATRT>
-      <OBJ_TYPE>B</OBJ_TYPE>
-      <OBJ_CODE>000004</OBJ_CODE>
-      <SUB_CODE>0001</SUB_CODE>
-      <MODAL>P</MODAL>
-      <INT_NOTE>Where used list</INT_NOTE>
      </RSMPE_ATRT>
     </DOC>
     <TIT>
@@ -1757,41 +2085,6 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_BL_NAM</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>32</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_BL_TYP</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>38</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_INCL</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>20</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_LINE</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>36</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_MAIN</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>20</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
-    <item>
-     <ID>S</ID>
      <KEY>P_NAME</KEY>
      <ENTRY>Name</ENTRY>
      <LENGTH>12</LENGTH>
@@ -1801,20 +2094,6 @@
      <KEY>P_OPT_ID</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>17</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_O_DESC</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>9</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_O_PREV</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>9</LENGTH>
      <SPLIT>D</SPLIT>
     </item>
     <item>

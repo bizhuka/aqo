@@ -448,16 +448,21 @@ METHOD create.
 
 **********************************************************************
   " Call save for user
-  CHECK lv_in_editor <> abap_true AND
-   ( lt_declared_field IS NOT INITIAL OR lv_changed = abap_true ).
+  CHECK lv_in_editor <> abap_true.
 
-  " Or something like that SY-SYSID <> 'DEV'
-  IF zcl_aqo_helper=>is_dev_mandt( ) <> abap_true.
-    MESSAGE s006(zaqo_message) WITH iv_package_id iv_option_id.
-    zcx_aqo_exception=>raise_sys_error( ).
+  IF lt_declared_field IS NOT INITIAL OR lv_changed = abap_true.
+    " Or something like that SY-SYSID <> 'DEV'
+    IF zcl_aqo_helper=>is_dev_mandt( ) <> abap_true.
+      MESSAGE s006(zaqo_message) WITH iv_package_id iv_option_id.
+      zcx_aqo_exception=>raise_sys_error( ).
+    ENDIF.
+
+    ro_opt->save( ).
+  ELSE.
+    zcl_aqo_menu=>get_menu(
+      iv_package_id = iv_package_id
+      iv_option_id  = iv_option_id ).
   ENDIF.
-
-  ro_opt->save( ).
 ENDMETHOD.
 
 
@@ -603,12 +608,17 @@ METHOD save.
     lv_is_class   TYPE abap_bool,
     lv_in_editor  TYPE abap_bool,
     lv_error_text TYPE text255,
+    lv_is_dev     TYPE abap_bool,
+    lo_error      TYPE REF TO zcx_aqo_exception,
     BEGIN OF ls_error_text,
       part1 TYPE symsgv,
       part2 TYPE symsgv,
       part3 TYPE symsgv,
       part4 TYPE symsgv,
     END OF ls_error_text.
+
+  " Is dev ?
+  lv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
 
   " Own dialogs (iv_confirm = abap_true)
   IF zcl_aqo_helper=>is_in_editor( iv_is_sapui5 = abap_true ) <> abap_true.
@@ -660,6 +670,16 @@ METHOD save.
     zcx_aqo_exception=>raise_sys_error( ).
   ENDIF.
 
+  " Always put in request
+  IF lv_in_editor = abap_true AND lv_is_dev = abap_true AND sy-mandt = iv_mandt.
+    TRY.
+        transport( ).
+      CATCH zcx_aqo_exception INTO lo_error.
+        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
+    ENDTRY.
+  ENDIF.
+
   " Data already set to mt_field_value
 
   " Technical info
@@ -687,6 +707,12 @@ METHOD save.
   MODIFY ztaqo_option CLIENT SPECIFIED FROM ms_db_item.
   COMMIT WORK AND WAIT.
 
+  " Always put in request
+  IF lv_in_editor = abap_true AND lv_is_dev <> abap_true.
+    MESSAGE 'The option was saved. Please copy or export it to DEV system!' TYPE 'S' DISPLAY LIKE 'W'.
+    RETURN.
+  ENDIF.
+
   " Show info
   CONCATENATE ms_db_item-package_id ` - ` ms_db_item-option_id ` MANDT = ` iv_mandt INTO lv_text.
   MESSAGE s516(ed) WITH lv_text.
@@ -696,64 +722,27 @@ ENDMETHOD.
 
 
 METHOD transport.
-  DATA : lt_e071  TYPE STANDARD TABLE OF e071  WITH DEFAULT KEY,
-         lt_e071k TYPE STANDARD TABLE OF e071k WITH DEFAULT KEY,
-         ls_e071  TYPE e071,
-         ls_e071k TYPE e071k,
-         lv_task  TYPE e070-trkorr.
+  DATA:
+    lv_task TYPE e070-trkorr.
+
+  " No need to transport
+  IF ms_db_item-package_id CP '$*'.
+    MESSAGE `No need to transport temporary options` TYPE 'S'.
+    RETURN.
+  ENDIF.
 
   lv_task = iv_task.
-  IF zcl_aqo_helper=>is_in_editor( iv_is_sapui5 = abap_true ) <> abap_true.
-    " select request/task
-    CALL FUNCTION 'TR_ORDER_CHOICE_CORRECTION'
-      EXPORTING
-        iv_category = 'SYST'                                "#EC NOTEXT
-      IMPORTING
-        ev_task     = lv_task
-      EXCEPTIONS
-        OTHERS      = 1.
-    IF sy-subrc <> 0.
-      zcx_aqo_exception=>raise_sys_error( ).
-    ENDIF.
-  ENDIF.
+  zcl_aqo_helper=>check_in_request(
+   EXPORTING
+     iv_table_name = 'ZTAQO_OPTION'
+     iv_key1       = sy-mandt
+     iv_key2       = ms_db_item-package_id
+     iv_key3       = ms_db_item-option_id
+   CHANGING
+     cv_task       = lv_task ).
 
-**   check unsaved data exist
-*  IF check_unsaved_data( ) EQ abap_true.
-**     save data
-*    data_save( ).
-*  ENDIF.
-
-  ls_e071-pgmid       = 'R3TR'.
-  ls_e071-object      = 'TABU'.
-  ls_e071-obj_name    = 'ZTAQO_OPTION'.
-  ls_e071-objfunc     = 'K'.
-  APPEND ls_e071 TO lt_e071.
-
-  ls_e071k-pgmid         = 'R3TR'.
-  ls_e071k-object        = 'TABU'.
-  ls_e071k-objname       = 'ZTAQO_OPTION'.
-  ls_e071k-mastertype    = 'TABU'.
-  ls_e071k-mastername    = 'ZTAQO_OPTION'.
-  ls_e071k-tabkey+0(3)   = sy-mandt.
-  ls_e071k-tabkey+3(30)  = ms_db_item-package_id.
-  ls_e071k-tabkey+33(30) = ms_db_item-option_id.
-  APPEND ls_e071k TO lt_e071k.
-
-* include data to request
-  CALL FUNCTION 'TR_APPEND_TO_COMM_OBJS_KEYS'
-    EXPORTING
-      wi_trkorr = lv_task
-    TABLES
-      wt_e071   = lt_e071
-      wt_e071k  = lt_e071k
-    EXCEPTIONS
-      OTHERS    = 1.
-  IF sy-subrc = 0.
-    MESSAGE s023(zaqo_message) WITH ms_db_item-package_id ms_db_item-option_id lv_task.
-    MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
-     INTO rv_info.
-  ELSE.
-    zcx_aqo_exception=>raise_sys_error( ).
-  ENDIF.
+  "Return info if ok (otherwise exception)
+  CHECK sy-msgid IS NOT INITIAL AND sy-msgty IS NOT INITIAL AND sy-msgno IS NOT INITIAL.
+  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO rv_info.
 ENDMETHOD.
 ENDCLASS.

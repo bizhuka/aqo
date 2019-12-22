@@ -66,7 +66,8 @@ CLASS lcl_main IMPLEMENTATION.
     DATA:
       lv_ref         TYPE REF TO data,
       lt_empty_field TYPE stringtab,
-      lo_error       TYPE REF TO zcx_aqo_exception.
+      lo_error       TYPE REF TO zcx_aqo_exception,
+      lv_message     TYPE string.
 
     " Initials values in editor
     set_default_values(
@@ -91,8 +92,10 @@ CLASS lcl_main IMPLEMENTATION.
 
     " After editing and saving data launch it again
     " Put BREAK-POINT on the message
-    MESSAGE 'Now edit option in tr ZAQO_BSP_EDITOR, ZAQO_EDITOR or ZAQO_EDITOR_OLD'(t02) TYPE 'S'.
+    lv_message = 'Now edit option by menu or in tr ZAQO_EDITOR_OLD, ZAQO_EDITOR, ZAQO_BSP_EDITOR'(t02).
+    MESSAGE lv_message TYPE 'S'.
     " Double click here --> ms_opt <-- data was changed
+    WRITE lv_message COLOR 2.
   ENDMETHOD.
 
   METHOD set_default_values.
@@ -170,7 +173,8 @@ CLASS lcl_main IMPLEMENTATION.
 
 *    CONCATENATE sy-datum sy-uzeit INTO cs_opt-datetime.
 
-    cs_opt-sum          = '-9999999999.99'.
+    " @see before_option_save
+    cs_opt-sum          = '123.00'. " '-9999999999.99' error for negative values
 
     cs_opt-edit_mask    = '*MA"SK'.
 

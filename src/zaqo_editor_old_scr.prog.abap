@@ -8,51 +8,6 @@ PARAMETERS : p_pack   TYPE ztaqo_option-package_id OBLIGATORY MEMORY ID zaqo_pac
 SELECTION-SCREEN END OF BLOCK bl_main.
 
 **********************************************************************
-" Where used
-SELECTION-SCREEN BEGIN OF SCREEN 1010.
-SELECTION-SCREEN BEGIN OF BLOCK bl_where_used.
-
-PARAMETERS:
-  p_main   TYPE abap_callstack_line-mainprogram MODIF ID par,
-  p_incl   TYPE abap_callstack_line-include     MODIF ID par,
-  p_line   TYPE abap_callstack_line-line        MODIF ID par,
-  p_bl_typ TYPE abap_callstack_line-blocktype   MODIF ID par,
-  p_bl_nam TYPE abap_callstack_line-blockname   MODIF ID par.
-
-SELECTION-SCREEN END OF BLOCK bl_where_used.
-SELECTION-SCREEN END OF SCREEN 1010.
-
-**********************************************************************
-SELECTION-SCREEN BEGIN OF SCREEN 1020.
-SELECTION-SCREEN BEGIN OF BLOCK bl_new_field.
-
-PARAMETERS:
-  p_name TYPE zcl_aqo_helper=>ts_field_desc-name      MODIF ID obl,
-  p_type TYPE zcl_aqo_helper=>ts_field_desc-rollname  MODIF ID obl.
-
-SELECTION-SCREEN END OF BLOCK bl_new_field.
-SELECTION-SCREEN END OF SCREEN 1020.
-
-**********************************************************************
-SELECTION-SCREEN BEGIN OF SCREEN 1030.
-SELECTION-SCREEN BEGIN OF BLOCK bl_change_desc.
-
-PARAMETERS:
-  p_o_desc TYPE ztaqo_option-description     MODIF ID obl,
-  p_o_prev TYPE ztaqo_option-prev_value_cnt  MODIF ID obl.
-
-SELECTION-SCREEN END OF BLOCK bl_change_desc.
-SELECTION-SCREEN END OF SCREEN 1030.
-**********************************************************************
-
-SELECTION-SCREEN FUNCTION KEY:
- 1,
- 2,
- 3,
- 4.
-
-
-
 
 " SH deleted from dictionary (for easy activation)
 
@@ -60,50 +15,21 @@ AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_pack.
   lcl_opt=>on_f4( ).
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_opt_id.
-  lcl_opt=>on_f4( ).
+  lcl_opt=>on_f4( abap_true ).
 
+INITIALIZATION.
+  lcl_opt=>initialization( ).
 
 AT SELECTION-SCREEN OUTPUT.
   CASE sy-dynnr.
     WHEN 1000.
       lcl_opt=>pbo( ).
-
-    WHEN 1010.
-      go_where_used = lcl_where_used=>get_instance( ).
-      go_where_used->pbo( ).
-
-    WHEN 1020.
-      go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
-      go_fld_value_alv->pbo_1020( ).
-
-    WHEN 1030.
-      go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
-      go_fld_value_alv->pbo_1030( ).
-
   ENDCASE.
 
 AT SELECTION-SCREEN.
   CASE sy-dynnr.
     WHEN 1000.
       lcl_opt=>pai(
-       CHANGING
-         cv_cmd = sy-ucomm ).
-
-    WHEN 1010.
-      go_where_used = lcl_where_used=>get_instance( ).
-      go_where_used->pai(
-       CHANGING
-         cv_cmd = sy-ucomm ).
-
-    WHEN 1020.
-      go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
-      go_fld_value_alv->pai_1020(
-       CHANGING
-         cv_cmd = sy-ucomm ).
-
-    WHEN 1030.
-      go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
-      go_fld_value_alv->pai_1030(
        CHANGING
          cv_cmd = sy-ucomm ).
   ENDCASE.
@@ -117,3 +43,14 @@ START-OF-SELECTION.
 MODULE pai_exit INPUT.
   LEAVE TO SCREEN 0.
 ENDMODULE.                    "pai_exit INPUT
+
+
+**********************************************************************
+* Flex method. @see usage
+FORM call_by_name
+   USING
+     iv_method TYPE csequence.
+
+  " Call by name
+  CALL METHOD lcl_opt=>(iv_method).
+ENDFORM.

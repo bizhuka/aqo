@@ -2,66 +2,47 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt IMPLEMENTATION.
-  METHOD pbo.
+  METHOD initialization.
     DATA:
-      ls_icon TYPE smp_dyntxt.
+      lv_command TYPE syucomm.
 
-    " Macro for creating icons
-    DEFINE get_icon.
-      CLEAR ls_icon.
+    GET PARAMETER ID:
+     'ZAQO_PACKAGE_ID' FIELD p_pack,
+     'ZAQO_OPTION_ID'  FIELD p_opt_id,
+     'ZAQO_COMMAND'    FIELD lv_command.
 
-      ls_icon-icon_id   = &1.
-      ls_icon-text      = &2.
-      ls_icon-icon_text = &2.
-      ls_icon-quickinfo = &3.
-      &4                = ls_icon.
-    END-OF-DEFINITION.
+    " 1 time only
+    SET PARAMETER ID 'ZAQO_COMMAND' FIELD ''.
 
-    get_icon icon_reference_list
-             'Where-Used List'(wul) ''
-              sscrfields-functxt_01.
+    CHECK p_pack IS NOT INITIAL AND p_opt_id IS NOT INITIAL.
 
-    get_icon icon_export
-             ''  'Export option'(exp)
-             sscrfields-functxt_02.
+    pai( CHANGING cv_cmd = lv_command ).
+  ENDMETHOD.
 
-    IF zcl_aqo_helper=>is_dev_mandt( ) = abap_true.
-      get_icon icon_import
-               '' 'Import option'(imp)
-               sscrfields-functxt_03.
+  METHOD pbo.
+    IF zcl_aqo_helper=>is_in_editor( iv_is_viewer = abap_true ) = abap_true.
+      SET TITLEBAR 'ST_MAIN' WITH 'View option'(vop).
+    ELSE.
+      SET TITLEBAR 'ST_MAIN' WITH 'Edit option'(eop).
     ENDIF.
-
-    get_icon icon_change_text
-             '' 'Change description'(ctd)
-             sscrfields-functxt_04.
   ENDMETHOD.
 
   METHOD pai.
     DATA:
       lo_err TYPE REF TO zcx_aqo_exception.
 
+    " Change menu
+    mo_menu = zcl_aqo_menu=>get_menu(
+      iv_package_id = p_pack
+      iv_option_id  = p_opt_id ).
+
     TRY.
         CASE cv_cmd.
           WHEN 'SAVE'.
             do_save( iv_mandt = sy-mandt ).
 
-          WHEN 'TRANSPORT'.
-            mo_option->transport( ).
-
-          WHEN 'DEL_OPT'.
-            mo_option->delete( ).
-
-          WHEN 'FC01'.
-            start_of_selection( mc_action_show_usage ).
-
-          WHEN 'FC02'.
-            start_of_selection( mc_action_export ).
-
-          WHEN 'FC03'.
-            start_of_selection( mc_action_import ).
-
-          WHEN 'FC04'.
-            start_of_selection( mc_action_change_description ).
+          WHEN mc_action-new_option.
+            start_of_selection( mc_action-new_option ).
 
           WHEN OTHERS.
             RETURN.
@@ -86,11 +67,6 @@ CLASS lcl_opt IMPLEMENTATION.
         mo_option = zcl_aqo_option=>create(
            iv_package_id  = p_pack
            iv_option_id   = p_opt_id ).
-
-        " Is new
-        IF mo_option->ms_db_item-fields IS INITIAL.
-          MESSAGE 'Create new option'(crt) TYPE 'S'.
-        ENDIF.
 
         " Mandt is open
         mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
@@ -123,37 +99,34 @@ CLASS lcl_opt IMPLEMENTATION.
     IF lv_action IS INITIAL.
       CASE mv_is_dev.
         WHEN abap_true.
-          lv_action = mc_action_tech_view.
+          lv_action = mc_action-tech_view.
 
           " Show immediately values
         WHEN abap_false.
-          lv_action = mc_action_edit_values.
+          lv_action = mc_action-edit_values.
       ENDCASE.
+    ENDIF.
+
+    " Create new option
+    IF lv_action = mc_action-new_option.
+      lv_action = mc_action-tech_view.
+      MESSAGE 'Create new option'(crt) TYPE 'S'.
+      " Is not new ?
+      IF mo_option->ms_db_item-fields IS NOT INITIAL.
+        MESSAGE 'Option already exist' TYPE 'S' DISPLAY LIKE 'E'.
+      ENDIF.
     ENDIF.
 
     " Decide what to do
     lo_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
     CASE lv_action.
-      WHEN mc_action_tech_view.
+      WHEN mc_action-tech_view.
         lo_fld_value_alv->call_screen( ).
 
-      WHEN mc_action_edit_values.
+      WHEN mc_action-edit_values.
         " Custom checks
         CHECK lo_fld_value_alv->data_check( ) = abap_true.
         lo_fld_value_alv->sel_screen_show( ).
-
-      WHEN mc_action_show_usage.
-        lo_fld_value_alv->find_ref( ).
-
-      WHEN mc_action_export.
-        lo_fld_value_alv->export( ).
-
-      WHEN mc_action_import.
-        lo_fld_value_alv->import( ).
-
-      WHEN mc_action_change_description.
-        lo_fld_value_alv->change_description( ).
-
     ENDCASE.
 
   ENDMETHOD.                    "START_OF_SELECTION
@@ -172,31 +145,37 @@ CLASS lcl_opt IMPLEMENTATION.
       ls_fld_value->cur_value = ir_data.
     ENDIF.
 
-    CASE ls_fld_value->ui_type.
-      WHEN zcl_aqo_helper=>mc_ui_string.
-        ls_fld_value->icon = icon_change_text.
-        ls_fld_value->value_button = icon_display_more.
+    " Quick edit for all type of fields
+    ls_fld_value->value_button = icon_display_more.
 
-      WHEN zcl_aqo_helper=>mc_ui_range.
-        ls_fld_value->icon = icon_interval_include_green.
-
-      WHEN zcl_aqo_helper=>mc_ui_table.
-        ls_fld_value->icon = icon_wd_table.
-        ls_fld_value->value_button = icon_display_more.
-
-      WHEN OTHERS.
-        ls_fld_value->icon = icon_equal_green.
-    ENDCASE.
-
-    " Field catalog
-    IF ls_fld_value->ui_type = zcl_aqo_helper=>mc_ui_table.
-      ls_fld_value->catalog = icon_catalog.
-    ENDIF.
+    set_icons(
+     EXPORTING
+       iv_ui_type = ls_fld_value->ui_type
+     IMPORTING
+       ev_icon    = ls_fld_value->icon
+       ev_catalog = ls_fld_value->catalog ).
 
     " Show history
     IF lines( ls_fld_value->value ) > 1.
       ls_fld_value->history_logs = icon_protocol.
     ENDIF.
+  ENDMETHOD.
+
+  METHOD set_icons.
+    CASE iv_ui_type.
+      WHEN zcl_aqo_helper=>mc_ui_string.
+        ev_icon = icon_change_text.
+
+      WHEN zcl_aqo_helper=>mc_ui_range.
+        ev_icon = icon_interval_include_green.
+
+      WHEN zcl_aqo_helper=>mc_ui_table.
+        ev_icon = icon_wd_table.
+        ev_catalog = icon_catalog. " -< show field catalog
+
+      WHEN OTHERS.
+        ev_icon = icon_equal_green.
+    ENDCASE.
   ENDMETHOD.
 
   METHOD is_editable.
@@ -252,6 +231,21 @@ CLASS lcl_opt IMPLEMENTATION.
       lt_dynp TYPE STANDARD TABLE OF dynpread,
       ls_dynp TYPE REF TO dynpread.
 
+    " Just check code existance
+    DO 1 TIMES.
+      CHECK iv_code_scan = abap_true.
+
+      " Read from memory
+
+      GET PARAMETER ID:
+       'ZAQO_PACKAGE_ID' FIELD p_pack,
+       'ZAQO_OPTION_ID'  FIELD p_opt_id.
+
+      CHECK p_pack IS NOT INITIAL AND p_opt_id IS NOT INITIAL.
+      code_scan_f4( ).
+      RETURN.
+    ENDDO.
+
     " Show SH
     CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'
       EXPORTING
@@ -293,5 +287,47 @@ CLASS lcl_opt IMPLEMENTATION.
         dynumb     = sy-dynnr
       TABLES
         dynpfields = lt_dynp.
+  ENDMETHOD.
+
+  METHOD code_scan_f4.
+    DATA:
+      lt_ret   TYPE STANDARD TABLE OF ddshretval,
+      ls_ret   TYPE REF TO ddshretval,
+      ls_usage TYPE zcl_aqo_helper=>ts_usage.
+    MESSAGE 'Check existence of option by code scanning. For search help use upper field!' TYPE 'S' DISPLAY LIKE 'W'.
+
+    " Show SH
+    CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'
+      EXPORTING
+        tabname    = 'ZSAQO_USER_SH'    " No need returns all fields in SH exit   "#EC NOTEXT
+        fieldname  = 'INDEX'            "#EC NOTEXT
+        searchhelp = 'ZHAQO_USAGE'      "#EC NOTEXT
+        dynpprog   = sy-repid
+        dynpnr     = sy-dynnr
+      TABLES
+        return_tab = lt_ret
+      EXCEPTIONS
+        OTHERS     = 5.
+    CHECK sy-subrc = 0.
+
+    " Write back
+    LOOP AT lt_ret REFERENCE INTO ls_ret WHERE fieldname = 'INCLUDE' OR fieldname = 'LINE'.
+      CASE ls_ret->fieldname.
+        WHEN 'INCLUDE'.
+          ls_usage-include = ls_ret->fieldval.
+        WHEN 'LINE'.
+          ls_usage-line = ls_ret->fieldval.
+      ENDCASE.
+    ENDLOOP.
+
+    IF ls_usage-include IS INITIAL OR ls_usage-line IS INITIAL.
+      MESSAGE s015(zaqo_message) DISPLAY LIKE 'E'.
+      RETURN.
+    ENDIF.
+
+    " Drilldown
+    zcl_aqo_helper=>navigate_to(
+     iv_include  = ls_usage-include
+     iv_position = ls_usage-line ).
   ENDMETHOD.
 ENDCLASS.                    "LCL_MAIN IMPLEMENTATION

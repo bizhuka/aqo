@@ -15,7 +15,7 @@
      <CLSNAME>ZIF_AQO_EXT</CLSNAME>
      <CMPNAME>BEFORE_OPTION_SAVE</CMPNAME>
      <LANGU>E</LANGU>
-     <DESCRIPT>Check an option before saving</DESCRIPT>
+     <DESCRIPT>Check an option before saving (Optional)</DESCRIPT>
     </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>

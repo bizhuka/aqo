@@ -15,7 +15,7 @@ public section.
 
   data BUKRS type BUKRS read-only value '1000' ##NO_TEXT.
   data BUKRS_RANGE type TR_BUKRS_RANGE read-only .
-  data BUKRS_TEXT type STRING read-only value 'BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS BUKRS' ##NO_TEXT.
+  data BUKRS_TEXT type STRING read-only value '123' ##NO_TEXT.
   data T002_TAB type TTAB_T002 read-only .
 
   methods CONSTRUCTOR .

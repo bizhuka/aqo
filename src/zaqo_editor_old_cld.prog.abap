@@ -2,16 +2,15 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
-   lcl_fld_value_alv lcl_table_alv lcl_scr_free_sel lcl_table_comp_alv lcl_string_memo lcl_where_used lcl_logs_alv.
+   lcl_fld_value_alv lcl_table_alv lcl_scr_free_sel lcl_table_comp_alv lcl_string_memo lcl_logs_alv.
   PUBLIC SECTION.
 
     CONSTANTS:
-      mc_action_tech_view          TYPE string VALUE 'TECH_VIEW',
-      mc_action_edit_values        TYPE string VALUE 'EDIT_VALUES',
-      mc_action_show_usage         TYPE string VALUE 'SHOW_USAGE',
-      mc_action_export             TYPE string VALUE 'EXPORT',
-      mc_action_import             TYPE string VALUE 'IMPORT',
-      mc_action_change_description TYPE string VALUE 'CHANGE_DESCRIPTION'.
+      BEGIN OF mc_action,
+        tech_view   TYPE string VALUE '_TECH_VIEW',
+        edit_values TYPE string VALUE '_EDIT_VALUES',
+        new_option  TYPE string VALUE '_NEW_OPTION',
+      END OF mc_action.
 
     TYPES:
       BEGIN OF ts_fld_value,
@@ -30,7 +29,9 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
       mt_fld_value TYPE STANDARD TABLE OF ts_fld_value WITH DEFAULT KEY,
 
       mv_read_only TYPE abap_bool, " Highest priority
-      mv_is_dev    TYPE abap_bool.
+      mv_is_dev    TYPE abap_bool,
+
+      mo_menu      TYPE REF TO zcl_aqo_menu.
 
     CLASS-METHODS:
       add_one_field
@@ -39,6 +40,13 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
           ir_data        TYPE REF TO data OPTIONAL
         RAISING
           zcx_aqo_exception,
+
+      set_icons
+        IMPORTING
+          iv_ui_type TYPE zcl_aqo_helper=>ts_field_value-ui_type
+        EXPORTING
+          ev_icon    TYPE icon_d
+          ev_catalog TYPE icon_d,
 
       is_editable
         IMPORTING
@@ -50,6 +58,8 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
         IMPORTING
           iv_mandt TYPE symandt,
 
+      initialization,
+
       start_of_selection
         IMPORTING
           iv_action TYPE string OPTIONAL,
@@ -60,7 +70,11 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
         CHANGING
           cv_cmd TYPE syucomm,
 
-      on_f4.
+      on_f4
+        IMPORTING
+          iv_code_scan TYPE abap_bool OPTIONAL,
+
+      code_scan_f4.
 ENDCLASS.                    "LCL_MAIN DEFINITION
 
 *----------------------------------------------------------------------*
@@ -99,7 +113,18 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
       mo_instance TYPE REF TO lcl_fld_value_alv.
 
     CLASS-METHODS:
-      get_instance RETURNING VALUE(ro_instance) TYPE REF TO lcl_fld_value_alv.
+      get_instance
+        RETURNING VALUE(ro_instance) TYPE REF TO lcl_fld_value_alv,
+
+      get_exclude_toolbar
+        IMPORTING
+                  iv_editable          TYPE abap_bool
+        RETURNING VALUE(rt_toolbar_ex) TYPE ui_functions,
+
+      add_new_field
+        EXPORTING
+          er_data       TYPE REF TO data
+          es_field_desc TYPE zcl_aqo_helper=>ts_field_desc.
 
     METHODS:
       call_screen,
@@ -110,13 +135,8 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
         CHANGING
           cv_cmd TYPE syucomm,
 
-      pbo_1020,
-      pai_1020
-        CHANGING
-          cv_cmd TYPE syucomm,
-
-      pbo_1030,
-      pai_1030
+      pbo_0920,
+      pai_0920
         CHANGING
           cv_cmd TYPE syucomm,
 
@@ -155,22 +175,9 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
         RETURNING
           VALUE(rv_text) TYPE rsdsselopt-low,
 
-      copy_2_client,
-
-      find_ref,
-
-      export,
-
-      import,
-
-      change_description,
-
-      do_update
+      edit_parameter
         IMPORTING
-          iv_set         TYPE string
-          iv_fields      TYPE ztaqo_option-fields         OPTIONAL
-          iv_description TYPE ztaqo_option-description    OPTIONAL
-          iv_prev_count  TYPE ztaqo_option-prev_value_cnt OPTIONAL.
+          is_fld_value TYPE REF TO lcl_opt=>ts_fld_value.
 
     DATA:
       mo_grid        TYPE REF TO cl_gui_alv_grid,
@@ -203,26 +210,51 @@ ENDCLASS.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
-CLASS lcl_table_comp_alv DEFINITION FINAL.
+CLASS lcl_table_comp_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
   PUBLIC SECTION.
 
-    CLASS-DATA:
-      mo_instance TYPE REF TO lcl_table_comp_alv.
-
     CLASS-METHODS:
-      get_instance RETURNING VALUE(ro_instance) TYPE REF TO lcl_table_comp_alv.
+      get_instance
+        IMPORTING
+                  VALUE(iv_level)    TYPE i OPTIONAL
+        RETURNING VALUE(ro_instance) TYPE REF TO lcl_table_comp_alv.
+
+    TYPES:
+      BEGIN OF ts_sub_fld_desc,
+        icon TYPE icon_d.
+        INCLUDE TYPE zcl_aqo_helper=>ts_field_desc AS field_desc.
+    TYPES:
+      catalog TYPE icon_d,
+      END OF ts_sub_fld_desc.
 
     DATA:
-      ms_fld_value  TYPE REF TO lcl_opt=>ts_fld_value,
-      mt_components TYPE STANDARD TABLE OF zcl_aqo_helper=>ts_field_desc WITH DEFAULT KEY,
+      ms_field_desc   TYPE REF TO zcl_aqo_helper=>ts_field_desc,
+      mt_sub_fld_desc TYPE STANDARD TABLE OF ts_sub_fld_desc WITH DEFAULT KEY,
+      mv_editable     TYPE abap_bool,
 
-      mv_refresh    TYPE abap_bool,
-      mr_grid       TYPE REF TO cl_gui_alv_grid.
+      mv_refresh      TYPE abap_bool,
+      mr_grid         TYPE REF TO cl_gui_alv_grid.
 
     METHODS:
       call_screen
         IMPORTING
-          is_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
+          is_field_desc TYPE REF TO zcl_aqo_helper=>ts_field_desc
+          iv_editable   TYPE abap_bool,
+
+      get_field_catalog
+        RETURNING VALUE(rt_fieldcat) TYPE lvc_t_fcat,
+
+      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
+        IMPORTING
+            e_column_id es_row_no,
+
+      on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
+        IMPORTING
+            e_object,
+
+      on_user_command FOR EVENT user_command OF cl_gui_alv_grid
+        IMPORTING
+            e_ucomm,
 
       pbo,
 
@@ -306,29 +338,6 @@ CLASS lcl_string_memo DEFINITION INHERITING FROM lcl_nested_instance FINAL.
       pai
         CHANGING
           cv_cmd TYPE syucomm.
-ENDCLASS.
-
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-CLASS lcl_where_used DEFINITION FINAL.
-  PUBLIC SECTION.
-    CLASS-DATA:
-      mo_instance TYPE REF TO lcl_where_used.
-
-    CLASS-METHODS:
-      get_instance
-        RETURNING VALUE(ro_instance) TYPE REF TO lcl_where_used.
-
-    METHODS:
-      call_screen,
-
-      pbo,
-
-      pai
-        CHANGING
-          cv_cmd TYPE syucomm,
-
-      deep_scan.
 ENDCLASS.
 
 *----------------------------------------------------------------------*
