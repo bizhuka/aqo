@@ -2,9 +2,10 @@
 #### tr. SE38-> ZAQO_TESTER, tr. SE24 -> ZCL_AQO_TESTER  ===> F8
 #### tr. ZAQO_EDITOR
 
-The main purpose of the library is to avoid [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants) and other `"permanent data"` from the code. And give the ability to user to change the `"constants"` in friendly interface.
+## Due to installation problems the [aqo_ui5](https://github.com/bizhuka/aqo_ui5) version should installed separately as an add-in
 
-#### Due to installation problems the [aqo_ui5](https://github.com/bizhuka/aqo_ui5) version should installed separately as an add-in
+
+The main purpose of the library is to avoid [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants) and other `"permanent data"` from the code. And give the ability to user to change the `"constants"` in friendly interface.
 
 Accounts by specific mask or texts in generated FI documents or range of BLART in selections are all good examples of options to maintain.
 
