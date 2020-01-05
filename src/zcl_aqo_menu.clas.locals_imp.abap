@@ -570,20 +570,13 @@ CLASS lcl_aqo_option IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _change.
-    DATA:
-      lo_error TYPE REF TO cx_sy_authorization_error.
+    SET PARAMETER ID:
+      'ZAQO_PACKAGE_ID' FIELD io_option->ms_db_item-package_id,
+      'ZAQO_OPTION_ID'  FIELD io_option->ms_db_item-option_id,
+      'ZAQO_COMMAND'    FIELD iv_command.
 
-    TRY.
-        SET PARAMETER ID:
-          'ZAQO_PACKAGE_ID' FIELD io_option->ms_db_item-package_id,
-          'ZAQO_OPTION_ID'  FIELD io_option->ms_db_item-option_id,
-          'ZAQO_COMMAND'    FIELD iv_command.
-
-        CALL TRANSACTION is_unq_menu->tcode " WITH AUTHORITY-CHECK "#EC CI_CALLTA
-          AND SKIP FIRST SCREEN.
-      CATCH cx_sy_authorization_error INTO lo_error.
-        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
-    ENDTRY.
+    CALL TRANSACTION is_unq_menu->tcode " WITH AUTHORITY-CHECK "#EC CI_CALLTA
+      AND SKIP FIRST SCREEN.
   ENDMETHOD.
 
   METHOD _save_in.

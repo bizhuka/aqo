@@ -14,7 +14,7 @@ TYPES:
     " Table in table
     emails  TYPE HASHED TABLE OF ts_email WITH UNIQUE KEY email,
     " Range in table
-    bukrs   TYPE RANGE OF t001-bukrs,
+    bukrs   TYPE RANGE OF bukrs,
     " and string
     memo    TYPE string,
 
@@ -29,14 +29,14 @@ TYPES:
     meins         TYPE meins,                " Char + conversion exit
     edit_mask     TYPE text30,               " CHAR
     pack_blocked  TYPE xsdboolean,           " ABAP_BOOL     swd_blocks
-    sum           TYPE wertv13,              " P with sign
+    sum           TYPE bf_rbetr,             " P with sign
     msg_count     TYPE syst-tabix,           " Number
     due_date      TYPE syst-datum,           " D
     due_time      TYPE syst-uzeit,           " T
     " datetime      TYPE xsddatetime_local,    " datetime NO component in OLD UI
     combo         TYPE laspez,
-    allowed_bukrs TYPE RANGE OF t001-bukrs,  " Range
-    blocked_bukrs TYPE RANGE OF t001-bukrs,  " Range 2
+    allowed_bukrs TYPE RANGE OF bukrs,  " Range
+    blocked_bukrs TYPE RANGE OF bukrs,  " Range 2
     some_numbers  TYPE RANGE OF syst-tabix,
     alt_land_text TYPE SORTED TABLE OF ts_alt_land WITH UNIQUE KEY land1,
     t002_tab      TYPE STANDARD TABLE OF t002 WITH DEFAULT KEY,

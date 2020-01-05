@@ -15,7 +15,7 @@ PARAMETERS:
   p_1_opt  TYPE ztaqo_option-option_id         MODIF ID gry,
   p_1_date TYPE ztaqo_option-created_date      MODIF ID gry,
 *  p_1_name TYPE ztaqo_option-created_uname     MODIF ID gry,
-  p_1_ntxt TYPE ztaqo_option-created_name_text MODIF ID gry,
+  p_1_ntxt TYPE ztaqo_option-created_name_txt  MODIF ID gry,
 
   p_1_desc TYPE ztaqo_option-description       MODIF ID deo, " DEV + OBL
   p_1_prev TYPE ztaqo_option-prev_value_cnt    MODIF ID deo, " DEV + OBL

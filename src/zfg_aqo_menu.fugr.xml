@@ -30,13 +30,11 @@
        <PARAMETER>EV_LAST_COMMAND</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Function Code</STEXT>
-       <INDEX> 001</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>CS_DB_ITEM</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Main table of options</STEXT>
-       <INDEX> 002</INDEX>
       </RSFDO>
      </DOCUMENTATION>
     </item>
@@ -74,24 +72,20 @@
        <PARAMETER>IV_PACKAGE_ID</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Package</STEXT>
-       <INDEX> 001</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>IV_OPTION_ID</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Option ID</STEXT>
-       <INDEX> 002</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>EV_OK</PARAMETER>
        <KIND>P</KIND>
-       <INDEX> 003</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>CS_INFO</PARAMETER>
        <KIND>P</KIND>
        <STEXT>OAOR file F4</STEXT>
-       <INDEX> 004</INDEX>
       </RSFDO>
      </DOCUMENTATION>
     </item>
@@ -125,25 +119,21 @@
        <PARAMETER>SHLP_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Table of elementary search helps</STEXT>
-       <INDEX> 001</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>RECORD_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Hit list</STEXT>
-       <INDEX> 002</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>SHLP</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Single (current) search help</STEXT>
-       <INDEX> 003</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>CALLCONTROL</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Control of the F4 process</STEXT>
-       <INDEX> 004</INDEX>
       </RSFDO>
      </DOCUMENTATION>
     </item>
@@ -177,25 +167,21 @@
        <PARAMETER>SHLP_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Table of elementary search helps</STEXT>
-       <INDEX> 001</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>RECORD_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Hit list</STEXT>
-       <INDEX> 002</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>SHLP</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Single (current) search help</STEXT>
-       <INDEX> 003</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>CALLCONTROL</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Control of the F4 process</STEXT>
-       <INDEX> 004</INDEX>
       </RSFDO>
      </DOCUMENTATION>
     </item>

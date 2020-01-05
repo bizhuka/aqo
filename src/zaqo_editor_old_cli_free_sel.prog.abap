@@ -109,7 +109,6 @@ FORM sel_screen_pbo TABLES ct_seldyn STRUCTURE rsseldyn
   SORT ct_fldnum BY group1.
   lo_scr_free_sel = lcl_scr_free_sel=>get_instance( ).
   lo_scr_free_sel->pbo(
-   it_seldyn    = ct_seldyn[]
    it_dsfldnum  = ct_fldnum[] ).
 ENDFORM.
 
@@ -130,7 +129,6 @@ FORM sel_screen_pai TABLES ct_seldyn STRUCTURE rsseldyn
   lo_scr_free_sel = lcl_scr_free_sel=>get_instance( ).
   lo_scr_free_sel->pai(
    EXPORTING
-     it_seldyn    = ct_seldyn[]
      it_dsfldnum  = ct_fldnum[]
    CHANGING
      cv_cmd         = <ls_sscrfields>-ucomm ).

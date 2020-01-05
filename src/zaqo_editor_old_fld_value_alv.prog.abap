@@ -649,7 +649,12 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
   METHOD data_check.
     DATA:
       lr_data_changed TYPE REF TO cl_alv_changed_data_protocol,
-      lr_msglist      TYPE REF TO if_reca_message_list,
+      " lr_msglist      TYPE REF TO if_reca_message_list,
+      ls_log          TYPE bal_s_log,
+      ls_msg          TYPE bal_s_msg,
+      lt_hnd          TYPE bal_t_logh,
+      lv_hnd          TYPE balloghndl,
+      ls_prof         TYPE bal_s_prof,
       ls_message      TYPE REF TO lvc_s_msg1.
 
     " Create protocol
@@ -671,23 +676,49 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
     " Show without grid
     IF mo_grid IS INITIAL AND lr_data_changed->mt_protocol IS NOT INITIAL.
-      " lr_data_changed->display_protocol( ).
-      lr_msglist  = cf_reca_message_list=>create( ).
+      " Is not visible    --> lr_data_changed->display_protocol( ).
+      " Downgrade to 7.02 --> lr_msglist  = cf_reca_message_list=>create( ).
+
+      CALL FUNCTION 'BAL_LOG_CREATE'
+        EXPORTING
+          i_s_log      = ls_log
+        IMPORTING
+          e_log_handle = lv_hnd.
       LOOP AT lr_data_changed->mt_protocol REFERENCE INTO ls_message.
-        lr_msglist->add( id_msgty = ls_message->msgty
-                         id_msgid = ls_message->msgid
-                         id_msgno = ls_message->msgno
-                         id_msgv1 = ls_message->msgv1
-                         id_msgv2 = ls_message->msgv2
-                         id_msgv3 = ls_message->msgv3
-                         id_msgv4 = ls_message->msgv4 ).
+*        lr_msglist->add( id_msgty = ls_message->msgty
+*                 id_msgid = ls_message->msgid
+*                 id_msgno = ls_message->msgno
+*                 id_msgv1 = ls_message->msgv1
+*                 id_msgv2 = ls_message->msgv2
+*                 id_msgv3 = ls_message->msgv3
+*                 id_msgv4 = ls_message->msgv4 ).
+        MOVE-CORRESPONDING ls_message->* TO ls_msg.
+
+        CALL FUNCTION 'BAL_LOG_MSG_ADD'
+          EXPORTING
+            i_s_msg      = ls_msg
+            i_log_handle = lv_hnd.
       ENDLOOP.
 
-      CALL FUNCTION 'RECA_GUI_MSGLIST_POPUP'
+      CALL FUNCTION 'BAL_DSP_PROFILE_POPUP_GET'
+        IMPORTING
+          e_s_display_profile = ls_prof.
+
+      ls_prof-use_grid = abap_true.
+      ls_prof-title    = 'Fix errors in DEV mandt first'(dis).
+      MESSAGE ls_prof-title TYPE 'S' DISPLAY LIKE 'E'.
+
+      INSERT lv_hnd INTO TABLE lt_hnd.
+      CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
         EXPORTING
-          io_msglist = lr_msglist
-          id_title   = 'Fix errors in DEV mandt first'(dis)
-          if_popup   = abap_false.
+          i_t_log_handle      = lt_hnd
+          i_s_display_profile = ls_prof.
+
+*      CALL FUNCTION 'RECA_GUI_MSGLIST_POPUP'
+*        EXPORTING
+*          io_msglist = lr_msglist
+*          id_title   = 'Fix errors in DEV mandt first'(dis)
+*          if_popup   = abap_false.
     ENDIF.
 
     CHECK lr_data_changed->mt_protocol IS INITIAL.

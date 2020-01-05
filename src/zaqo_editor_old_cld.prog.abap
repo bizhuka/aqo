@@ -197,12 +197,10 @@ CLASS lcl_scr_free_sel DEFINITION FINAL.
     METHODS:
       pbo
         IMPORTING
-          it_seldyn   TYPE rsseldyn_tab                     "#EC NEEDED
           it_dsfldnum TYPE tt_rsdsfldnum,
 
       pai
         IMPORTING
-          it_seldyn   TYPE rsseldyn_tab                     "#EC NEEDED
           it_dsfldnum TYPE tt_rsdsfldnum
         CHANGING
           cv_cmd      TYPE syucomm.

@@ -691,7 +691,7 @@ METHOD save.
     ms_db_item-created_uname = sy-uname.
 
     " Login could be deletes afterwards
-    SELECT SINGLE name_textc INTO ms_db_item-created_name_text
+    SELECT SINGLE name_textc INTO ms_db_item-created_name_txt
     FROM user_addr
     WHERE bname = sy-uname " ##WARN_OK  backward compatibility
     .

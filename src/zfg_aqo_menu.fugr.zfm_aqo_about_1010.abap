@@ -17,7 +17,7 @@ FUNCTION ZFM_AQO_ABOUT_1010.
   p_1_opt    = cs_db_item-option_id.
   p_1_date   = cs_db_item-created_date.
 *  p_1_name   = cs_db_item-created_uname.
-  p_1_ntxt   = cs_db_item-created_name_text.
+  p_1_ntxt   = cs_db_item-created_name_txt.
 
   " Show screen
   gv_ok_code = sy-ucomm = ''.
