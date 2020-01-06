@@ -5,6 +5,8 @@ class ZCX_AQO_EXCEPTION definition
   create public .
 
 public section.
+*"* public components of class ZCX_AQO_EXCEPTION
+*"* do not include other source files here!!!
   type-pools ABAP .
 
   interfaces IF_T100_MESSAGE .
@@ -32,6 +34,8 @@ public section.
       !MSGV3 type MSGV3 optional
       !MSGV4 type MSGV4 optional .
   class-methods RAISE_SYS_ERROR
+    importing
+      !IV_MESSAGE type CSEQUENCE optional
     raising
       ZCX_AQO_EXCEPTION .
 protected section.
@@ -43,7 +47,7 @@ ENDCLASS.
 CLASS ZCX_AQO_EXCEPTION IMPLEMENTATION.
 
 
-  method CONSTRUCTOR.
+method CONSTRUCTOR.
 CALL METHOD SUPER->CONSTRUCTOR
 EXPORTING
 PREVIOUS = PREVIOUS
@@ -58,7 +62,7 @@ if textid is initial.
 else.
   IF_T100_MESSAGE~T100KEY = TEXTID.
 endif.
-  endmethod.
+endmethod.
 
 
 METHOD raise_sys_error.
@@ -70,8 +74,13 @@ METHOD raise_sys_error.
       part4 TYPE symsgv,
     END OF ls_string.
 
-  " Any error
-  MESSAGE ID sy-msgid TYPE 'E' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ls_string.
+  " From string
+  IF iv_message IS SUPPLIED.
+    ls_string = iv_message.
+  ELSE.
+    " Any error
+    MESSAGE ID sy-msgid TYPE 'E' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ls_string.
+  ENDIF.
 
   " Devided to blocks
   RAISE EXCEPTION TYPE zcx_aqo_exception

@@ -246,7 +246,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
       lv_sum       TYPE num4,
       lt_code      TYPE STANDARD TABLE OF syucomm,
       ls_sub_field TYPE REF TO zcl_aqo_helper=>ts_field_desc,
-      lv_cnt       TYPE i.
+      lv_cnt       TYPE i,
+      lv_drdn_hndl TYPE i.
     FIELD-SYMBOLS:
       <lt_table> TYPE STANDARD TABLE.
 
@@ -310,16 +311,24 @@ CLASS lcl_table_alv IMPLEMENTATION.
         ls_fieldcat->coltext = ls_sub_field->label.
       ENDIF.
 
+      " Show as link
+      IF ls_sub_field->ui_type = zcl_aqo_helper=>mc_ui_string.
+        ls_fieldcat->hotspot = abap_true.
+      ENDIF.
+
       " For F4
       IF ls_sub_field->rollname CP '*-*'.
         SPLIT ls_sub_field->rollname AT '-' INTO
          ls_fieldcat->ref_table
          ls_fieldcat->ref_field.
-      ENDIF.
 
-      " Show as link
-      IF ls_sub_field->ui_type = zcl_aqo_helper=>mc_ui_string.
-        ls_fieldcat->hotspot = abap_true.
+        " for domain values
+        zcl_aqo_helper=>find_dropdown(
+         EXPORTING
+          io_grid      = mo_grid
+          is_fieldcat  = ls_fieldcat
+         CHANGING
+          cv_drdn_hndl = lv_drdn_hndl ).
       ENDIF.
     ENDLOOP.
 

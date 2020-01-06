@@ -609,13 +609,7 @@ METHOD save.
     lv_in_editor  TYPE abap_bool,
     lv_error_text TYPE text255,
     lv_is_dev     TYPE abap_bool,
-    lo_error      TYPE REF TO zcx_aqo_exception,
-    BEGIN OF ls_error_text,
-      part1 TYPE symsgv,
-      part2 TYPE symsgv,
-      part3 TYPE symsgv,
-      part4 TYPE symsgv,
-    END OF ls_error_text.
+    lo_error      TYPE REF TO zcx_aqo_exception.
 
   " Is dev ?
   lv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
@@ -663,11 +657,9 @@ METHOD save.
       CLEAR lv_error_text.
   ENDTRY.
 
-  " Show error
+  " Show an error
   IF lv_error_text IS NOT INITIAL.
-    ls_error_text = lv_error_text.
-    MESSAGE s000(zaqo_message) WITH ls_error_text-part1 ls_error_text-part2 ls_error_text-part3 ls_error_text-part4.
-    zcx_aqo_exception=>raise_sys_error( ).
+    zcx_aqo_exception=>raise_sys_error( lv_error_text ).
   ENDIF.
 
   " Always put in request

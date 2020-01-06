@@ -4,6 +4,8 @@ class ZCL_AQO_HELPER definition
   create private .
 
 public section.
+*"* public components of class ZCL_AQO_HELPER
+*"* do not include other source files here!!!
   type-pools ABAP .
 
   types:
@@ -299,6 +301,14 @@ public section.
       !IS_OAOR_FILE type TS_OAOR_FILE
     changing
       !CV_TASK type E070-TRKORR .
+  class-methods FIND_DROPDOWN
+    importing
+      !IO_GRID type ref to CL_GUI_ALV_GRID
+      !IS_FIELDCAT type ref to LVC_S_FCAT
+    changing
+      !CV_DRDN_HNDL type I
+    raising
+      ZCX_AQO_EXCEPTION .
 protected section.
 private section.
 
@@ -1365,6 +1375,198 @@ METHOD edit_in_popup.
 ENDMETHOD.
 
 
+METHOD find_dropdown.
+  " TODO call also from UI5 ?
+
+  DATA:
+    ls_sh_desc        TYPE shlp_descr,
+    lt_fielddescr     TYPE ddfields,
+    ls_field          TYPE REF TO dfies,
+    lt_field_desc     TYPE zcl_aqo_helper=>tt_field_desc,
+    ls_field_desc     TYPE zcl_aqo_helper=>ts_field_desc,
+    lo_struc          TYPE REF TO cl_abap_structdescr,
+    lo_table          TYPE REF TO cl_abap_tabledescr,
+    lr_table          TYPE REF TO data,
+    lt_shlp_return    TYPE STANDARD TABLE OF ddshretval,
+    ls_shlp_return    TYPE REF TO ddshretval,
+    lv_prev_pos       TYPE i,
+    ls_call_control   TYPE ddshf4ctrl,
+    ls_fld_prop       TYPE REF TO ddshfprop,
+    lt_shlp_descr_tab TYPE shlp_desct,
+    lt_shlp_record    TYPE STANDARD TABLE OF seahlpres,
+    lt_dropdown       TYPE lvc_t_dral,
+    ls_dropdown       TYPE lvc_s_dral.
+  FIELD-SYMBOLS:
+    <lt_table> TYPE STANDARD TABLE,
+    <ls_row>   TYPE any,
+    <lv_value> TYPE any,
+    <lv_low>   TYPE any,
+    <lv_txt>   TYPE csequence.
+
+  " No need
+  CHECK is_fieldcat->checkbox <> abap_true
+    AND is_fieldcat->hotspot  <> abap_true.
+
+  " Get top SH
+  CALL FUNCTION 'F4IF_DETERMINE_SEARCHHELP'
+    EXPORTING
+      tabname   = is_fieldcat->ref_table " lv_table_name
+      fieldname = is_fieldcat->ref_field " lv_field_name
+    IMPORTING
+      shlp      = ls_sh_desc
+    EXCEPTIONS
+      OTHERS    = 1.
+  " Fixed values of domains
+  CHECK sy-subrc = 0 AND ls_sh_desc-shlptype = 'FV'.
+
+
+  " Work with copy
+  lt_fielddescr[] = ls_sh_desc-fielddescr[].
+
+  " Strucure fields
+  LOOP AT lt_fielddescr REFERENCE INTO ls_field.
+    ls_field_desc = zcl_aqo_helper=>get_field_desc( is_sh_field = ls_field->* ).
+    INSERT ls_field_desc INTO TABLE lt_field_desc.
+  ENDLOOP.
+
+  " Output table
+  lo_struc = zcl_aqo_helper=>create_structure( it_field_desc = lt_field_desc ).
+  lo_table = cl_abap_tabledescr=>create( p_line_type = lo_struc ).
+
+  " Asign it
+  CREATE DATA lr_table TYPE HANDLE lo_table.
+  ASSIGN lr_table->* TO <lt_table>.
+
+  CALL FUNCTION 'F4IF_SELECT_VALUES'
+    EXPORTING
+      shlp           = ls_sh_desc
+      maxrows        = 0         " all values of domain
+      call_shlp_exit = abap_true " 'SELECT' only!
+    TABLES
+      return_tab     = lt_shlp_return.
+
+**********************************************************************
+  " Copied from --> METHOD get_sh_table.
+**********************************************************************
+  " Show all fields
+  LOOP AT ls_sh_desc-fieldprop REFERENCE INTO ls_fld_prop.
+    ls_fld_prop->shlpoutput = abap_true.
+  ENDLOOP.
+
+  " Call with SELECT event only (probably no texts)
+  IF ls_sh_desc-intdescr-selmexit IS INITIAL.
+    CALL FUNCTION 'F4IF_SELECT_VALUES'
+      EXPORTING
+        shlp           = ls_sh_desc
+        maxrows        = 0         " all values of domain
+        call_shlp_exit = abap_true " 'SELECT' only!
+      TABLES
+        return_tab     = lt_shlp_return.
+  ELSE.
+    " Get records first
+    CALL FUNCTION 'F4IF_SELECT_VALUES'
+      EXPORTING
+        shlp           = ls_sh_desc
+        maxrows        = 0         " all values of domain
+        call_shlp_exit = abap_true
+      TABLES
+        record_tab     = lt_shlp_record.
+
+    " Disp event
+    ls_call_control-step       = 'DISP'.
+    ls_call_control-maxrecords = 0. " all values of domain
+
+    APPEND ls_sh_desc TO lt_shlp_descr_tab.
+    CALL FUNCTION ls_sh_desc-intdescr-selmexit
+      TABLES
+        shlp_tab    = lt_shlp_descr_tab
+        record_tab  = lt_shlp_record
+      CHANGING
+        shlp        = ls_sh_desc
+        callcontrol = ls_call_control.
+
+    " To normal state -> lt_shlp_return
+    CLEAR lt_shlp_return.
+    PERFORM transform_outval IN PROGRAM saplsdsd
+      TABLES lt_shlp_record lt_shlp_return
+      USING ls_call_control ls_sh_desc.
+  ENDIF.
+
+  " Write data to table
+  lv_prev_pos = 0.
+  SORT ls_sh_desc-fielddescr BY fieldname.
+  LOOP AT lt_shlp_return REFERENCE INTO ls_shlp_return.
+    " New row ?
+    IF lv_prev_pos <> ls_shlp_return->recordpos.
+      APPEND INITIAL LINE TO <lt_table> ASSIGNING <ls_row>.
+    ENDIF.
+    lv_prev_pos = ls_shlp_return->recordpos.
+
+    " value
+    ASSIGN COMPONENT ls_shlp_return->fieldname OF STRUCTURE <ls_row> TO <lv_value>.
+    CHECK sy-subrc = 0.
+
+    " Copy field field
+    READ TABLE ls_sh_desc-fielddescr REFERENCE INTO ls_field BINARY SEARCH
+      WITH KEY fieldname = ls_shlp_return->fieldname.
+
+    " Special case for certain types
+    CASE ls_field->inttype.
+      WHEN cl_abap_typedescr=>typekind_time.
+        CONCATENATE ls_shlp_return->fieldval+0(2)
+                    ls_shlp_return->fieldval+3(2)
+                    ls_shlp_return->fieldval+6(2) INTO <lv_value>.
+
+      WHEN cl_abap_typedescr=>typekind_date.
+        CALL FUNCTION 'CONVERT_DATE_TO_INTERNAL'
+          EXPORTING
+            date_external = ls_shlp_return->fieldval
+          IMPORTING
+            date_internal = <lv_value>
+          EXCEPTIONS
+            OTHERS        = 1.
+        IF sy-subrc <> 0.
+          CLEAR <lv_value>.
+        ENDIF.
+
+        " Integer, byte, short
+      WHEN cl_abap_typedescr=>typekind_int OR cl_abap_typedescr=>typekind_int1  OR cl_abap_typedescr=>typekind_int2.
+        REPLACE ALL OCCURRENCES OF '.' IN ls_shlp_return->fieldval WITH ''.
+        <lv_value> = ls_shlp_return->fieldval.
+
+      WHEN OTHERS.
+        <lv_value> = ls_shlp_return->fieldval.
+    ENDCASE.
+  ENDLOOP.
+
+**********************************************************************
+**********************************************************************
+
+  " Next handle
+  ADD 1 TO cv_drdn_hndl.
+
+  " Prepare field catalog
+  is_fieldcat->drdn_hndl  = cv_drdn_hndl.
+  is_fieldcat->drdn_alias = abap_true.
+
+  LOOP AT <lt_table> ASSIGNING <ls_row>.
+    ASSIGN COMPONENT:
+     '_LOW'  OF STRUCTURE <ls_row> TO <lv_low>,
+     '_TEXT' OF STRUCTURE <ls_row> TO <lv_txt>.
+
+    ls_dropdown-handle    = is_fieldcat->drdn_hndl.
+    ls_dropdown-int_value = <lv_low>.
+    CONCATENATE <lv_low> ` - ` <lv_txt> INTO ls_dropdown-value.
+
+    " Add new item to dropdown
+    APPEND ls_dropdown TO lt_dropdown.
+  ENDLOOP.
+
+  io_grid->set_drop_down_table(
+   it_drop_down_alias = lt_dropdown ).
+ENDMETHOD.
+
+
 METHOD find_table_fieldname.
   TYPES:
     BEGIN OF ts_dd03l,
@@ -1459,11 +1661,12 @@ METHOD from_json.
     lv_length  TYPE i,
     lt_table   TYPE w3mimetabtype.
 
-  " No need
-  IF iv_json IS INITIAL.
-    ev_ok = abap_false. " Always have {"DATA":}
-    RETURN.
-  ENDIF.
+  CLEAR:
+   ev_ok,
+   ex_data.
+
+  " No need. Always have {"DATA":} ?
+  CHECK iv_json IS NOT INITIAL.
 
   TRY.
       " Work with JSON even in ABAP 7.02! 000116
@@ -1947,14 +2150,6 @@ METHOD json_2_abap.
 
   DATA newline TYPE REF TO data.
 
-  DATA:
-    BEGIN OF ls_error_text,
-      part1 TYPE symsgv,
-      part2 TYPE symsgv,
-      part3 TYPE symsgv,
-      part4 TYPE symsgv,
-    END OF ls_error_text.
-
   FIELD-SYMBOLS:
     <abap_data> TYPE any,
     <itab>      TYPE ANY TABLE,
@@ -2044,9 +2239,7 @@ METHOD json_2_abap.
     js_object->execute( script_name = 'json_parser' ).
 
     IF js_object->last_error_message IS NOT INITIAL.
-      ls_error_text = js_object->last_error_message.
-      MESSAGE s000(zaqo_message) WITH ls_error_text-part1 ls_error_text-part2 ls_error_text-part3 ls_error_text-part4.
-      zcx_aqo_exception=>raise_sys_error( ).
+      zcx_aqo_exception=>raise_sys_error( js_object->last_error_message ).
     ENDIF.
 
   ENDIF.
@@ -2085,9 +2278,7 @@ METHOD json_2_abap.
     WHEN cl_abap_typedescr=>kind_elem.
 * Scalar: process ABAP elements. Assume no type conversions for the moment.
       IF var_name IS INITIAL.
-        ls_error_text = 'VAR_NAME is required for scalar values.'.
-        MESSAGE s000(zaqo_message) WITH ls_error_text-part1 ls_error_text-part2 ls_error_text-part3 ls_error_text-part4.
-        zcx_aqo_exception=>raise_sys_error( ).
+        zcx_aqo_exception=>raise_sys_error( 'VAR_NAME is required for scalar values.' ).
       ENDIF.
       js_property_table = js_object->get_properties_scope_global( property_path = property_path ).
       READ TABLE js_property_table WITH KEY name = var_name INTO js_property.

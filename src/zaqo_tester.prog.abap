@@ -9,14 +9,16 @@ TYPES:
   END OF ts_email,
 
   BEGIN OF ts_alt_land,
-    land1   TYPE t005t-land1,
-    landx50 TYPE t005t-landx50,
+    land1    TYPE t005t-land1,
+    landx50  TYPE t005t-landx50,
+    " Check dropdown
+    bdc_mode TYPE ettcd_mode,
     " Table in table
-    emails  TYPE HASHED TABLE OF ts_email WITH UNIQUE KEY email,
+    emails   TYPE HASHED TABLE OF ts_email WITH UNIQUE KEY email,
     " Range in table
-    bukrs   TYPE RANGE OF bukrs,
+    bukrs    TYPE RANGE OF bukrs,
     " and string
-    memo    TYPE string,
+    memo     TYPE string,
 
     " !!! Uncomment for testing purpose
     " natio    TYPE t005t-natio,
