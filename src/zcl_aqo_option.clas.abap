@@ -42,8 +42,6 @@ protected section.
     returning
       value(RV_OK) type ABAP_BOOL .
   methods SAVE
-    importing
-      !IV_MANDT type CSEQUENCE default SY-MANDT
     returning
       value(RV_INFO) type STRING
     raising
@@ -663,7 +661,7 @@ METHOD save.
   ENDIF.
 
   " Always put in request
-  IF lv_in_editor = abap_true AND lv_is_dev = abap_true AND sy-mandt = iv_mandt.
+  IF lv_in_editor = abap_true AND lv_is_dev = abap_true.
     TRY.
         transport( ).
       CATCH zcx_aqo_exception INTO lo_error.
@@ -695,8 +693,7 @@ METHOD save.
    RESULT XML ms_db_item-fields.
 
   " Save data
-  ms_db_item-mandt = iv_mandt.
-  MODIFY ztaqo_option CLIENT SPECIFIED FROM ms_db_item.
+  MODIFY ztaqo_option FROM ms_db_item.
   COMMIT WORK AND WAIT.
 
   " Always put in request
@@ -706,7 +703,7 @@ METHOD save.
   ENDIF.
 
   " Show info
-  CONCATENATE ms_db_item-package_id ` - ` ms_db_item-option_id ` MANDT = ` iv_mandt INTO lv_text.
+  CONCATENATE ms_db_item-package_id ` - ` ms_db_item-option_id INTO lv_text.
   MESSAGE s516(ed) WITH lv_text.
   MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
    INTO rv_info.
@@ -727,9 +724,8 @@ METHOD transport.
   zcl_aqo_helper=>check_in_request(
    EXPORTING
      iv_table_name = 'ZTAQO_OPTION'
-     iv_key1       = sy-mandt
-     iv_key2       = ms_db_item-package_id
-     iv_key3       = ms_db_item-option_id
+     iv_key1       = ms_db_item-package_id
+     iv_key2       = ms_db_item-option_id
    CHANGING
      cv_task       = lv_task ).
 

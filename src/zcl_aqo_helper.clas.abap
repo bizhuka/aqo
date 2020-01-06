@@ -306,9 +306,7 @@ public section.
       !IO_GRID type ref to CL_GUI_ALV_GRID
       !IS_FIELDCAT type ref to LVC_S_FCAT
     changing
-      !CV_DRDN_HNDL type I
-    raising
-      ZCX_AQO_EXCEPTION .
+      !CV_DRDN_HNDL type I .
 protected section.
 private section.
 
@@ -1423,15 +1421,19 @@ METHOD find_dropdown.
   " Work with copy
   lt_fielddescr[] = ls_sh_desc-fielddescr[].
 
-  " Strucure fields
-  LOOP AT lt_fielddescr REFERENCE INTO ls_field.
-    ls_field_desc = zcl_aqo_helper=>get_field_desc( is_sh_field = ls_field->* ).
-    INSERT ls_field_desc INTO TABLE lt_field_desc.
-  ENDLOOP.
+  TRY.
+      " Strucure fields
+      LOOP AT lt_fielddescr REFERENCE INTO ls_field.
+        ls_field_desc = zcl_aqo_helper=>get_field_desc( is_sh_field = ls_field->* ).
+        INSERT ls_field_desc INTO TABLE lt_field_desc.
+      ENDLOOP.
 
-  " Output table
-  lo_struc = zcl_aqo_helper=>create_structure( it_field_desc = lt_field_desc ).
-  lo_table = cl_abap_tabledescr=>create( p_line_type = lo_struc ).
+      " Output table
+      lo_struc = zcl_aqo_helper=>create_structure( it_field_desc = lt_field_desc ).
+      lo_table = cl_abap_tabledescr=>create( p_line_type = lo_struc ).
+    CATCH zcx_aqo_exception.
+      RETURN.
+  ENDTRY.
 
   " Asign it
   CREATE DATA lr_table TYPE HANDLE lo_table.

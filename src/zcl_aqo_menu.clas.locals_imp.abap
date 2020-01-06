@@ -163,14 +163,15 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     <ls_menu>-function     = mc_action-transport_root.
     <ls_menu>-par_function = lv_root_func.
 
-    APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
-    <ls_menu>-text         = 'Save in mandant'(svi).
-    <ls_menu>-quickinfo    = <ls_menu>-text.
-    <ls_menu>-icon         = icon_save_as_template.
-    <ls_menu>-butn_type    = cntb_btype_button.
-    <ls_menu>-function     = mc_action-save_in.
-    <ls_menu>-par_function = mc_action-transport_root. " mc_action-save_root.
-
+*    MANDT field is deleted
+*    APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
+*    <ls_menu>-text         = 'Save in mandant'(svi).
+*    <ls_menu>-quickinfo    = <ls_menu>-text.
+*    <ls_menu>-icon         = icon_save_as_template.
+*    <ls_menu>-butn_type    = cntb_btype_button.
+*    <ls_menu>-function     = mc_action-save_in.
+*    <ls_menu>-par_function = mc_action-transport_root. " mc_action-save_root.
+*
 *    SAVE in DEV always calls TRANSPORT method
 *    APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
 *    <ls_menu>-text         = 'Transport'(trn).
@@ -317,7 +318,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
             <ls_menu>-hide = abap_true.
           ENDIF.
 
-        WHEN mc_action-save_in OR mc_action-import OR mc_action-delete " OR mc_action-transport
+        WHEN mc_action-import OR mc_action-delete " OR mc_action-transport  OR mc_action-save_in
              OR mc_action-attach_import OR mc_action-attach_delete.
           IF lv_option_exist <> abap_true.
             <ls_menu>-hide = abap_true.
@@ -579,37 +580,37 @@ CLASS lcl_aqo_option IMPLEMENTATION.
       AND SKIP FIRST SCREEN.
   ENDMETHOD.
 
-  METHOD _save_in.
-    DATA:
-      lv_mandt TYPE symandt,
-      lv_ok    TYPE abap_bool.
-
-    " Save in another mandant
-    lv_mandt = sy-mandt.
-    zcl_aqo_helper=>edit_in_popup(
-     EXPORTING
-       iv_type  = 'T001-MANDT'
-       iv_title = 'Specify the client number'(cln)
-     CHANGING
-       cv_value = lv_mandt
-       cv_ok    = lv_ok ).
-    CHECK lv_ok = abap_true.
-
-    " check client
-    IF lv_mandt = sy-mandt.
-      MESSAGE s035(zaqo_message) DISPLAY LIKE 'E'.
-      RETURN.
-    ENDIF.
-
-**   check unsaved data exist
-*    IF check_unsaved_data( ) EQ abap_true.
-**     save data
-*      data_save( ).
+*  METHOD _save_in.
+*    DATA:
+*      lv_mandt TYPE symandt,
+*      lv_ok    TYPE abap_bool.
+*
+*    " Save in another mandant
+*    lv_mandt = sy-mandt.
+*    zcl_aqo_helper=>edit_in_popup(
+*     EXPORTING
+*       iv_type  = 'T001-MANDT'
+*       iv_title = 'Specify the client number'(cln)
+*     CHANGING
+*       cv_value = lv_mandt
+*       cv_ok    = lv_ok ).
+*    CHECK lv_ok = abap_true.
+*
+*    " check client
+*    IF lv_mandt = sy-mandt.
+*      MESSAGE s035(zaqo_message) DISPLAY LIKE 'E'.
+*      RETURN.
 *    ENDIF.
-
-    "lcl_opt=>do_save( iv_mandt = lv_mandt ).
-    io_option->save( iv_mandt = lv_mandt ).
-  ENDMETHOD.
+*
+***   check unsaved data exist
+**    IF check_unsaved_data( ) EQ abap_true.
+***     save data
+**      data_save( ).
+**    ENDIF.
+*
+*    "lcl_opt=>do_save( iv_mandt = lv_mandt ).
+*    io_option->save( iv_mandt = lv_mandt ).
+*  ENDMETHOD.
 
   METHOD _attach_import.
     DATA:

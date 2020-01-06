@@ -39,7 +39,7 @@ CLASS lcl_opt IMPLEMENTATION.
     TRY.
         CASE cv_cmd.
           WHEN 'SAVE'.
-            do_save( iv_mandt = sy-mandt ).
+            do_save( ).
 
           WHEN mc_action-new_option.
             start_of_selection( mc_action-new_option ).
@@ -218,7 +218,7 @@ CLASS lcl_opt IMPLEMENTATION.
     ENDLOOP.
 
     TRY.
-        mo_option->save( iv_mandt = iv_mandt ).
+        mo_option->save( ).
       CATCH zcx_aqo_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
     ENDTRY.

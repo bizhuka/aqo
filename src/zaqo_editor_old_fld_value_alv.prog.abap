@@ -1023,7 +1023,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ENDLOOP.
 
     " And save
-    lcl_opt=>do_save( iv_mandt = sy-mandt ).
+    lcl_opt=>do_save( ).
   ENDMETHOD.                    "sel_screen_show
 
   METHOD get_text_value.

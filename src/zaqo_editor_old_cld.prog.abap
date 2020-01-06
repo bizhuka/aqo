@@ -54,9 +54,7 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
         RETURNING
           VALUE(rv_editable) TYPE abap_bool,
 
-      do_save
-        IMPORTING
-          iv_mandt TYPE symandt,
+      do_save,
 
       initialization,
 

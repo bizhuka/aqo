@@ -36,7 +36,7 @@ CLASS lcl_aqo_option DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL.
         view           TYPE ui_func VALUE '_VIEW',
 
         transport_root TYPE ui_func VALUE '_TRANSPORT_ROOT',
-        save_in        TYPE ui_func VALUE '_SAVE_IN',
+*        save_in        TYPE ui_func VALUE '_SAVE_IN',
         export         TYPE ui_func VALUE '_EXPORT',
         import         TYPE ui_func VALUE '_IMPORT',
         delete         TYPE ui_func VALUE '_DELETE',
@@ -122,13 +122,6 @@ CLASS lcl_aqo_option DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL.
         RAISING   zcx_aqo_exception,
 
       _new
-        IMPORTING
-                  io_option        TYPE REF TO zcl_aqo_option
-                  is_unq_menu      TYPE REF TO ts_unq_menu
-        RETURNING VALUE(rv_update) TYPE abap_bool
-        RAISING   zcx_aqo_exception,
-
-      _save_in
         IMPORTING
                   io_option        TYPE REF TO zcl_aqo_option
                   is_unq_menu      TYPE REF TO ts_unq_menu
