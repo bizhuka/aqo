@@ -31,7 +31,6 @@ TYPES:
     meins         TYPE meins,                " Char + conversion exit
     edit_mask     TYPE text30,               " CHAR
     pack_blocked  TYPE xsdboolean,           " ABAP_BOOL     swd_blocks
-    sum           TYPE bf_rbetr,             " P with sign
     msg_count     TYPE syst-tabix,           " Number
     due_date      TYPE syst-datum,           " D
     due_time      TYPE syst-uzeit,           " T
@@ -43,6 +42,8 @@ TYPES:
     alt_land_text TYPE SORTED TABLE OF ts_alt_land WITH UNIQUE KEY land1,
     t002_tab      TYPE STANDARD TABLE OF t002 WITH DEFAULT KEY,
     some_text     TYPE string,
+    sum           TYPE bf_rbetr,             " P with sign
+    sum2          TYPE dmbtr,                " P without sign
 
 *     one_field      TYPE STANDARD TABLE OF char30 WITH DEFAULT KEY,  " Table_line is not structure
   END OF ts_main_opt.

@@ -30,7 +30,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>003</MSGNR>
-     <TEXT>Error in FM &amp;1 sy-subrc &amp;2</TEXT>
+     <TEXT>---</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -42,7 +42,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>005</MSGNR>
-     <TEXT>Cannot write data back to table &amp;1. Maybe key duplication</TEXT>
+     <TEXT>---</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -54,19 +54,19 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>007</MSGNR>
-     <TEXT>Unknown type for field &amp;1</TEXT>
+     <TEXT>---</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>008</MSGNR>
-     <TEXT>Table line is not structure. Parameter &amp;1</TEXT>
+     <TEXT>---</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>009</MSGNR>
-     <TEXT>Cannot detect type for &amp;1</TEXT>
+     <TEXT>---</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -138,7 +138,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>021</MSGNR>
-     <TEXT>Cannot create &apos;&amp;1&apos; type</TEXT>
+     <TEXT>---</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>

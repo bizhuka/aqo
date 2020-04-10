@@ -1,11 +1,10 @@
 *&---------------------------------------------------------------------*
 *  AQO - ABAP quick options
 *  @see https://github.com/bizhuka/aqo
-*  @version: 1.0
+*  @version: 2.0
 *&---------------------------------------------------------------------*
 REPORT  zaqo_editor_old.
 
-INCLUDE zaqo_editor_old_typ.
 INCLUDE zaqo_editor_old_cld.
 INCLUDE zaqo_editor_old_scr.
 INCLUDE zaqo_editor_old_cli_opt.

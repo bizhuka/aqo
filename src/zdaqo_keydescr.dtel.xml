@@ -3,18 +3,18 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <DD04V>
-    <ROLLNAME>ZDAQO_ATTR_NAME</ROLLNAME>
+    <ROLLNAME>ZDAQO_KEYDESCR</ROLLNAME>
     <DDLANGUAGE>E</DDLANGUAGE>
-    <DOMNAME>ZDAQO_ATTR_NAME</DOMNAME>
-    <HEADLEN>55</HEADLEN>
+    <DOMNAME>CHAR30</DOMNAME>
+    <HEADLEN>30</HEADLEN>
     <SCRLEN1>10</SCRLEN1>
     <SCRLEN2>20</SCRLEN2>
     <SCRLEN3>40</SCRLEN3>
-    <DDTEXT>Name</DDTEXT>
-    <REPTEXT>Name</REPTEXT>
-    <SCRTEXT_S>Name</SCRTEXT_S>
-    <SCRTEXT_M>Name</SCRTEXT_M>
-    <SCRTEXT_L>Name</SCRTEXT_L>
+    <DDTEXT>Key fields</DDTEXT>
+    <REPTEXT>Key fields</REPTEXT>
+    <SCRTEXT_S>Key fields</SCRTEXT_S>
+    <SCRTEXT_M>Key fields</SCRTEXT_M>
+    <SCRTEXT_L>Key fields</SCRTEXT_L>
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>

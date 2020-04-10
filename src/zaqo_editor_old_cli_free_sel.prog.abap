@@ -13,8 +13,7 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
     DATA:
       ls_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
       ls_screen    TYPE screen,
-      lv_edit      TYPE abap_bool,
-      lv_show      TYPE abap_bool.
+      lv_editable  TYPE abap_bool.
 
     " Prepare screen
     LOOP AT SCREEN.
@@ -25,33 +24,27 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
       CHECK sy-subrc = 0.
 
       " Change one time only
-      ls_screen = screen.
-      lv_edit = lv_show = abap_undefined.
+      ls_screen   = screen.
+      lv_editable = abap_true.
 
       IF lcl_opt=>is_editable( ls_fld_value->is_editable ) <> abap_true AND ls_screen-group3 <> 'VPU'. " But not for tables
-        lv_edit = abap_false.
+        lv_editable = abap_false.
       ENDIF.
 
-      IF ls_fld_value->ui_type = zcl_aqo_helper=>mc_ui_table OR
-         ls_fld_value->ui_type = zcl_aqo_helper=>mc_ui_string.
+      IF ls_fld_value->ui_type = zcl_eui_type=>mc_ui_type-table OR
+         ls_fld_value->ui_type = zcl_eui_type=>mc_ui_type-string.
+
         IF ls_screen-group3 = 'LOW' OR ls_screen-group3 = 'TOT' OR ls_screen-group3 = 'HGH'.
-          lv_show = abap_false.
+          ls_screen-active    = '0'.
+          ls_screen-invisible = '1'.
+          lv_editable         = abap_false.
         ENDIF.
       ENDIF.
 
-      " Hide elements
-      CASE lv_show.
-        WHEN abap_false.
-          ls_screen-active    = '0'.
-          ls_screen-invisible = '1'.
-          lv_edit = abap_false.
-      ENDCASE.
-
       " Do not edit
-      CASE lv_edit.
-        WHEN abap_false.
-          ls_screen-input     = '0'.
-      ENDCASE.
+      IF lv_editable <> abap_true.
+        ls_screen-input     = '0'.
+      ENDIF.
 
       " And update
       CHECK ls_screen <> screen.
@@ -81,12 +74,12 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
 
     " Only for tables
     CASE ls_fld_value->ui_type.
-      WHEN zcl_aqo_helper=>mc_ui_table.
-        lo_table_alv = lcl_table_alv=>get_instance( 1 ).
+      WHEN zcl_eui_type=>mc_ui_type-table.
+        lo_table_alv = lcl_table_alv=>get_instance( 1 ). " 1
         lo_table_alv->call_screen( ls_fld_value ).
 
-      WHEN zcl_aqo_helper=>mc_ui_string.
-        go_string_memo = lcl_string_memo=>get_instance( 1 ).
+      WHEN zcl_eui_type=>mc_ui_type-string.
+        go_string_memo = lcl_string_memo=>get_instance( ). " 1
         go_string_memo->call_screen( ls_fld_value ).
 
       WHEN OTHERS.
@@ -97,7 +90,6 @@ CLASS lcl_scr_free_sel IMPLEMENTATION.
     CLEAR cv_cmd.
   ENDMETHOD.                    "pai
 ENDCLASS.
-
 
 *&---------------------------------------------------------------------*
 *----------------------------------------------------------------------*

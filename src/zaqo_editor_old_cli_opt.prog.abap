@@ -3,13 +3,16 @@
 
 CLASS lcl_opt IMPLEMENTATION.
   METHOD initialization.
-    DATA:
-      lv_command TYPE syucomm.
+    DATA lv_command TYPE syucomm.
 
-    GET PARAMETER ID:
-     'ZAQO_PACKAGE_ID' FIELD p_pack,
-     'ZAQO_OPTION_ID'  FIELD p_opt_id,
-     'ZAQO_COMMAND'    FIELD lv_command.
+    " se38 or se80 (todo ZAQO_EDITOR)
+    IF sy-tcode CP 'SE*'.
+      zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!' ).
+    ENDIF.
+
+    GET PARAMETER ID 'ZAQO_PACKAGE_ID' FIELD p_pack.
+    GET PARAMETER ID 'ZAQO_OPTION_ID'  FIELD p_opt_id.
+    GET PARAMETER ID 'ZAQO_COMMAND'    FIELD lv_command.
 
     " 1 time only
     SET PARAMETER ID 'ZAQO_COMMAND' FIELD ''.
@@ -20,11 +23,20 @@ CLASS lcl_opt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD pbo.
-    IF zcl_aqo_helper=>is_in_editor( iv_is_viewer = abap_true ) = abap_true.
-      SET TITLEBAR 'ST_MAIN' WITH 'View option'(vop).
-    ELSE.
-      SET TITLEBAR 'ST_MAIN' WITH 'Edit option'(eop).
-    ENDIF.
+    CONSTANTS:
+      c_ui_app TYPE sy-cprog VALUE 'SAPLZFG_EUI_SCREEN'.
+
+    CASE sy-dynnr.
+      WHEN 1000.
+        IF zcl_aqo_helper=>is_in_editor( iv_is_viewer = abap_true ) = abap_true.
+          SET TITLEBAR 'TITLE_100' OF PROGRAM c_ui_app WITH 'View option'(vop).
+        ELSE.
+          SET TITLEBAR 'TITLE_100' OF PROGRAM c_ui_app WITH 'Edit option'(eop).
+        ENDIF.
+
+      WHEN 1010 OR 1020 OR 1030 OR 1040.
+        PERFORM auto_screen_pbo IN PROGRAM saplzfg_eui_screen.
+    ENDCASE.
   ENDMETHOD.
 
   METHOD pai.
@@ -32,7 +44,7 @@ CLASS lcl_opt IMPLEMENTATION.
       lo_err TYPE REF TO zcx_aqo_exception.
 
     " Change menu
-    mo_menu = zcl_aqo_menu=>get_menu(
+    mo_eui_menu = zcl_aqo_option=>get_menu(
       iv_package_id = p_pack
       iv_option_id  = p_opt_id ).
 
@@ -162,16 +174,20 @@ CLASS lcl_opt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD set_icons.
+    CLEAR:
+     ev_icon,
+     ev_catalog.
+
     CASE iv_ui_type.
-      WHEN zcl_aqo_helper=>mc_ui_string.
+      WHEN zcl_eui_type=>mc_ui_type-string.
         ev_icon = icon_change_text.
 
-      WHEN zcl_aqo_helper=>mc_ui_range.
+      WHEN zcl_eui_type=>mc_ui_type-range.
         ev_icon = icon_interval_include_green.
 
-      WHEN zcl_aqo_helper=>mc_ui_table.
+      WHEN zcl_eui_type=>mc_ui_type-table.
         ev_icon = icon_wd_table.
-        ev_catalog = icon_catalog. " -< show field catalog
+        ev_catalog = icon_catalog. " <--- show field catalog
 
       WHEN OTHERS.
         ev_icon = icon_equal_green.
@@ -192,7 +208,8 @@ CLASS lcl_opt IMPLEMENTATION.
       ls_fld_value   TYPE REF TO lcl_opt=>ts_fld_value,
       ls_field_value TYPE zcl_aqo_helper=>ts_field_value,
       lo_err         TYPE REF TO zcx_aqo_exception,
-      lv_new_value   TYPE string.
+      lv_new_value   TYPE string,
+      lv_info        TYPE string.
     FIELD-SYMBOLS:
       <lv_value> TYPE any.
     " IF locked by another user
@@ -205,7 +222,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
       " As JSON string
       ASSIGN ls_fld_value->cur_value->* TO <lv_value>.
-      lv_new_value = zcl_aqo_helper=>to_json( <lv_value> ).
+      lv_new_value = zcl_eui_conv=>to_json( <lv_value> ).
 
       " Add new value
       mo_option->add_history_value(
@@ -218,7 +235,10 @@ CLASS lcl_opt IMPLEMENTATION.
     ENDLOOP.
 
     TRY.
-        mo_option->save( ).
+        lv_info = mo_option->save( ).
+        IF lv_info IS NOT INITIAL.
+          MESSAGE lv_info TYPE 'S'.
+        ENDIF.
       CATCH zcx_aqo_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
     ENDTRY.
@@ -236,10 +256,8 @@ CLASS lcl_opt IMPLEMENTATION.
       CHECK iv_code_scan = abap_true.
 
       " Read from memory
-
-      GET PARAMETER ID:
-       'ZAQO_PACKAGE_ID' FIELD p_pack,
-       'ZAQO_OPTION_ID'  FIELD p_opt_id.
+      GET PARAMETER ID 'ZAQO_PACKAGE_ID' FIELD p_pack.
+      GET PARAMETER ID 'ZAQO_OPTION_ID'  FIELD p_opt_id.
 
       CHECK p_pack IS NOT INITIAL AND p_opt_id IS NOT INITIAL.
       code_scan_f4( ).
@@ -329,5 +347,15 @@ CLASS lcl_opt IMPLEMENTATION.
     zcl_aqo_helper=>navigate_to(
      iv_include  = ls_usage-include
      iv_position = ls_usage-line ).
+  ENDMETHOD.
+
+  METHOD set_menu_visible.
+    CHECK mo_eui_menu IS NOT INITIAL.
+
+    DATA lo_container TYPE REF TO cl_gui_container.
+    lo_container = mo_eui_menu->get_container( ).
+
+    CHECK lo_container IS NOT INITIAL.
+    lo_container->set_visible( iv_visible ).
   ENDMETHOD.
 ENDCLASS.                    "LCL_MAIN IMPLEMENTATION

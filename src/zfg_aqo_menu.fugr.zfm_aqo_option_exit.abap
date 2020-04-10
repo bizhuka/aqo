@@ -1,4 +1,4 @@
-FUNCTION ZFM_AQO_OPTION_EXIT.
+FUNCTION zfm_aqo_option_exit.
 *"--------------------------------------------------------------------
 *"*"Local Interface:
 *"  TABLES

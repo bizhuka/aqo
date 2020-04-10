@@ -13,19 +13,16 @@ CLASS lcl_logs_alv IMPLEMENTATION.
     DATA:
       ls_history_value TYPE zcl_aqo_helper=>ts_history_value,
       lr_history_value TYPE REF TO zcl_aqo_helper=>ts_history_value,
-      lt_field_desc    TYPE zcl_aqo_helper=>tt_field_desc,
+      lt_field_desc    TYPE zcl_eui_type=>tt_field_desc,
       ls_field_desc    LIKE LINE OF lt_field_desc,
       ls_field_desc_ui LIKE LINE OF lt_field_desc,
       lo_struc         TYPE REF TO cl_abap_structdescr,
       lr_type          TYPE REF TO data,
-      lo_error         TYPE REF TO zcx_aqo_exception.
+      lo_error         TYPE REF TO zcx_eui_exception.
     FIELD-SYMBOLS:
       <ls_item>       TYPE any,
       <lv_value>      TYPE any,
       <lt_hist_table> TYPE STANDARD TABLE.
-
-    " Field description
-    mv_refresh = abap_true.
 
     " Make copy
     CREATE DATA ms_fld_value.
@@ -34,13 +31,13 @@ CLASS lcl_logs_alv IMPLEMENTATION.
 
     TRY.
         " 1-st
-        ls_field_desc = zcl_aqo_helper=>get_field_desc(
+        ls_field_desc = zcl_eui_type=>get_field_desc(
            iv_data       = ls_history_value-changed
            iv_field_name = 'CHANGED' ).
         INSERT ls_field_desc INTO TABLE lt_field_desc.
 
         " 2-nd
-        ls_field_desc = zcl_aqo_helper=>get_field_desc(
+        ls_field_desc = zcl_eui_type=>get_field_desc(
            iv_data       = ls_history_value-login
            iv_field_name = 'LOGIN' ).
         INSERT ls_field_desc INTO TABLE lt_field_desc.
@@ -51,21 +48,21 @@ CLASS lcl_logs_alv IMPLEMENTATION.
         INSERT ls_field_desc INTO TABLE lt_field_desc.
 
         " 4-th
-        IF ls_field_desc-ui_type <> zcl_aqo_helper=>mc_ui_range AND
-           ls_field_desc-ui_type <> zcl_aqo_helper=>mc_ui_table.
+        IF ls_field_desc-ui_type <> zcl_eui_type=>mc_ui_type-range AND
+           ls_field_desc-ui_type <> zcl_eui_type=>mc_ui_type-table.
           CLEAR ls_field_desc.
         ELSE.
-          ls_field_desc_ui = zcl_aqo_helper=>get_field_desc(
+          ls_field_desc_ui = zcl_eui_type=>get_field_desc(
              iv_data       = ls_history_value-h_value
              iv_field_name = '_VALUE_UI' ).
           INSERT ls_field_desc_ui INTO TABLE lt_field_desc.
         ENDIF.
 
         " Create structure
-        lo_struc = zcl_aqo_helper=>create_structure( it_field_desc = lt_field_desc ).
+        lo_struc = zcl_eui_type=>create_structure( it_field_desc = lt_field_desc ).
         CREATE DATA lr_type TYPE HANDLE lo_struc.
         ASSIGN lr_type->* TO <ls_item>.
-      CATCH zcx_aqo_exception INTO lo_error.
+      CATCH zcx_eui_exception INTO lo_error.
         MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
@@ -81,7 +78,7 @@ CLASS lcl_logs_alv IMPLEMENTATION.
 
       " From json
       ASSIGN COMPONENT '_VALUE' OF STRUCTURE <ls_item> TO <lv_value>.
-      zcl_aqo_helper=>from_json(
+      zcl_eui_conv=>from_json(
        EXPORTING
         iv_json = lr_history_value->h_value
        IMPORTING
@@ -93,100 +90,62 @@ CLASS lcl_logs_alv IMPLEMENTATION.
 
     " Table or range
     IF ls_field_desc IS NOT INITIAL.
-      lcl_table_alv=>refresh_sub_fields(
+      zcl_eui_alv=>update_complex_fields(
        ir_table     = mr_hist_table
        is_sub_field = ls_field_desc ).
     ENDIF.
 
-    " Show screen
-    CALL SCREEN 500 STARTING AT 5 1.
+**********************************************************************
+    " Layout
+**********************************************************************
+    DATA ls_layout TYPE lvc_s_layo.
+    CONCATENATE `Change logs of ` ms_fld_value->name INTO ls_layout-grid_title.
+    ls_layout-smalltitle = abap_true.
+
+**********************************************************************
+    " Catalog
+**********************************************************************
+    DATA lt_fieldcat TYPE lvc_t_fcat.
+    DATA ls_fieldcat TYPE REF TO lvc_s_fcat.
+    APPEND INITIAL LINE TO lt_fieldcat REFERENCE INTO ls_fieldcat.
+    ls_fieldcat->fieldname = '_VALUE_UI'.
+    ls_fieldcat->hotspot = abap_true.
+
+**********************************************************************
+    " Show by ALV manager
+**********************************************************************
+    DATA lo_eui_alv TYPE REF TO zif_eui_manager.
+    DATA ls_status  TYPE REF TO lo_eui_alv->ts_status.
+
+    " Pass by reference
+    CREATE OBJECT lo_eui_alv TYPE zcl_eui_alv
+      EXPORTING
+        ir_table       = mr_hist_table
+        " grid parameters
+        is_layout      = ls_layout
+        it_mod_catalog = lt_fieldcat
+        iv_read_only   = abap_true.
+
+    " In popup
+    lo_eui_alv->popup( ).
+
+    " Static PF status no need on_pbo_event.
+    GET REFERENCE OF lo_eui_alv->ms_status INTO ls_status.
+    ls_status->is_fixed = abap_true.
+    IF ms_fld_value->label IS NOT INITIAL.
+      ls_status->title = ms_fld_value->label.
+    ENDIF.
+
+    " 1 button left = CANCEL
+    APPEND 'OK' TO ls_status->exclude.
+
+    " Instead of set handler
+    lo_eui_alv->show( io_handler = me ).
   ENDMETHOD.                    "call_screen
 
-  METHOD pbo.
-    DATA:
-      lr_cont     TYPE REF TO cl_gui_custom_container,
-      lt_fieldcat TYPE lvc_t_fcat,
-      ls_fieldcat TYPE REF TO lvc_s_fcat,
-      ls_layout   TYPE lvc_s_layo,
-      lv_text     TYPE string,
-      lt_code     TYPE STANDARD TABLE OF syucomm.
-    FIELD-SYMBOLS:
-      <lt_hist_table> TYPE STANDARD TABLE.
-
-    " 1 button
-    APPEND 'CANCEL' TO lt_code.
-    SET PF-STATUS 'OK_CANCEL' EXCLUDING lt_code.
-
-    IF ms_fld_value->label IS NOT INITIAL.
-      lv_text = ms_fld_value->label.
-    ENDIF.
-    SET TITLEBAR 'ST_MAIN' WITH lv_text.
-
-    " One time only
-    IF mo_grid IS INITIAL.
-      " Header and grid
-      CREATE OBJECT:
-       lr_cont
-        EXPORTING
-          container_name = 'EMPTY_500',
-
-      " Show at first SCREEN
-       mo_grid
-        EXPORTING
-          i_parent = lr_cont
-        EXCEPTIONS
-          OTHERS   = 1.
-      IF sy-subrc <> 0.
-        MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-        RETURN.
-      ENDIF.
-
-      mo_grid->register_edit_event( i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
-    ENDIF.
-
-    " Update data
-    CHECK mv_refresh = abap_true.
-    mv_refresh = abap_false.
-
-    " Get field catalog
-    ASSIGN mr_hist_table->* TO <lt_hist_table>.
-    zcl_aqo_helper=>create_field_catalog(
-     IMPORTING
-       et_fieldcat = lt_fieldcat
-     CHANGING
-       ct_table    = <lt_hist_table> ).
-
-    " Change field catalog
-    LOOP AT lt_fieldcat REFERENCE INTO ls_fieldcat.
-      " Show as link
-      IF ls_fieldcat->fieldname = '_VALUE_UI'.
-        ls_fieldcat->hotspot = abap_true.
-      ENDIF.
-    ENDLOOP.
-
-    " Prepare layout
-    ls_layout-cwidth_opt = abap_true.
-    ls_layout-sel_mode   = 'C'.
-
-    " Events
-    SET HANDLER:
-     on_hotspot_click  FOR mo_grid.
-
-    mo_grid->set_table_for_first_display(
-      EXPORTING
-        i_save                        = 'A'
-        is_layout                     = ls_layout
-      CHANGING
-        it_outtab                     = <lt_hist_table>
-        it_fieldcatalog               = lt_fieldcat
-      EXCEPTIONS
-        OTHERS                        = 1 ).
-    IF sy-subrc <> 0.
-      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    ENDIF.
-  ENDMETHOD.                    "pbo
-
   METHOD on_hotspot_click.
+    DATA:
+      lv_read_only    TYPE abap_bool.
     FIELD-SYMBOLS:
       <lt_hist_table> TYPE STANDARD TABLE,
       <ls_hist_table> TYPE any,
@@ -205,45 +164,19 @@ CLASS lcl_logs_alv IMPLEMENTATION.
 
     CASE ms_fld_value->ui_type.
         " Change logs of table
-      WHEN zcl_aqo_helper=>mc_ui_table.
-        go_table_alv = lcl_table_alv=>get_instance( 6 ).
+      WHEN zcl_eui_type=>mc_ui_type-table.
+        go_table_alv = lcl_table_alv=>get_instance( 6 ). " 6
         go_table_alv->call_screen( ms_fld_value ).
 
         " Change logs of range
-      WHEN zcl_aqo_helper=>mc_ui_range.
-        lcl_table_alv=>show_range( ms_fld_value ).
-
-    ENDCASE.
-  ENDMETHOD.
-
-  METHOD pai.
-    DATA:
-      lv_cmd        LIKE cv_cmd.
-
-    " Save & clear
-    lv_cmd = cv_cmd.
-    CLEAR cv_cmd.
-
-    CASE lv_cmd.
-      WHEN 'OK' OR 'CANCEL'.
-        LEAVE TO SCREEN 0.
-
+      WHEN zcl_eui_type=>mc_ui_type-range.
+        IF lcl_opt=>is_editable( ms_fld_value->is_editable ) <> abap_true.
+          lv_read_only = abap_true.
+        ENDIF.
+        zcl_eui_screen=>show_range(
+          is_field_desc = ms_fld_value->field_desc
+          ir_cur_value  = ms_fld_value->cur_value
+          iv_read_only  = lv_read_only ).
     ENDCASE.
   ENDMETHOD.
 ENDCLASS.
-
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-MODULE pbo_0500 OUTPUT.
-  go_logs_alv = lcl_logs_alv=>get_instance( ).
-  go_logs_alv->pbo( ).
-ENDMODULE.
-
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-MODULE pai_0500 INPUT.
-  go_logs_alv = lcl_logs_alv=>get_instance( ).
-  go_logs_alv->pai(
-   CHANGING
-     cv_cmd = gv_ok_code ).
-ENDMODULE.

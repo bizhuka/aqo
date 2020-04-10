@@ -2,13 +2,310 @@
 *"* local helper classes, interface definitions and type
 *"* declarations
 
-CLASS lcl_aqo_option IMPLEMENTATION.
-  METHOD get_menu.
+CLASS lcl_helper IMPLEMENTATION.
+
+  METHOD check_abap_declaration.
+    DATA:
+      lv_in_editor      TYPE abap_bool,
+      lo_struc          TYPE REF TO cl_abap_structdescr,
+      lo_class          TYPE REF TO cl_abap_classdescr,
+      ls_comp           TYPE REF TO abap_compdescr,
+      ls_attr           TYPE REF TO abap_attrdescr,
+      lv_name           TYPE string,
+      lv_field_name     TYPE abap_attrname,
+      lt_friend         TYPE abap_frndtypes_tab,
+      lv_is_stat        TYPE abap_bool,
+      lt_declared_field TYPE zcl_aqo_helper=>abap_attrname_tab,
+      lr_unique_type    TYPE REF TO zcl_eui_type=>tt_unique_type,
+      lo_error          TYPE REF TO zcx_eui_exception.
+
+    " No error in editor
+    lv_in_editor = zcl_aqo_helper=>is_in_editor( ).
+
+**********************************************************************
+    " №1 Based on class
+    IF io_data IS NOT INITIAL.
+      lo_class ?= cl_abap_classdescr=>describe_by_object_ref( io_data ).
+      lv_name = lo_class->get_relative_name( ).
+
+      " Check class
+      lt_friend = lo_class->get_friend_types( ).
+      READ TABLE lt_friend TRANSPORTING NO FIELDS
+       WITH KEY table_line->absolute_name = '\CLASS=ZCL_AQO_OPTION'.
+      IF sy-subrc <> 0.
+        MESSAGE s014(zaqo_message) WITH lv_name INTO sy-msgli.
+        zcx_aqo_exception=>raise_sys_error( ).
+      ENDIF.
+
+      " name type_kind length decimals
+      lv_is_stat = abap_undefined.
+      LOOP AT lo_class->attributes REFERENCE INTO ls_attr
+         WHERE visibility   = cl_abap_objectdescr=>public
+           AND is_read_only = abap_true
+           AND is_inherited = abap_false
+           AND is_constant  = abap_false
+           " AND is_class     = abap_false  Also initialize class data
+           AND is_virtual   = abap_false.
+
+        " Check instance or static
+        IF lv_is_stat <> abap_undefined AND lv_is_stat <> ls_attr->is_class.
+          MESSAGE s014(zaqo_message) WITH ls_attr->name INTO sy-msgli.
+          zcx_aqo_exception=>raise_sys_error( ).
+        ENDIF.
+        lv_is_stat = ls_attr->is_class.
+
+        " And add to list
+        INSERT ls_attr->name INTO TABLE lt_declared_field.
+      ENDLOOP.
+    ENDIF.
+
+**********************************************************************
+    " №2 Based on structure
+    IF ir_data IS NOT INITIAL.
+      lo_struc ?= cl_abap_structdescr=>describe_by_data_ref( ir_data ).
+
+      " name type_kind length decimals
+      LOOP AT lo_struc->components REFERENCE INTO ls_comp.
+        " And add to list
+        lv_field_name = ls_comp->name.
+        INSERT lv_field_name INTO TABLE lt_declared_field.
+      ENDLOOP.
+    ENDIF.
+
+**********************************************************************
+    " Check abap declaration
+**********************************************************************
+    DATA:
+      lr_data         TYPE REF TO data,
+      lr_new_field    TYPE REF TO abap_attrname,
+      lt_editor_field LIKE lt_declared_field,
+      ls_field_value  TYPE zcl_aqo_helper=>ts_field_value,
+      lr_field_value  TYPE REF TO zcl_aqo_helper=>ts_field_value,
+      ls_old          TYPE REF TO zcl_eui_type=>ts_field_desc,
+      lv_value        TYPE string.
+    FIELD-SYMBOLS:
+      <lv_value> TYPE any.
+
+    " Just show warning
+    IF iv_repair = abap_true AND lv_in_editor <> abap_true.
+      MESSAGE s029(zaqo_message) DISPLAY LIKE 'W'.
+    ENDIF.
+
+    " Check declarations
+    LOOP AT ct_field_value REFERENCE INTO lr_field_value.
+      " Is not declared in ABAP code
+      DELETE lt_declared_field WHERE table_line = lr_field_value->name.
+      IF sy-subrc <> 0.
+        INSERT lr_field_value->name INTO TABLE lt_editor_field.
+        CONTINUE.
+      ENDIF.
+
+      " Get from declaration
+      lr_data = io_option->get_abap_value(
+         io_data = io_data
+         ir_data = ir_data
+         iv_name = lr_field_value->name ).
+      ASSIGN lr_data->* TO <lv_value>.
+
+      " Check existing decalration with editor field
+      TRY.
+          ls_field_value-field_desc = zcl_eui_type=>get_field_desc(
+              iv_field_name = lr_field_value->name
+              iv_data       = <lv_value> ).
+        CATCH zcx_eui_exception INTO lo_error.
+          zcx_aqo_exception=>raise_sys_error( io_error = lo_error ).
+      ENDTRY.
+
+      " Compare each existing field
+      GET REFERENCE OF lr_field_value->field_desc INTO ls_old.
+      lcl_helper=>compare_2_fields(
+       EXPORTING
+         is_new     = ls_field_value-field_desc " abap code declaration
+         iv_repair  = iv_repair
+         cs_old     = ls_old
+       CHANGING
+         cv_changed = cv_changed ).
+    ENDLOOP.
+
+    " ERROR - IF lines( mt_field_value ) > lines( lt_declared_field )
+    IF lv_in_editor <> abap_true AND lt_editor_field IS NOT INITIAL.
+      " Dont't have fields in abap source code
+      " ---> lt_editor_field[]
+      IF 1 = 2.
+        MESSAGE s027(zaqo_message) WITH '' '' '' ''.
+      ENDIF.
+
+      " Show error
+      zcl_aqo_helper=>message_with_fields(
+       it_field  = lt_editor_field[]
+       iv_number = 027 ).
+      zcx_aqo_exception=>raise_sys_error( ).
+    ENDIF.
+
+**********************************************************************
+    " OK - add description one by one (have something new in ABAP code)
+    " IF lines( mt_field_value ) < lines( lt_declared_field )
+    CREATE DATA lr_unique_type.
+    LOOP AT lt_declared_field REFERENCE INTO lr_new_field.
+      cv_changed = abap_true.
+
+      " Get from declaration
+      lr_data = io_option->get_abap_value(
+         io_data = io_data
+         ir_data = ir_data
+         iv_name = lr_new_field->* ).
+      ASSIGN lr_data->* TO <lv_value>.
+      lv_value = zcl_eui_conv=>to_json( <lv_value> ).
+
+      " Field cescription
+      TRY.
+          ls_field_value-field_desc = zcl_eui_type=>get_field_desc(
+            iv_field_name  = lr_new_field->*
+            iv_data        = <lv_value>
+            ir_unique_type = lr_unique_type ).
+        CATCH zcx_eui_exception INTO lo_error.
+          zcx_aqo_exception=>raise_sys_error( io_error = lo_error ).
+      ENDTRY.
+
+      " Add to history
+      io_option->add_history_value(
+       EXPORTING
+         iv_value       = lv_value
+       CHANGING
+         cs_field_value = ls_field_value ).
+
+      " And finally add new field option
+      INSERT ls_field_value INTO TABLE ct_field_value.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD compare_2_fields.
+    DATA:
+      lt_old      TYPE zcl_eui_type=>tt_field_desc,
+      lv_old_ok   TYPE abap_bool,
+      lt_new      TYPE zcl_eui_type=>tt_field_desc,
+      lv_new_ok   TYPE abap_bool,
+      lv_changed  LIKE cv_changed,
+      ls_old      TYPE REF TO zcl_eui_type=>ts_field_desc,
+      ls_new      TYPE REF TO zcl_eui_type=>ts_field_desc,
+      lv_subfield TYPE abap_attrname.
+
+    DEFINE raise_error.
+      " Add sub field
+      IF lv_subfield IS NOT INITIAL.
+       CONCATENATE '-' lv_subfield INTO lv_subfield.
+      ENDIF.
+
+      MESSAGE s028(zaqo_message) WITH cs_old->name lv_subfield.
+      zcx_aqo_exception=>raise_sys_error( ).
+      CLEAR lv_subfield.
+    END-OF-DEFINITION.
+
+    " ERROR - Parameter has now become Table or Range ?
+    IF is_new-sys_type <> cs_old->sys_type OR
+       is_new-ui_type  <> cs_old->ui_type.
+      raise_error.
+    ENDIF.
+
+    " Check sub fields
+    IF cs_old->sub_fdesc IS NOT INITIAL.
+      zcl_eui_conv=>from_json(
+       EXPORTING
+         iv_json = cs_old->sub_fdesc
+       IMPORTING
+         ex_data = lt_old
+         ev_ok   = lv_old_ok ).
+
+      zcl_eui_conv=>from_json(
+       EXPORTING
+         iv_json = is_new-sub_fdesc
+       IMPORTING
+         ex_data = lt_new
+         ev_ok   = lv_new_ok ).
+
+      " Json format error
+      IF lv_old_ok <> abap_true OR lv_new_ok <> abap_true.
+        raise_error.
+      ENDIF.
+
+      LOOP AT lt_old REFERENCE INTO ls_old.
+        " Field deleted
+        READ TABLE lt_new REFERENCE INTO ls_new
+         WITH TABLE KEY name = ls_old->name.
+        IF sy-subrc <> 0.
+          IF iv_repair = abap_true.
+            DELETE lt_old WHERE name = ls_old->name.
+            lv_changed = abap_true.
+          ELSE.
+            lv_subfield = ls_old->name.
+            raise_error.
+          ENDIF.
+
+          CONTINUE.
+        ENDIF.
+
+        " Recursive check
+        compare_2_fields(
+         EXPORTING
+           is_new     = ls_new->*
+           iv_repair  = iv_repair
+           cs_old     = ls_old
+         CHANGING
+           cv_changed = lv_changed ).
+      ENDLOOP.
+
+      LOOP AT lt_new REFERENCE INTO ls_new.
+        READ TABLE lt_old REFERENCE INTO ls_old
+         WITH TABLE KEY name = ls_new->name.
+        CHECK sy-subrc <> 0.
+
+        IF iv_repair = abap_true.
+          INSERT ls_new->* INTO TABLE lt_old.
+          lv_changed = abap_true.
+        ELSE.
+          lv_subfield = ls_new->name.
+          raise_error.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+    " Repair option (pass as 'IV_REPAIR = abap_true')
+    IF cs_old->length      <> is_new-length      OR
+       cs_old->decimals    <> is_new-decimals    OR
+       " cs_old->rollname    <> is_new-rollname    OR
+       cs_old->table_kind  <> is_new-table_kind  OR
+       cs_old->unique      <> is_new-unique      OR
+       cs_old->key[]       <> is_new-key[]       OR
+       cs_old->key_defkind <> is_new-key_defkind OR
+       lv_changed         = abap_true.
+
+      IF iv_repair <> abap_true.
+        raise_error.
+      ELSE.
+        cv_changed         = abap_true.
+        " Copy new elementary declarations
+        cs_old->length      = is_new-length.
+        cs_old->decimals    = is_new-decimals.
+        " cs_old->rollname    = is_new-rollname.
+
+        " Copy new table declarations
+        cs_old->table_kind  = is_new-table_kind.
+        cs_old->unique      = is_new-unique.
+        cs_old->key         = is_new-key.
+        cs_old->key_defkind = is_new-key_defkind.
+        cs_old->sub_fdesc   = zcl_eui_conv=>to_json( lt_old ).
+      ENDIF.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_unq_menu IMPLEMENTATION.
+  METHOD get_eui_menu.
     DATA:
       lv_in_editor TYPE abap_bool,
       ls_unq_menu  TYPE ts_unq_menu,
       lr_unq_menu  TYPE REF TO ts_unq_menu,
-      lt_menu      TYPE zcl_aqo_menu=>tt_menu.
+      lo_unq_menu  TYPE REF TO lcl_unq_menu.
 
     lv_in_editor = zcl_aqo_helper=>is_in_editor( ).
     IF lv_in_editor = abap_true.
@@ -23,28 +320,33 @@ CLASS lcl_aqo_option IMPLEMENTATION.
 
     " Create new GOS menu
     IF sy-subrc <> 0.
-      CREATE OBJECT ls_unq_menu-menu.
+      CREATE OBJECT ls_unq_menu-unq_menu.
       INSERT ls_unq_menu INTO TABLE mt_unq_menu REFERENCE INTO lr_unq_menu.
     ENDIF.
-
-    " Result
-    ro_menu = lr_unq_menu->menu.
-
-    " Init or not
-    CHECK lr_unq_menu->package_id <> iv_package_id
-       OR lr_unq_menu->option_id  <> iv_option_id.
+    lo_unq_menu = lr_unq_menu->unq_menu.
 
     " If new option
-    lr_unq_menu->package_id = iv_package_id.
-    lr_unq_menu->option_id  = iv_option_id.
+    IF lo_unq_menu->package_id <> iv_package_id OR lo_unq_menu->option_id  <> iv_option_id.
+      " Construct unq menu
+      lo_unq_menu->package_id = iv_package_id.
+      lo_unq_menu->option_id  = iv_option_id.
 
-    " prepare buttons
-    lt_menu = get_buttons(
-     is_unq_menu  = lr_unq_menu
-     iv_in_editor = lv_in_editor ).
+      " User interface class
+      IF lo_unq_menu->eui_menu IS INITIAL.
+        CREATE OBJECT lo_unq_menu->eui_menu
+          EXPORTING
+            io_handler = lo_unq_menu.
+      ENDIF.
 
-    " And init
-    ro_menu->construct_buttons( lt_menu ).
+      " prepare buttons
+      DATA lt_menu TYPE zcl_eui_menu=>tt_menu.
+      lt_menu = lo_unq_menu->get_buttons( iv_in_editor = lv_in_editor ).
+
+      lo_unq_menu->eui_menu->create_toolbar( it_menu = lt_menu ).
+    ENDIF.
+
+    " And return
+    ro_eui_menu = lo_unq_menu->eui_menu.
   ENDMETHOD.
 
   METHOD get_buttons.
@@ -69,27 +371,27 @@ CLASS lcl_aqo_option IMPLEMENTATION.
      <ls_menu> LIKE LINE OF rt_menu.
 
     lv_is_dev    = zcl_aqo_helper=>is_dev_mandt( ).
-    lv_lock_info = read_locks( is_unq_menu ).
+    lv_lock_info = read_locks( ).
 
     " Exist ?
     SELECT SINGLE menu_mode INTO lv_menu_mode
     FROM ztaqo_option
-    WHERE package_id = is_unq_menu->package_id
-      AND option_id  = is_unq_menu->option_id.
+    WHERE package_id = me->package_id
+      AND option_id  = me->option_id.
     IF sy-subrc = 0.
       lv_option_exist = abap_true.
     ELSE.
       SELECT SINGLE devclass INTO lv_devclass
       FROM tdevc
-      WHERE devclass = is_unq_menu->package_id.
+      WHERE devclass = me->package_id.
       IF sy-subrc = 0.
         lv_package_exist = abap_true.
       ENDIF.
     ENDIF.
 
     IF iv_in_editor = abap_true.
-      lv_in_viewer       = zcl_aqo_helper=>is_in_editor( iv_is_viewer = abap_true ).
-      is_unq_menu->tcode = sy-tcode.
+      lv_in_viewer = zcl_aqo_helper=>is_in_editor( iv_is_viewer = abap_true ).
+      me->tcode    = sy-tcode.
     ELSEIF lv_option_exist = abap_true.
 
       CASE lv_menu_mode.
@@ -101,7 +403,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
           IF lv_lock_info IS INITIAL.
             MESSAGE s034(zaqo_message) WITH 'settings' INTO lv_lock_info.
           ENDIF.
-          is_unq_menu->tcode = 'ZAQO_VIEWER_OLD'.
+          me->tcode = mc_prog-viewer_tcode.
 
         WHEN mc_menu_mode-edit.
           " Do nothing
@@ -112,7 +414,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
 
       " If not locked by user or settings
       IF lv_lock_info IS INITIAL.
-        is_unq_menu->tcode = 'ZAQO_EDITOR_OLD'.
+        me->tcode = mc_prog-editor_tcode.
       ENDIF.
     ENDIF.
 
@@ -123,7 +425,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
       APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
 
       " Just tooltip
-      CONCATENATE is_unq_menu->package_id ` - ` is_unq_menu->option_id INTO <ls_menu>-quickinfo.
+      CONCATENATE me->package_id ` - ` me->option_id INTO <ls_menu>-quickinfo.
       <ls_menu>-icon         = icon_tools.
       <ls_menu>-butn_type    = cntb_btype_menu.
       <ls_menu>-function     = lv_root_func = mc_action-base.
@@ -162,24 +464,6 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     <ls_menu>-butn_type    = cntb_btype_menu.
     <ls_menu>-function     = mc_action-transport_root.
     <ls_menu>-par_function = lv_root_func.
-
-*    MANDT field is deleted
-*    APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
-*    <ls_menu>-text         = 'Save in mandant'(svi).
-*    <ls_menu>-quickinfo    = <ls_menu>-text.
-*    <ls_menu>-icon         = icon_save_as_template.
-*    <ls_menu>-butn_type    = cntb_btype_button.
-*    <ls_menu>-function     = mc_action-save_in.
-*    <ls_menu>-par_function = mc_action-transport_root. " mc_action-save_root.
-*
-*    SAVE in DEV always calls TRANSPORT method
-*    APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
-*    <ls_menu>-text         = 'Transport'(trn).
-*    <ls_menu>-quickinfo    = lv_lock_info.
-*    <ls_menu>-icon         = icon_transport.
-*    <ls_menu>-butn_type    = cntb_btype_button.
-*    <ls_menu>-function     = mc_action-transport.
-*    <ls_menu>-par_function = mc_action-transport_root.
 
     APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
     <ls_menu>-butn_type    = cntb_btype_sep.
@@ -364,9 +648,8 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     FIELD-SYMBOLS:
      <ls_lock> LIKE LINE OF lt_lock.
 
-    lv_garg+0(3)   = sy-mandt.
-    lv_garg+3(30)  = is_unq_menu->package_id.
-    lv_garg+33(30) = is_unq_menu->option_id.
+    lv_garg+0(30)  = me->package_id.
+    lv_garg+30(30) = me->option_id.
     CALL FUNCTION 'ENQUEUE_READ'
       EXPORTING
         gname                 = 'ZTAQO_OPTION'
@@ -386,6 +669,46 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     MESSAGE s034(zaqo_message) WITH <ls_lock>-guname INTO rv_locked_text.
   ENDMETHOD.
 
+  METHOD on_function_selected.
+    DATA lo_err    TYPE REF TO zcx_aqo_exception.
+    DATA lo_error  TYPE REF TO cx_root.
+    DATA lv_update TYPE abap_bool.
+
+    DEFINE read_option.
+      IF   me->option IS INITIAL
+        OR me->option->ms_db_item-package_id <> me->package_id
+        OR me->option->ms_db_item-option_id  <> me->option_id.
+
+        TRY.
+            me->option = zcl_aqo_option=>create(
+               iv_package_id  = me->package_id
+               iv_option_id   = me->option_id ).
+          CATCH zcx_aqo_exception INTO lo_err.
+            MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+            RETURN.
+        ENDTRY.
+      ENDIF.
+    END-OF-DEFINITION.
+
+    " Set no error mode
+    zcl_aqo_helper=>is_in_editor( iv_tcode = me->tcode ).
+
+    read_option.
+    TRY.
+        CALL METHOD me->(fcode)
+          RECEIVING
+            rv_update = lv_update.
+
+        " Option was changed
+        IF lv_update = abap_true.
+          CLEAR me->option.
+          read_option.
+        ENDIF.
+      CATCH cx_root INTO lo_error.
+        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
+    ENDTRY.
+  ENDMETHOD.
+
   METHOD _export.
     DATA:
       lv_title     TYPE string,
@@ -395,7 +718,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
       lv_fullpath  TYPE string.
 
     lv_title     = 'Save option values'(sov).
-    CONCATENATE io_option->ms_db_item-package_id `-` io_option->ms_db_item-option_id `-` sy-mandt `-` sy-datum `-` sy-uzeit `.aqob` INTO lv_file_name.
+    CONCATENATE option->ms_db_item-package_id `-` option->ms_db_item-option_id `-` sy-mandt `-` sy-datum `-` sy-uzeit `.aqob` INTO lv_file_name.
     cl_gui_frontend_services=>file_save_dialog(
      EXPORTING
        window_title      = lv_title
@@ -409,35 +732,116 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     CHECK sy-subrc = 0 AND lv_fullpath IS NOT INITIAL.
 
     " Save to file
-    zcl_aqo_helper=>download(
-     iv_xcontent = io_option->ms_db_item-fields
-     iv_filename = lv_fullpath ).
+    DATA lo_file TYPE REF TO zcl_eui_file.
+    CREATE OBJECT lo_file
+      EXPORTING
+        iv_xstring = option->ms_db_item-fields.
+    TRY.
+        lo_file->download( iv_full_path = lv_fullpath ).
+      CATCH zcx_eui_exception.
+    ENDTRY.
   ENDMETHOD.
 
   METHOD _about.
-    DATA:
-      lv_ok_code TYPE syucomm,
-      ls_db_item TYPE ztaqo_option.
+    " Show in screen PARAMETERS:
+    DATA ls_dyn_scr  TYPE REF TO zsaqo_about_dialog.
+    DATA lo_screen   TYPE REF TO zcl_eui_screen.
+    DATA lo_err      TYPE REF TO zcx_eui_exception.
+    DATA lv_input    TYPE screen-input.
+    DATA lv_cmd      TYPE syucomm.
+
+    " Where to store data
+    CREATE DATA ls_dyn_scr.
 
     " Previous values
-    ls_db_item = io_option->ms_db_item.
+    ls_dyn_scr->p_2_pack = option->ms_db_item-package_id.
+    ls_dyn_scr->p_2_opt  = option->ms_db_item-option_id.
+    ls_dyn_scr->p_2_date = option->ms_db_item-created_date.
+    ls_dyn_scr->p_2_ntxt = option->ms_db_item-created_name_txt.
+    " Editable
+    ls_dyn_scr->p_2_desc = option->ms_db_item-description.
+    ls_dyn_scr->p_2_prev = option->ms_db_item-prev_value_cnt.
+    ls_dyn_scr->p_2_menu = option->ms_db_item-menu_mode.
 
-    CALL FUNCTION 'ZFM_AQO_ABOUT_1010'
-      IMPORTING
-        ev_last_command = lv_ok_code
-      CHANGING
-        cs_db_item      = ls_db_item.
+    " Create screen manager
+    TRY.
+        CREATE OBJECT lo_screen
+          EXPORTING
+            iv_dynnr   = '1020'
+            iv_cprog   = mc_prog-editor
+            ir_context = ls_dyn_scr.
+      CATCH zcx_eui_exception INTO lo_err.
+        MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
+    ENDTRY.
 
-    CASE lv_ok_code.
-      WHEN 'EDIT'.
-        rv_update = do_update(
-         io_option      = io_option
+    " Set pf-status & text
+    lo_screen->ms_status-is_fixed = abap_true.
+    lo_screen->ms_status-name     = 'ABOUT_STATUS'.
+    lo_screen->ms_status-prog     = mc_prog-editor.
+    lo_screen->ms_status-title    = 'Enter option description'(eod).
+
+    " Ok & Cancel
+    IF me->tcode = mc_prog-editor_tcode AND zcl_aqo_helper=>is_dev_mandt( ) = abap_true.
+      lv_input = '1'.
+      APPEND 'USER_INFO'   TO lo_screen->ms_status-exclude.
+    ELSE.
+      lv_input = '0'.
+      APPEND 'MODIFY'      TO lo_screen->ms_status-exclude.
+      APPEND 'DEV_INFO'    TO lo_screen->ms_status-exclude.
+
+      " Also hide
+      IF has_visible_files( iv_pack = ls_dyn_scr->p_2_pack iv_opt = ls_dyn_scr->p_2_opt ) <> abap_true.
+        APPEND 'USER_INFO' TO lo_screen->ms_status-exclude.
+      ENDIF.
+    ENDIF.
+
+    " Static PF status no need on_pbo_event.
+    lo_screen->customize( iv_fieldname = 'P_2_PACK'   input = '0' ).
+    lo_screen->customize( iv_fieldname = 'P_2_OPT'    input = '0' ).
+    lo_screen->customize( iv_fieldname = 'P_2_DATE'   input = '0' ).
+    lo_screen->customize( iv_fieldname = 'P_2_NTXT'   input = '0' ).
+
+    lo_screen->customize( iv_fieldname = 'P_2_DESC'   input = lv_input required = '1' ).
+    lo_screen->customize( iv_fieldname = 'P_2_PREV'   input = lv_input required = '1' ).
+    lo_screen->customize( iv_fieldname = 'P_2_MENU'   input = lv_input ).
+
+    " As popup
+    lo_screen->popup( ).
+
+    " Process action
+    lv_cmd = lo_screen->show( io_handler = me iv_handlers_map = 'ON_ABOUT_PAI' ).
+    CHECK lv_cmd <> zif_eui_manager=>mc_cmd-cancel.
+    rv_update = abap_true.
+  ENDMETHOD.
+
+  METHOD on_about_pai.
+    DATA lo_screen   TYPE REF TO zcl_eui_screen.
+    DATA ls_dyn_scr  TYPE REF TO zsaqo_about_dialog.
+    DATA lo_err      TYPE REF TO zcx_aqo_exception.
+
+    " Get data
+    lo_screen ?= sender.
+    ls_dyn_scr ?= lo_screen->get_context( ).
+
+    CASE iv_command.
+      WHEN 'MODIFY'.
+        IF ls_dyn_scr->p_2_prev > 7 OR ls_dyn_scr->p_2_prev < 1.
+          MESSAGE 'Previous values count have to be from 1 to 7'(nir) TYPE 'S' DISPLAY LIKE 'E'.
+          RETURN.
+        ENDIF.
+
+        do_update(
          iv_set         = `DESCRIPTION = IV_DESCRIPTION PREV_VALUE_CNT = IV_PREV_COUNT MENU_MODE = IV_MENU_MODE`
-         iv_description = ls_db_item-description
-         iv_prev_count  = ls_db_item-prev_value_cnt
-         iv_menu_mode   = ls_db_item-menu_mode ).
+         iv_description = ls_dyn_scr->p_2_desc
+         iv_prev_count  = ls_dyn_scr->p_2_prev
+         iv_menu_mode   = ls_dyn_scr->p_2_menu ).
+
+        cv_close->* = abap_true.
 
       WHEN 'DEV_INFO'.
+        cv_close->* = abap_true.
+
         " Show online documentation in browser
         CALL FUNCTION 'CALL_BROWSER'
           EXPORTING
@@ -447,15 +851,56 @@ CLASS lcl_aqo_option IMPLEMENTATION.
         CHECK sy-subrc = 0.
 
       WHEN 'USER_INFO'.
-        " Check in attachments
-        _attach_show( io_option   = io_option
-                      is_unq_menu = is_unq_menu
-                      iv_vis_only = abap_true ).
+        cv_close->* = abap_true.
 
-        " Ok or cancel
+        " Check in attachments
+        TRY.
+            _attach_show( iv_vis_only = abap_true ).
+          CATCH zcx_aqo_exception INTO lo_err.
+            MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+        ENDTRY.
+
+        " Ok or cancel ?
       WHEN OTHERS.
         RETURN.
     ENDCASE.
+  ENDMETHOD.
+
+  METHOD has_visible_files.
+    DATA:
+      ls_visible   TYPE ts_visible,
+      lr_visible   TYPE REF TO ts_visible,
+      lt_oaor_file TYPE zcl_aqo_helper=>tt_oaor_file.
+
+    READ TABLE mt_visible REFERENCE INTO lr_visible
+     WITH TABLE KEY pack = iv_pack
+                    opt  = iv_opt.
+
+    " Serach for the first time
+    IF sy-subrc <> 0.
+      ls_visible-pack = iv_pack.
+      ls_visible-opt  = iv_opt.
+
+      " Get all files
+      zcl_aqo_helper=>oaor_get_files(
+       EXPORTING
+         iv_pack_id   = ls_visible-pack
+         iv_option_id = ls_visible-opt
+       IMPORTING
+         et_oaor_file	= lt_oaor_file ).
+
+      " Only visible and new files
+      DELETE lt_oaor_file WHERE visible <> abap_true OR last_version <> abap_true.
+      IF lt_oaor_file IS NOT INITIAL.
+        ls_visible-visible = abap_true.
+      ENDIF.
+
+      " Insert for speed
+      INSERT ls_visible INTO TABLE mt_visible REFERENCE INTO lr_visible.
+    ENDIF.
+
+    " And return
+    rv_visible = lr_visible->visible.
   ENDMETHOD.
 
   METHOD _import.
@@ -500,12 +945,11 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     ENDIF.
 
     " TODO check data structure
-    lv_xdata = zcl_aqo_helper=>binary_to_xstring(
+    lv_xdata = zcl_eui_conv=>binary_to_xstring(
      it_table  = lt_data
      iv_length = lv_len ).
 
     rv_update = do_update(
-     io_option = io_option
      iv_set    = `FIELDS = IV_FIELDS`
      iv_fields = lv_xdata ).
   ENDMETHOD.
@@ -513,8 +957,8 @@ CLASS lcl_aqo_option IMPLEMENTATION.
   METHOD do_update.
     UPDATE ztaqo_option
      SET (iv_set)
-    WHERE package_id = io_option->ms_db_item-package_id
-      AND option_id  = io_option->ms_db_item-option_id.
+    WHERE package_id = option->ms_db_item-package_id
+      AND option_id  = option->ms_db_item-option_id.
 
     IF sy-subrc = 0.
       MESSAGE 'Data updated'(upd) TYPE 'S'.
@@ -527,25 +971,25 @@ CLASS lcl_aqo_option IMPLEMENTATION.
   METHOD _last_code.
     DATA:
       lv_ok TYPE abap_bool.
-    IF io_option->ms_db_item-mainprogram IS INITIAL.
+    IF option->ms_db_item-mainprogram IS INITIAL.
       MESSAGE 'No previous call was found'(ncl) TYPE 'S' DISPLAY LIKE 'E'.
       RETURN.
     ENDIF.
 
     " Try to launch by save first save of option
     lv_ok = zcl_aqo_helper=>navigate_to(
-       iv_include  = io_option->ms_db_item-include
-       iv_position = io_option->ms_db_item-line ).
+       iv_include  = option->ms_db_item-include
+       iv_position = option->ms_db_item-line ).
 
     " if not OK
     CHECK lv_ok <> abap_true
-      AND io_option->ms_db_item-package_id IS NOT INITIAL
-      AND io_option->ms_db_item-option_id  IS NOT INITIAL.
+      AND option->ms_db_item-package_id IS NOT INITIAL
+      AND option->ms_db_item-option_id  IS NOT INITIAL.
 
     " Pass params
     SET PARAMETER ID:
-      'ZAQO_PACKAGE_ID' FIELD io_option->ms_db_item-package_id,
-      'ZAQO_OPTION_ID'  FIELD io_option->ms_db_item-option_id.
+      'ZAQO_PACKAGE_ID' FIELD option->ms_db_item-package_id,
+      'ZAQO_OPTION_ID'  FIELD option->ms_db_item-option_id.
 
     " Second attempt by code scan
     PERFORM call_by_name IN PROGRAM zaqo_editor_old
@@ -554,63 +998,34 @@ CLASS lcl_aqo_option IMPLEMENTATION.
 
   METHOD _delete.
     " $ & transport
-    rv_update = io_option->delete( ).
+    DATA lv_message TYPE string.
+    lv_message = option->delete( ).
+    IF lv_message IS NOT INITIAL.
+      MESSAGE lv_message TYPE 'S'.
+    ENDIF.
+
+    rv_update = abap_true.
   ENDMETHOD.
 
   METHOD _view.
-    rv_update = _change(
-     is_unq_menu = is_unq_menu
-     io_option   = io_option ).
+    _change( ).
+    rv_update = abap_true.
   ENDMETHOD.
 
   METHOD _new.
-    rv_update = _change(
-     is_unq_menu = is_unq_menu
-     io_option   = io_option
-     iv_command  = '_NEW_OPTION' ).
+    _change( iv_command  = '_NEW_OPTION' ).
+    rv_update = abap_true.
   ENDMETHOD.
 
   METHOD _change.
     SET PARAMETER ID:
-      'ZAQO_PACKAGE_ID' FIELD io_option->ms_db_item-package_id,
-      'ZAQO_OPTION_ID'  FIELD io_option->ms_db_item-option_id,
+      'ZAQO_PACKAGE_ID' FIELD option->ms_db_item-package_id,
+      'ZAQO_OPTION_ID'  FIELD option->ms_db_item-option_id,
       'ZAQO_COMMAND'    FIELD iv_command.
 
-    CALL TRANSACTION is_unq_menu->tcode " WITH AUTHORITY-CHECK "#EC CI_CALLTA
+    CALL TRANSACTION me->tcode " WITH AUTHORITY-CHECK "#EC CI_CALLTA
       AND SKIP FIRST SCREEN.
   ENDMETHOD.
-
-*  METHOD _save_in.
-*    DATA:
-*      lv_mandt TYPE symandt,
-*      lv_ok    TYPE abap_bool.
-*
-*    " Save in another mandant
-*    lv_mandt = sy-mandt.
-*    zcl_aqo_helper=>edit_in_popup(
-*     EXPORTING
-*       iv_type  = 'T001-MANDT'
-*       iv_title = 'Specify the client number'(cln)
-*     CHANGING
-*       cv_value = lv_mandt
-*       cv_ok    = lv_ok ).
-*    CHECK lv_ok = abap_true.
-*
-*    " check client
-*    IF lv_mandt = sy-mandt.
-*      MESSAGE s035(zaqo_message) DISPLAY LIKE 'E'.
-*      RETURN.
-*    ENDIF.
-*
-***   check unsaved data exist
-**    IF check_unsaved_data( ) EQ abap_true.
-***     save data
-**      data_save( ).
-**    ENDIF.
-*
-*    "lcl_opt=>do_save( iv_mandt = lv_mandt ).
-*    io_option->save( iv_mandt = lv_mandt ).
-*  ENDMETHOD.
 
   METHOD _attach_import.
     DATA:
@@ -633,10 +1048,11 @@ CLASS lcl_aqo_option IMPLEMENTATION.
       lv_ok             TYPE abap_bool,
       lv_ar_object      TYPE toadv-ar_object,
       lv_task           TYPE e070-trkorr,
+      lv_message        TYPE string,
       lv_oaor_mode      TYPE string.
 
     " Subfolder in OAOR (and classname = package_id)
-    lv_key = io_option->ms_db_item-option_id.
+    lv_key = option->ms_db_item-option_id.
 
     " Get file info
     cl_gui_frontend_services=>file_open_dialog(
@@ -653,10 +1069,15 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     " Create or not
     zcl_aqo_helper=>oaor_check_exists(
      EXPORTING
-       iv_pack_id   = io_option->ms_db_item-package_id
-       iv_option_id = io_option->ms_db_item-option_id
+       iv_pack_id    = option->ms_db_item-package_id
+       iv_option_id  = option->ms_db_item-option_id
      IMPORTING
-       ev_task      = lv_task ).
+       ev_task       = lv_task
+       ev_ok_message = lv_message ).
+    IF lv_message IS NOT INITIAL.
+      MESSAGE lv_message TYPE 'S'.
+    ENDIF.
+
     CHECK lv_task IS NOT INITIAL.
 
     " First file
@@ -664,7 +1085,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     CHECK sy-subrc = 0.
 
     " Extract info & add
-    zcl_aqo_helper=>split_file_path(
+    zcl_eui_file=>split_file_path(
      EXPORTING
        iv_fullpath  = ls_file_table->filename
      IMPORTING
@@ -682,8 +1103,8 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     " Read previous
     zcl_aqo_helper=>oaor_get_files(
      EXPORTING
-      iv_pack_id   = io_option->ms_db_item-package_id
-      iv_option_id = io_option->ms_db_item-option_id
+      iv_pack_id   = option->ms_db_item-package_id
+      iv_option_id = option->ms_db_item-option_id
       iv_filename  = ls_file-filename
      IMPORTING
       es_oaor_last = ls_oaor_file
@@ -692,26 +1113,24 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     " New or existeng item
     IF ls_oaor_file IS INITIAL.
       ls_oaor_file-description = ls_oaor_file-file_name = ls_file-filename.
-      lv_oaor_mode = zcl_aqo_menu=>mc_oaor_new_file.
+      lv_oaor_mode = mc_oaor-new_file.
       MESSAGE s036(zaqo_message).
 
     ELSEIF sy-datum = ls_oaor_file-last_changed_at_date.
-      lv_oaor_mode = zcl_aqo_menu=>mc_oaor_update_version.
+      lv_oaor_mode = mc_oaor-update_version.
       MESSAGE s038(zaqo_message) WITH ls_oaor_file-doc_ver_no.
 
     ELSE.
-      lv_oaor_mode = zcl_aqo_menu=>mc_oaor_new_version.
+      lv_oaor_mode = mc_oaor-new_version.
       MESSAGE s037(zaqo_message) WITH ls_oaor_file-doc_ver_no.
     ENDIF.
 
-    CALL FUNCTION 'ZFM_AQO_OAOR_FILE_1020'
-      EXPORTING
-        iv_package_id = io_option->ms_db_item-package_id
-        iv_option_id  = io_option->ms_db_item-option_id
-      IMPORTING
-        ev_ok         = lv_ok
-      CHANGING
-        cs_info       = ls_oaor_file-f4.
+    " #######
+    show_new_version_diloag(
+     IMPORTING
+       ev_ok        = lv_ok
+     CHANGING
+       cs_oaor_file = ls_oaor_file ).
     CHECK lv_ok = abap_true.
 
     " always equal to file name (Case sensetive)
@@ -738,7 +1157,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     CASE lv_oaor_mode.
 
         " First version
-      WHEN zcl_aqo_menu=>mc_oaor_new_file.
+      WHEN mc_oaor-new_file.
 
         " Detect folder  'BDS_ATTACH' is first
         SELECT SINGLE ar_object INTO lv_ar_object
@@ -758,7 +1177,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
 
         cl_bds_document_set=>create_with_files(
            EXPORTING
-             classname       = io_option->ms_db_item-package_id
+             classname       = option->ms_db_item-package_id
              classtype       = zcl_aqo_helper=>mc_oaor_other
            CHANGING
              object_key      = lv_key
@@ -770,8 +1189,8 @@ CLASS lcl_aqo_option IMPLEMENTATION.
           " new version
           zcl_aqo_helper=>oaor_get_files(
            EXPORTING
-            iv_pack_id   = io_option->ms_db_item-package_id
-            iv_option_id = io_option->ms_db_item-option_id
+            iv_pack_id   = option->ms_db_item-package_id
+            iv_option_id = option->ms_db_item-option_id
             iv_filename  = ls_file-filename
            IMPORTING
             es_oaor_last = ls_oaor_file ).
@@ -779,10 +1198,10 @@ CLASS lcl_aqo_option IMPLEMENTATION.
 
 **********************************************************************
         " Set new version
-      WHEN zcl_aqo_menu=>mc_oaor_new_version.
+      WHEN mc_oaor-new_version.
         cl_bds_document_set=>create_version_with_files(
            EXPORTING
-             classname       = io_option->ms_db_item-package_id
+             classname       = option->ms_db_item-package_id
              classtype       = zcl_aqo_helper=>mc_oaor_other
              object_key      = lv_key
              doc_id          = ls_oaor_file-doc_id
@@ -801,10 +1220,10 @@ CLASS lcl_aqo_option IMPLEMENTATION.
 
 **********************************************************************
         " Update existing
-      WHEN zcl_aqo_menu=>mc_oaor_update_version.
+      WHEN mc_oaor-update_version.
         cl_bds_document_set=>update_with_files(
          EXPORTING
-          classname       = io_option->ms_db_item-package_id
+          classname       = option->ms_db_item-package_id
           classtype       = zcl_aqo_helper=>mc_oaor_other
           object_key       = lv_key
           doc_id          = ls_oaor_file-doc_id
@@ -829,25 +1248,92 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     " Put new file
     zcl_aqo_helper=>check_in_request(
      EXPORTING
-       is_oaor_file = ls_oaor_file
+       is_oaor_file  = ls_oaor_file
      CHANGING
-       cv_task      = lv_task ).
+       cv_task       = lv_task
+       cv_ok_message = lv_message ).
+    IF lv_message IS NOT INITIAL.
+      MESSAGE lv_message TYPE 'S'.
+    ENDIF.
 
     " Delete obselete data
     lv_last_index = lines( lt_oaor_file ) + 1.
-    lv_last_index = lv_last_index - io_option->ms_db_item-prev_value_cnt.
+    lv_last_index = lv_last_index - option->ms_db_item-prev_value_cnt.
     DO lv_last_index TIMES.
       READ TABLE lt_oaor_file INTO ls_oaor_file INDEX sy-index.
       CHECK sy-subrc = 0.
 
       zcl_aqo_helper=>oaor_delete_file(
        EXPORTING
-        iv_pack_id   = io_option->ms_db_item-package_id
-        iv_option_id = io_option->ms_db_item-option_id
+        iv_pack_id   = option->ms_db_item-package_id
+        iv_option_id = option->ms_db_item-option_id
         is_oaor_file = ls_oaor_file
        CHANGING
         cv_task      = lv_task ).
     ENDDO.
+  ENDMETHOD.
+
+  METHOD show_new_version_diloag.
+    " Show in screen PARAMETERS:
+    DATA ls_dyn_scr  TYPE REF TO zsaqo_oaor_dialog.
+    DATA lo_screen   TYPE REF TO zcl_eui_screen.
+    DATA lo_err      TYPE REF TO zcx_eui_exception.
+    DATA lv_input    TYPE screen-input.
+    DATA lv_cmd      TYPE syucomm.
+
+    CLEAR ev_ok.
+
+    " Fill scrren with values
+    CREATE DATA ls_dyn_scr.
+    ls_dyn_scr->p_3_pack   = package_id.
+    ls_dyn_scr->p_3_opt    = option_id.
+    ls_dyn_scr->p_3_file   = cs_oaor_file-file_name.
+    ls_dyn_scr->p_3_vers   = cs_oaor_file-doc_ver_no.
+    " Editable
+    ls_dyn_scr->p_3_desc   = cs_oaor_file-description.
+    ls_dyn_scr->p_3_vis    = cs_oaor_file-visible.
+
+    " Create screen manager
+    TRY.
+        CREATE OBJECT lo_screen
+          EXPORTING
+            iv_dynnr   = '1030'
+            iv_cprog   = mc_prog-editor
+            ir_context = ls_dyn_scr.
+      CATCH zcx_eui_exception INTO lo_err.
+        MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
+    ENDTRY.
+
+    " Set pf-status & text
+    lo_screen->ms_status-is_fixed = abap_true.
+    lo_screen->ms_status-title    = 'New file info'(nfi).
+
+    " Ok & Cancel
+    lv_input = '1'.
+    IF me->tcode <> mc_prog-editor_tcode OR zcl_aqo_helper=>is_dev_mandt( ) <> abap_true.
+      APPEND 'OK' TO lo_screen->ms_status-exclude.
+      lv_input = '0'.
+    ENDIF.
+
+    " Static PF status no need on_pbo_event.
+    lo_screen->customize( iv_fieldname = 'P_3_PACK'   input = '0' ).
+    lo_screen->customize( iv_fieldname = 'P_3_OPT'    input = '0' ).
+    lo_screen->customize( iv_fieldname = 'P_3_FILE'   input = '0' ).
+    lo_screen->customize( iv_fieldname = 'P_3_VERS'   input = '0' ).
+    lo_screen->customize( iv_fieldname = 'P_3_DESC'   input = lv_input ).
+    lo_screen->customize( iv_fieldname = 'P_3_VIS'    input = lv_input ).
+
+    " As popup
+    lo_screen->popup( ).
+
+    " Process action
+    lv_cmd = lo_screen->show( ).
+    CHECK lv_cmd <> zif_eui_manager=>mc_cmd-cancel.
+
+    cs_oaor_file-description = ls_dyn_scr->p_3_desc.
+    cs_oaor_file-visible     = ls_dyn_scr->p_3_vis.
+    ev_ok                    = abap_true.
   ENDMETHOD.
 
   METHOD _attach_show.
@@ -869,14 +1355,15 @@ CLASS lcl_aqo_option IMPLEMENTATION.
       lv_ext       TYPE string,
       lv_len       TYPE i,
       lv_index     TYPE i,
+      lv_message   TYPE string,
       lv_task      TYPE e070-trkorr.
     FIELD-SYMBOLS:
      <lt_table>   TYPE STANDARD TABLE.
 
     zcl_aqo_helper=>oaor_get_files(
      EXPORTING
-       iv_pack_id   = io_option->ms_db_item-package_id
-       iv_option_id = io_option->ms_db_item-option_id
+       iv_pack_id   = option->ms_db_item-package_id
+       iv_option_id = option->ms_db_item-option_id
      IMPORTING
        et_oaor_file = lt_oaor_file ).
 
@@ -931,16 +1418,20 @@ CLASS lcl_aqo_option IMPLEMENTATION.
       " Request for deleting file
       zcl_aqo_helper=>oaor_check_exists(
        EXPORTING
-         iv_pack_id   = io_option->ms_db_item-package_id
-         iv_option_id = io_option->ms_db_item-option_id
+         iv_pack_id    = option->ms_db_item-package_id
+         iv_option_id  = option->ms_db_item-option_id
        IMPORTING
-         ev_task      = lv_task ).
+         ev_task       = lv_task
+         ev_ok_message = lv_message ).
+      IF lv_message IS NOT INITIAL.
+        MESSAGE lv_message TYPE 'S'.
+      ENDIF.
 
       IF lv_task IS NOT INITIAL.
         zcl_aqo_helper=>oaor_delete_file(
          EXPORTING
-           iv_pack_id   = io_option->ms_db_item-package_id
-           iv_option_id = io_option->ms_db_item-option_id
+           iv_pack_id   = option->ms_db_item-package_id
+           iv_option_id = option->ms_db_item-option_id
            is_oaor_file = ls_oaor_file->*
          CHANGING
            cv_task      = lv_task ).
@@ -971,7 +1462,7 @@ CLASS lcl_aqo_option IMPLEMENTATION.
       lv_file_size = ls_info->file_size.
     ELSE.
       ASSIGN lt_text TO <lt_table>.
-      lv_filetype  = 'ASC'.
+      lv_filetype  = 'ASC'. " <---  TODO use ZCL_EUI_FILE --->
     ENDIF.
 
     " No need to clean files (cl_gui_frontend_services=>file_delete). SAP gui cleans 'SAP GUI\tmp\' automatically
@@ -985,12 +1476,12 @@ CLASS lcl_aqo_option IMPLEMENTATION.
     cl_gui_cfw=>flush( ).
 
     " Extract info & add
-    zcl_aqo_helper=>split_file_path(
+    zcl_eui_file=>split_file_path(
      EXPORTING
-       iv_fullpath       = ls_oaor_file->file_name
+       iv_fullpath   = ls_oaor_file->file_name
      IMPORTING
-       ev_filename_noext = lv_filename
-       ev_extension      = lv_ext ).
+       ev_file_noext = lv_filename
+       ev_extension  = lv_ext ).
 
     " Whole path
     lv_len = strlen( lv_path ) - 1.
@@ -1023,14 +1514,13 @@ CLASS lcl_aqo_option IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _attach_delete.
-    CHECK zcl_aqo_helper=>confirm(
+    CHECK zcl_eui_screen=>confirm(
         iv_title    = 'Confirmation'(cnf)
-        iv_question = 'Deleting file is irreversible. Continue?'(def) ) = abap_true.
+        iv_question = 'Deleting file is irreversible. Continue?'(def)
+        iv_icon_1   = 'ICON_DELETE_TEMPLATE' ) = abap_true.
 
     " Delete in attachments
-    _attach_show( io_option   = io_option
-                  is_unq_menu = is_unq_menu
-                  iv_delete   = abap_true ).
+    _attach_show( iv_delete = abap_true ).
   ENDMETHOD.
 
 ENDCLASS.

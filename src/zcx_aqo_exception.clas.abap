@@ -36,8 +36,13 @@ public section.
   class-methods RAISE_SYS_ERROR
     importing
       !IV_MESSAGE type CSEQUENCE optional
+      value(IO_ERROR) type ref to CX_ROOT optional
     raising
       ZCX_AQO_EXCEPTION .
+  class-methods RAISE_DUMP
+    importing
+      !IV_MESSAGE type CSEQUENCE optional
+      !IO_ERROR type ref to CX_ROOT optional .
 protected section.
 private section.
 ENDCLASS.
@@ -47,7 +52,7 @@ ENDCLASS.
 CLASS ZCX_AQO_EXCEPTION IMPLEMENTATION.
 
 
-method CONSTRUCTOR.
+  method CONSTRUCTOR.
 CALL METHOD SUPER->CONSTRUCTOR
 EXPORTING
 PREVIOUS = PREVIOUS
@@ -62,7 +67,22 @@ if textid is initial.
 else.
   IF_T100_MESSAGE~T100KEY = TEXTID.
 endif.
-endmethod.
+  endmethod.
+
+
+METHOD raise_dump.
+  DATA:
+    lv_message TYPE string.
+
+  IF io_error IS SUPPLIED.
+    lv_message = io_error->get_text( ).
+  ELSE.
+    lv_message = iv_message.
+  ENDIF.
+
+  MESSAGE lv_message TYPE 'S' DISPLAY LIKE 'E'.
+  MESSAGE lv_message TYPE 'X'.
+ENDMETHOD.
 
 
 METHOD raise_sys_error.
@@ -73,12 +93,33 @@ METHOD raise_sys_error.
       part3 TYPE symsgv,
       part4 TYPE symsgv,
     END OF ls_string.
+  DATA lv_incl TYPE syrepid.
+  DATA lv_line TYPE i.
+  DATA lv_text TYPE string.
 
   " From string
-  IF iv_message IS SUPPLIED.
+  IF iv_message IS NOT INITIAL.
     ls_string = iv_message.
-  ELSE.
-    " Any error
+  ENDIF.
+
+  WHILE ls_string IS INITIAL AND io_error IS NOT INITIAL.
+    ls_string = io_error->get_text( ).
+
+    " For debug
+    io_error->get_source_position(
+     IMPORTING
+       include_name = lv_incl
+       source_line  = lv_line ).
+    IF ls_string IS NOT INITIAL.
+      lv_text = lv_line.
+      CONCATENATE ls_string lv_incl  INTO ls_string SEPARATED BY ` - `.
+    ENDIF.
+
+    io_error = io_error->previous.
+  ENDWHILE.
+
+  " Any error based on system message
+  IF ls_string IS INITIAL.
     MESSAGE ID sy-msgid TYPE 'E' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ls_string.
   ENDIF.
 

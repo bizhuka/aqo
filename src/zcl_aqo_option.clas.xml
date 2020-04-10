@@ -14,8 +14,80 @@
    <TPOOL>
     <item>
      <ID>I</ID>
+     <KEY>AAT</KEY>
+     <ENTRY>Add attachment</ENTRY>
+     <LENGTH>24</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>ABO</KEY>
+     <ENTRY>About</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>ATT</KEY>
+     <ENTRY>Attach</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>CNF</KEY>
+     <ENTRY>Confirmation</ENTRY>
+     <LENGTH>22</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>CRT</KEY>
+     <ENTRY>New</ENTRY>
+     <LENGTH>13</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>DAT</KEY>
+     <ENTRY>Delete attachment</ENTRY>
+     <LENGTH>27</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>DEF</KEY>
+     <ENTRY>Deleting file is irreversible. Continue?</ENTRY>
+     <LENGTH>80</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>DEL</KEY>
      <ENTRY>Delete</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>EDT</KEY>
+     <ENTRY>Edit</ENTRY>
+     <LENGTH>14</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>EDU</KEY>
+     <ENTRY>Error during updating!</ENTRY>
+     <LENGTH>44</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>EOD</KEY>
+     <ENTRY>Enter option description</ENTRY>
+     <LENGTH>48</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>EXP</KEY>
+     <ENTRY>Export</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>IMP</KEY>
+     <ENTRY>Import</ENTRY>
      <LENGTH>16</LENGTH>
     </item>
     <item>
@@ -26,9 +98,63 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>NCL</KEY>
+     <ENTRY>No previous call was found</ENTRY>
+     <LENGTH>52</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>NFI</KEY>
+     <ENTRY>New file info</ENTRY>
+     <LENGTH>23</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>NIR</KEY>
+     <ENTRY>Previous values count have to be from 1 to 7</ENTRY>
+     <LENGTH>88</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>SAT</KEY>
+     <ENTRY>Show attachments</ENTRY>
+     <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>SAV</KEY>
      <ENTRY>Save</ENTRY>
      <LENGTH>14</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>SOV</KEY>
+     <ENTRY>Save option values</ENTRY>
+     <LENGTH>28</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>TRN</KEY>
+     <ENTRY>Transport</ENTRY>
+     <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>UPD</KEY>
+     <ENTRY>Data updated</ENTRY>
+     <LENGTH>22</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>VIW</KEY>
+     <ENTRY>View</ENTRY>
+     <LENGTH>14</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>WUL</KEY>
+     <ENTRY>Where-Used List</ENTRY>
+     <LENGTH>25</LENGTH>
     </item>
    </TPOOL>
    <DESCRIPTIONS>
@@ -49,6 +175,12 @@
      <CMPNAME>GET_FIELD_VALUE</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Get data as reference</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AQO_OPTION</CLSNAME>
+     <CMPNAME>GET_MENU</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Creates new menu (ZCL_EUI_MENU) or return existing</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_AQO_OPTION</CLSNAME>

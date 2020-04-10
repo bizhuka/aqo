@@ -9,87 +9,6 @@
    </INCLUDES>
    <FUNCTIONS>
     <item>
-     <FUNCNAME>ZFM_AQO_ABOUT_1010</FUNCNAME>
-     <SHORT_TEXT>About dialog</SHORT_TEXT>
-     <CHANGING>
-      <RSCHA>
-       <PARAMETER>CS_DB_ITEM</PARAMETER>
-       <REFERENCE>X</REFERENCE>
-       <TYP>ZTAQO_OPTION</TYP>
-      </RSCHA>
-     </CHANGING>
-     <EXPORT>
-      <RSEXP>
-       <PARAMETER>EV_LAST_COMMAND</PARAMETER>
-       <REFERENCE>X</REFERENCE>
-       <TYP>SYUCOMM</TYP>
-      </RSEXP>
-     </EXPORT>
-     <DOCUMENTATION>
-      <RSFDO>
-       <PARAMETER>EV_LAST_COMMAND</PARAMETER>
-       <KIND>P</KIND>
-       <STEXT>Function Code</STEXT>
-      </RSFDO>
-      <RSFDO>
-       <PARAMETER>CS_DB_ITEM</PARAMETER>
-       <KIND>P</KIND>
-       <STEXT>Main table of options</STEXT>
-      </RSFDO>
-     </DOCUMENTATION>
-    </item>
-    <item>
-     <FUNCNAME>ZFM_AQO_OAOR_FILE_1020</FUNCNAME>
-     <SHORT_TEXT>Edit OAOR file properties</SHORT_TEXT>
-     <IMPORT>
-      <RSIMP>
-       <PARAMETER>IV_PACKAGE_ID</PARAMETER>
-       <REFERENCE>X</REFERENCE>
-       <TYP>ZTAQO_OPTION-PACKAGE_ID</TYP>
-      </RSIMP>
-      <RSIMP>
-       <PARAMETER>IV_OPTION_ID</PARAMETER>
-       <REFERENCE>X</REFERENCE>
-       <TYP>ZTAQO_OPTION-OPTION_ID</TYP>
-      </RSIMP>
-     </IMPORT>
-     <CHANGING>
-      <RSCHA>
-       <PARAMETER>CS_INFO</PARAMETER>
-       <REFERENCE>X</REFERENCE>
-       <TYP>ZSAQO_OAOR_FILE_F4</TYP>
-      </RSCHA>
-     </CHANGING>
-     <EXPORT>
-      <RSEXP>
-       <PARAMETER>EV_OK</PARAMETER>
-       <REFERENCE>X</REFERENCE>
-       <TYP>ABAP_BOOL</TYP>
-      </RSEXP>
-     </EXPORT>
-     <DOCUMENTATION>
-      <RSFDO>
-       <PARAMETER>IV_PACKAGE_ID</PARAMETER>
-       <KIND>P</KIND>
-       <STEXT>Package</STEXT>
-      </RSFDO>
-      <RSFDO>
-       <PARAMETER>IV_OPTION_ID</PARAMETER>
-       <KIND>P</KIND>
-       <STEXT>Option ID</STEXT>
-      </RSFDO>
-      <RSFDO>
-       <PARAMETER>EV_OK</PARAMETER>
-       <KIND>P</KIND>
-      </RSFDO>
-      <RSFDO>
-       <PARAMETER>CS_INFO</PARAMETER>
-       <KIND>P</KIND>
-       <STEXT>OAOR file F4</STEXT>
-      </RSFDO>
-     </DOCUMENTATION>
-    </item>
-    <item>
      <FUNCNAME>ZFM_AQO_OPTION_EXIT</FUNCNAME>
      <SHORT_TEXT>Beispiel für ein Suchhilfe-Exit eine Suchhilfe</SHORT_TEXT>
      <CHANGING>
@@ -119,21 +38,25 @@
        <PARAMETER>SHLP_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Table of elementary search helps</STEXT>
+       <INDEX> 001</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>RECORD_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Hit list</STEXT>
+       <INDEX> 002</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>SHLP</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Single (current) search help</STEXT>
+       <INDEX> 003</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>CALLCONTROL</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Control of the F4 process</STEXT>
+       <INDEX> 004</INDEX>
       </RSFDO>
      </DOCUMENTATION>
     </item>
@@ -167,213 +90,33 @@
        <PARAMETER>SHLP_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Table of elementary search helps</STEXT>
+       <INDEX> 001</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>RECORD_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Hit list</STEXT>
+       <INDEX> 002</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>SHLP</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Single (current) search help</STEXT>
+       <INDEX> 003</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>CALLCONTROL</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Control of the F4 process</STEXT>
+       <INDEX> 004</INDEX>
       </RSFDO>
      </DOCUMENTATION>
     </item>
    </FUNCTIONS>
    <CUA>
     <ADM>
-     <PFKCODE>000002</PFKCODE>
+     <PFKCODE>000003</PFKCODE>
     </ADM>
-    <STA>
-     <RSMPE_STAT>
-      <CODE>OK_ABOUT</CODE>
-      <MODAL>P</MODAL>
-      <PFKCODE>000002</PFKCODE>
-      <BUTCODE>0001</BUTCODE>
-      <INT_NOTE>About dialog</INT_NOTE>
-     </RSMPE_STAT>
-    </STA>
-    <FUN>
-     <RSMPE_FUNT>
-      <CODE>CANCEL</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_CANCEL</TEXT_NAME>
-      <ICON_ID>@0W@</ICON_ID>
-      <FUN_TEXT>Cancel</FUN_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
-      <CODE>DEV_INFO</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_HTM</TEXT_NAME>
-      <ICON_ID>@J4@</ICON_ID>
-      <FUN_TEXT>Developer manual</FUN_TEXT>
-      <ICON_TEXT>Developer manual</ICON_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
-      <CODE>EDIT</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_CHANGE_TEXT</TEXT_NAME>
-      <ICON_ID>@0Q@</ICON_ID>
-      <FUN_TEXT>Change description</FUN_TEXT>
-      <ICON_TEXT>Change description</ICON_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
-      <CODE>OK</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_OKAY</TEXT_NAME>
-      <ICON_ID>@0V@</ICON_ID>
-      <FUN_TEXT>Cancel</FUN_TEXT>
-      <ICON_TEXT>Close</ICON_TEXT>
-     </RSMPE_FUNT>
-     <RSMPE_FUNT>
-      <CODE>USER_INFO</CODE>
-      <TEXTNO>001</TEXTNO>
-      <TEXT_TYPE>S</TEXT_TYPE>
-      <TEXT_NAME>ICON_INFORMATION</TEXT_NAME>
-      <ICON_ID>@0S@</ICON_ID>
-      <FUN_TEXT>Documentation</FUN_TEXT>
-      <ICON_TEXT>User manual</ICON_TEXT>
-     </RSMPE_FUNT>
-    </FUN>
-    <BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000001</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>01</NO>
-      <PFNO>00</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000001</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>02</NO>
-      <PFNO>12</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000002</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>01</NO>
-      <PFNO>00</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000002</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>02</NO>
-      <PFNO>06</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000002</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>03</NO>
-      <PFNO>07</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000002</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>04</NO>
-      <PFNO>08</PFNO>
-     </RSMPE_BUT>
-    </BUT>
-    <PFK>
-     <RSMPE_PFK>
-      <CODE>000001</CODE>
-      <PFNO>00</PFNO>
-      <FUNCODE>OK</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000001</CODE>
-      <PFNO>12</PFNO>
-      <FUNCODE>CANCEL</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000002</CODE>
-      <PFNO>00</PFNO>
-      <FUNCODE>OK</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000002</CODE>
-      <PFNO>06</PFNO>
-      <FUNCODE>EDIT</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000002</CODE>
-      <PFNO>07</PFNO>
-      <FUNCODE>USER_INFO</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000002</CODE>
-      <PFNO>08</PFNO>
-      <FUNCODE>DEV_INFO</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-     <RSMPE_PFK>
-      <CODE>000002</CODE>
-      <PFNO>12</PFNO>
-      <FUNCODE>OK</FUNCODE>
-      <FUNNO>001</FUNNO>
-     </RSMPE_PFK>
-    </PFK>
-    <SET>
-     <RSMPE_STAF>
-      <STATUS>OK_ABOUT</STATUS>
-      <FUNCTION>DEV_INFO</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>OK_ABOUT</STATUS>
-      <FUNCTION>EDIT</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>OK_ABOUT</STATUS>
-      <FUNCTION>OK</FUNCTION>
-     </RSMPE_STAF>
-     <RSMPE_STAF>
-      <STATUS>OK_ABOUT</STATUS>
-      <FUNCTION>USER_INFO</FUNCTION>
-     </RSMPE_STAF>
-    </SET>
-    <DOC>
-     <RSMPE_ATRT>
-      <OBJ_TYPE>P</OBJ_TYPE>
-      <OBJ_CODE>000001</OBJ_CODE>
-      <MODAL>P</MODAL>
-      <NORM>X</NORM>
-      <INT_NOTE>Dialog screen</INT_NOTE>
-     </RSMPE_ATRT>
-     <RSMPE_ATRT>
-      <OBJ_TYPE>B</OBJ_TYPE>
-      <OBJ_CODE>000001</OBJ_CODE>
-      <SUB_CODE>0001</SUB_CODE>
-      <MODAL>P</MODAL>
-      <INT_NOTE>Dialog screen</INT_NOTE>
-     </RSMPE_ATRT>
-     <RSMPE_ATRT>
-      <OBJ_TYPE>P</OBJ_TYPE>
-      <OBJ_CODE>000002</OBJ_CODE>
-      <MODAL>P</MODAL>
-      <INT_NOTE>About dialog</INT_NOTE>
-     </RSMPE_ATRT>
-     <RSMPE_ATRT>
-      <OBJ_TYPE>B</OBJ_TYPE>
-      <OBJ_CODE>000002</OBJ_CODE>
-      <SUB_CODE>0001</SUB_CODE>
-      <MODAL>P</MODAL>
-      <INT_NOTE>About dialog</INT_NOTE>
-     </RSMPE_ATRT>
-    </DOC>
    </CUA>
   </asx:values>
  </asx:abap>

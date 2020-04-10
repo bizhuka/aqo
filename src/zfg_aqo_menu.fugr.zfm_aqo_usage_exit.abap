@@ -1,4 +1,4 @@
-FUNCTION ZFM_AQO_USAGE_EXIT.
+FUNCTION zfm_aqo_usage_exit.
 *"--------------------------------------------------------------------
 *"*"Local Interface:
 *"  TABLES

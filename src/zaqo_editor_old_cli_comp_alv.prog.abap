@@ -13,16 +13,19 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
   ENDMETHOD.                    "get_instance
 
   METHOD call_screen.
-    DATA:
-      lv_ok    TYPE abap_bool,
-      lv_dynnr TYPE dynpronr.
-
     " Field description
     ms_field_desc = is_field_desc.
+
+    " Can edit ?
+    DATA lv_read_only TYPE abap_bool.
     mv_editable   = iv_editable.
+    IF mv_editable <> abap_true.
+      lv_read_only = abap_true.
+    ENDIF.
 
     " Table to show
-    zcl_aqo_helper=>from_json(
+    DATA lv_ok TYPE abap_bool.
+    zcl_eui_conv=>from_json(
      EXPORTING
       iv_json = ms_field_desc->sub_fdesc
      IMPORTING
@@ -33,147 +36,221 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    mv_refresh    = abap_true.
+**********************************************************************
+    " Main table
+    DATA lr_table TYPE REF TO data.
+    GET REFERENCE OF mt_sub_fld_desc INTO lr_table.
 
-    " Show screen
-    lv_dynnr = 300 + me->mv_level - 1.
-    CALL SCREEN lv_dynnr STARTING AT 5 1.
+**********************************************************************
+    " Prepare layout
+    DATA ls_layout TYPE lvc_s_layo.
+    " ls_layout-no_toolbar = abap_true.
+    CONCATENATE `Field catalog of ` ms_field_desc->name INTO ls_layout-grid_title.
+    ls_layout-smalltitle = abap_true.
+
+**********************************************************************
+    " Variant
+    DATA ls_variant TYPE disvariant.
+    CONCATENATE p_pack p_opt_id INTO ls_variant-report.
+    ls_variant-handle  = '0003'.
+
+**********************************************************************
+    " Get field catalog
+    DATA lt_fieldcat     TYPE lvc_t_fcat.
+    DATA ls_fieldcat     TYPE REF TO lvc_s_fcat.
+    DATA ls_sub_fld_desc TYPE REF TO ts_sub_fld_desc.
+
+    " Editable fields
+    add_fcat_field '+' ''.
+    ls_fieldcat->edit = mv_editable.
+    add_fcat_field '+ROLLNAME' ''.    add_fcat_field '+LABEL' ''.
+
+    " Hide table specific fields
+    add_fcat_field '+' ''.
+    ls_fieldcat->tech = abap_true.
+    add_fcat_field '+TABLE_KIND' ''.  add_fcat_field '+UNIQUE' ''.  add_fcat_field '+KEY_DEFKIND' ''.   add_fcat_field '+SUB_FDESC' ''.
+    add_fcat_field '+SYS_TYPE' ''.    add_fcat_field '+LENGTH' ''.  add_fcat_field '+DECIMALS' ''.
+
+    " Icon of catalog
+    add_fcat_field 'CATALOG' 'Catalog'(cat).
+    ls_fieldcat->hotspot = abap_true.
+
+    " Only 1 type of icons
+    ls_fieldcat->tech = abap_true.
+    LOOP AT mt_sub_fld_desc REFERENCE INTO ls_sub_fld_desc.
+      lcl_opt=>set_icons(
+       EXPORTING
+         iv_ui_type = ls_sub_fld_desc->ui_type
+       IMPORTING
+         ev_icon    = ls_sub_fld_desc->icon
+         ev_catalog = ls_sub_fld_desc->catalog ).
+
+      CHECK ls_sub_fld_desc->ui_type = zcl_eui_type=>mc_ui_type-table.
+      ls_fieldcat->tech = abap_false.
+    ENDLOOP.
+
+**********************************************************************
+    " Toolbar
+    DATA lt_toolbar TYPE ttb_button.
+    DATA ls_toolbar TYPE stb_button.
+
+    " Only if editable
+    IF mv_editable = abap_true.
+      ls_toolbar-function  = 'CHANGE_KEY'.
+      ls_toolbar-icon      = icon_foreign_key.
+      ls_toolbar-text      = 'Change key'(chk).
+      INSERT ls_toolbar INTO TABLE lt_toolbar.
+
+      ls_toolbar-function  = 'ADD_NEW_FIELD'.
+      ls_toolbar-icon      = icon_insert_row.
+      ls_toolbar-text      = 'Add new field'(anf).
+      INSERT ls_toolbar INTO TABLE lt_toolbar.
+    ENDIF.
+
+**********************************************************************
+    " Show by ALV manager
+**********************************************************************
+    DATA lo_eui_alv TYPE REF TO zif_eui_manager.
+    DATA ls_status  TYPE REF TO lo_eui_alv->ts_status.
+
+    " Pass by reference
+    CREATE OBJECT lo_eui_alv TYPE zcl_eui_alv
+      EXPORTING
+        ir_table       = lr_table
+        " grid parameters
+        is_layout      = ls_layout
+        it_mod_catalog = lt_fieldcat
+        it_toolbar     = lt_toolbar
+        iv_read_only   = lv_read_only.
+
+    " Instead of set handler
+    lo_eui_alv->popup( ).
+
+    " Static PF status no need on_pbo_event.
+    GET REFERENCE OF lo_eui_alv->ms_status INTO ls_status.
+    ls_status->is_fixed = abap_true.
+    ls_status->title    = ms_field_desc->label.
+
+    lo_eui_alv->show( io_handler = me ).
   ENDMETHOD.                    "call_screen
 
-  METHOD pbo.
-    DATA:
-      lr_cont       TYPE REF TO cl_gui_custom_container,
-      lt_fieldcat   TYPE lvc_t_fcat,
-      ls_layout     TYPE lvc_s_layo,
-      ls_variant    TYPE disvariant,
-      lv_text       TYPE string VALUE '-',
-      lv_name       TYPE text40,
-      lt_toolbar_ex TYPE ui_functions.
-
-*    " Own buttons
-    SET PF-STATUS 'OK_CANCEL'.
-
-    IF ms_field_desc->label IS NOT INITIAL.
-      lv_text = ms_field_desc->label.
-    ENDIF.
-    SET TITLEBAR 'ST_MAIN' WITH lv_text.
-
-    " Update field catalog & layout
-    IF mr_grid IS INITIAL OR mv_refresh = abap_true.
-      lt_fieldcat = get_field_catalog( ).
-
-      " Prepare layout
-      ls_layout-cwidth_opt = abap_true.
-      ls_layout-sel_mode   = 'C'.
-      " ls_layout-no_toolbar = abap_true.
-
-      " Variant
-      CONCATENATE p_pack p_opt_id INTO ls_variant-report.
-      ls_variant-handle  = '0003'.
-    ENDIF.
-
-    " One time only
-    IF mr_grid IS NOT INITIAL.
-      IF mv_refresh = abap_true.
-        " Set new catalog & layout
-        mr_grid->set_frontend_fieldcatalog( lt_fieldcat ).
-        mr_grid->set_frontend_layout( ls_layout ).
-
-        mr_grid->refresh_table_display( ).
-      ENDIF.
-      mv_refresh = abap_false.
-
-      RETURN.
-    ENDIF.
-
-    " Header and grid
-    CONCATENATE 'EMPTY_' sy-dynnr INTO lv_name.
-    CREATE OBJECT:
-     lr_cont
-      EXPORTING
-        container_name = lv_name,
-
-    " Show at first SCREEN
-     mr_grid
-      EXPORTING
-        i_parent = lr_cont
-      EXCEPTIONS
-        OTHERS   = 1.
-    IF sy-subrc <> 0.
-      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-      RETURN.
-    ENDIF.
-
-    " Add & delete new fiels
-    SET HANDLER:
-     on_toolbar       FOR mr_grid,
-     on_user_command  FOR mr_grid,
-     on_hotspot_click FOR mr_grid.
-
-    lt_toolbar_ex = lcl_fld_value_alv=>get_exclude_toolbar( mv_editable ).
-    mr_grid->set_table_for_first_display(
-      EXPORTING
-        is_variant                    = ls_variant
-        i_save                        = 'A'
-        is_layout                     = ls_layout
-        it_toolbar_excluding          = lt_toolbar_ex
-      CHANGING
-        it_outtab                     = mt_sub_fld_desc[]
-        it_fieldcatalog               = lt_fieldcat
-      EXCEPTIONS
-        OTHERS                        = 1 ).
-    IF sy-subrc <> 0.
-      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    ENDIF.
-  ENDMETHOD.                    "pbo
-
   METHOD on_toolbar.
-    DATA:
-      ls_toolbar TYPE stb_button.
-    " Only if editable
-    CHECK mv_editable = abap_true.
-
-    ls_toolbar-function  = 'ADD_NEW_FIELD'.
-    ls_toolbar-icon      = icon_insert_row.
-    ls_toolbar-text      = 'Add new field'(anf).
-
-    INSERT ls_toolbar INTO TABLE e_object->mt_toolbar.
+    go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
+    go_fld_value_alv->set_exclude_toolbar(
+     EXPORTING
+      iv_editable = mv_editable
+     CHANGING
+      ct_toolbar  = e_object->mt_toolbar ).
   ENDMETHOD.
 
   METHOD on_user_command.
-    DATA:
-      lr_data         TYPE REF TO data,
-      ls_sub_fld_desc TYPE ts_sub_fld_desc.
-    CHECK e_ucomm = 'ADD_NEW_FIELD'.
+    DATA lr_data         TYPE REF TO data.
+    DATA ls_sub_fld_desc TYPE ts_sub_fld_desc.
+    DATA lv_fname        TYPE zcl_eui_type=>ts_field_desc-name.
 
-    " Get full description
-    lcl_fld_value_alv=>add_new_field(
-     IMPORTING
-       er_data       = lr_data
-       es_field_desc = ls_sub_fld_desc-field_desc ).
-    CHECK ls_sub_fld_desc-field_desc IS NOT INITIAL.
+    CASE e_ucomm.
 
-    " Already exist
-    READ TABLE mt_sub_fld_desc TRANSPORTING NO FIELDS
-     WITH KEY name = zsaqo_new_field-f_name.
-    IF sy-subrc = 0.
-      MESSAGE s002(zaqo_message) WITH zsaqo_new_field-f_name DISPLAY LIKE 'E'.
-      RETURN.
+        " Add field to field catalog
+      WHEN 'ADD_NEW_FIELD'.
+        " Get full description
+        go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
+        go_fld_value_alv->add_new_field(
+         IMPORTING
+           er_data       = lr_data
+           es_field_desc = ls_sub_fld_desc-field_desc ).
+        CHECK ls_sub_fld_desc-field_desc IS NOT INITIAL.
+
+        " Already exist
+        lv_fname = ls_sub_fld_desc-field_desc-name.
+        READ TABLE mt_sub_fld_desc TRANSPORTING NO FIELDS
+         WITH KEY name = lv_fname.
+        IF sy-subrc = 0.
+          MESSAGE s002(zaqo_message) WITH lv_fname DISPLAY LIKE 'E'.
+          RETURN.
+        ENDIF.
+
+        " Just add to the end
+        APPEND ls_sub_fld_desc TO mt_sub_fld_desc.
+        sender->refresh_table_display( ).
+
+      WHEN 'CHANGE_KEY'.
+        change_key( ).
+
+    ENDCASE.
+  ENDMETHOD.
+
+  METHOD change_key.
+    " Show in screen
+    DATA ls_dyn_scr  TYPE REF TO zsaqo_table_key_dialog. " PARAMETERS & SELECT-OPTIONS
+    DATA lo_screen   TYPE REF TO zcl_eui_screen.
+    DATA lo_err      TYPE REF TO cx_root.
+    DATA lr_key_desr TYPE REF TO abap_keydescr.
+    DATA ls_key_desr TYPE abap_keydescr.
+    DATA ls_key      LIKE LINE OF s_4_key.
+
+    " Where to store data
+    CREATE DATA ls_dyn_scr.
+    ls_dyn_scr->p_4_kind = ms_field_desc->table_kind.
+    ls_dyn_scr->p_4_unq  = ms_field_desc->unique.
+    ls_dyn_scr->p_4_keyd = ms_field_desc->key_defkind.
+    LOOP AT ms_field_desc->key REFERENCE INTO lr_key_desr.
+      ls_key-sign   = 'I'.
+      ls_key-option = 'EQ'.
+      ls_key-low    = lr_key_desr->name.
+      APPEND ls_key TO ls_dyn_scr->s_4_key[].
+    ENDLOOP.
+
+    " Create screen manager
+    TRY.
+        CREATE OBJECT lo_screen
+          EXPORTING
+            iv_dynnr   = '1040'
+            iv_cprog   = sy-cprog
+            ir_context = ls_dyn_scr.
+      CATCH zcx_eui_exception INTO lo_err.
+        MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
+    ENDTRY.
+
+*    " Static PF status no need on_pbo_event.
+    lo_screen->customize( iv_fieldname = 'P_4_KIND' required = '1' ).
+    lo_screen->customize( iv_fieldname = 'P_4_KEYD' required = '1' ). " input = '0' ?
+
+    " Set text
+    lo_screen->ms_status-is_fixed = abap_true.
+    lo_screen->ms_status-title = 'Change declaration and run again is much easier!'(010).
+
+    " Ok & Cancel
+    IF mv_editable <> abap_true.
+      APPEND 'OK' TO lo_screen->ms_status-exclude.
     ENDIF.
 
-    " Just add to the end
-    APPEND ls_sub_fld_desc TO mt_sub_fld_desc.
+    " As popup
+    lo_screen->popup( iv_col_beg  = 1
+                       iv_row_beg  = 1
+                       iv_col_end  = 118
+                       iv_row_end  = 30 ).
 
-    " TODO
-    mv_refresh = abap_true.
-    pbo( ).
+    " Check OK pressed
+    CHECK lo_screen->show( ) = 'OK'.
+
+    " Copy back
+    ms_field_desc->table_kind  = ls_dyn_scr->p_4_kind.
+    ms_field_desc->unique      = ls_dyn_scr->p_4_unq.
+    ms_field_desc->key_defkind = ls_dyn_scr->p_4_keyd.
+    " Field by field
+    CLEAR ms_field_desc->key.
+    LOOP AT ls_dyn_scr->s_4_key INTO ls_key.
+      ls_key_desr-name = ls_key-low.
+      INSERT ls_key_desr INTO TABLE ms_field_desc->key.
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD on_hotspot_click.
     DATA:
       ls_sub_fld_desc   TYPE REF TO ts_sub_fld_desc,
       lo_table_comp_alv LIKE me,
-      lr_field_desc     TYPE REF TO zcl_aqo_helper=>ts_field_desc,
+      lr_field_desc     TYPE REF TO zcl_eui_type=>ts_field_desc,
       lv_level          TYPE i.
 
     " Current item
@@ -182,11 +259,11 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
 
     CASE e_column_id.
       WHEN 'CATALOG'.
-        CHECK ls_sub_fld_desc->ui_type = zcl_aqo_helper=>mc_ui_table.
+        CHECK ls_sub_fld_desc->ui_type = zcl_eui_type=>mc_ui_type-table.
 
         " Create new instance
         lv_level = me->mv_level + 1.
-        lo_table_comp_alv = lcl_table_comp_alv=>get_instance( lv_level ).
+        lo_table_comp_alv = lcl_table_comp_alv=>get_instance( lv_level ). " lv_level
 
         " Show catalog again
         GET REFERENCE OF ls_sub_fld_desc->field_desc INTO lr_field_desc.
@@ -197,104 +274,30 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     ENDCASE.
   ENDMETHOD.
 
-  METHOD get_field_catalog.
-    DATA:
-      ls_fieldcat     TYPE REF TO lvc_s_fcat,
-      ls_sub_fld_desc TYPE REF TO ts_sub_fld_desc.
-
-    " Get field catalog
-    zcl_aqo_helper=>create_field_catalog(
-     IMPORTING
-       et_fieldcat = rt_fieldcat
-     CHANGING
-       ct_table    = mt_sub_fld_desc[] ).
-
-*      ls_layout-edit = abap_true.
-    LOOP AT rt_fieldcat REFERENCE INTO ls_fieldcat.
-      CASE ls_fieldcat->fieldname.
-        WHEN 'ROLLNAME' OR 'LABEL'.
-          ls_fieldcat->edit = mv_editable.
-
-          " Hide table specific fields
-        WHEN 'TABLE_KIND' OR 'UNIQUE' OR 'KEY_DEFKIND' OR 'SUB_FDESC' OR
-             " Rollname has priority
-             'SYS_TYPE' OR 'LENGTH' OR 'DECIMALS'.
-          ls_fieldcat->tech = abap_true.
-
-        WHEN 'CATALOG'.
-          ls_fieldcat->hotspot = abap_true.
-          ls_fieldcat->scrtext_s = ls_fieldcat->scrtext_m = ls_fieldcat->scrtext_l =
-                 ls_fieldcat->reptext = ls_fieldcat->coltext = 'Catalog'(cat).
-
-          " Only 1 type of icons
-          ls_fieldcat->tech = abap_true.
-          LOOP AT mt_sub_fld_desc REFERENCE INTO ls_sub_fld_desc.
-            lcl_opt=>set_icons(
-             EXPORTING
-               iv_ui_type = ls_sub_fld_desc->ui_type
-             IMPORTING
-               ev_icon    = ls_sub_fld_desc->icon
-               ev_catalog = ls_sub_fld_desc->catalog ).
-
-            CHECK ls_sub_fld_desc->ui_type = zcl_aqo_helper=>mc_ui_table.
-            ls_fieldcat->tech = abap_false.
-          ENDLOOP.
-      ENDCASE.
-    ENDLOOP.
-  ENDMETHOD.
-
-  METHOD pai.
+  METHOD on_pai_event.
     DATA:
       lv_cmd          TYPE syucomm,
-      lv_exit         TYPE abap_bool,
       " SRC
       ls_sub_fld_desc TYPE REF TO ts_sub_fld_desc,
       " DEST
-      lt_field_desc   TYPE STANDARD TABLE OF zcl_aqo_helper=>ts_field_desc WITH DEFAULT KEY,
-      lr_field_desc   TYPE REF TO zcl_aqo_helper=>ts_field_desc.
+      lt_field_desc   TYPE STANDARD TABLE OF zcl_eui_type=>ts_field_desc WITH DEFAULT KEY,
+      lr_field_desc   TYPE REF TO zcl_eui_type=>ts_field_desc.
 
     " Save & clear
-    lv_cmd = cv_cmd.
-    CLEAR cv_cmd.
-
-    " Write data back
-    mr_grid->check_changed_data( ).
+    lv_cmd = iv_command.
 
     CASE lv_cmd.
-      WHEN 'OK'.
+      WHEN zif_eui_manager=>mc_cmd-ok.
         LOOP AT mt_sub_fld_desc REFERENCE INTO ls_sub_fld_desc.
           APPEND INITIAL LINE TO lt_field_desc REFERENCE INTO lr_field_desc.
           MOVE-CORRESPONDING ls_sub_fld_desc->* TO lr_field_desc->*.
         ENDLOOP.
 
-        ms_field_desc->sub_fdesc = zcl_aqo_helper=>to_json( lt_field_desc[] ).
-        lv_exit = abap_true.
+        ms_field_desc->sub_fdesc = zcl_eui_conv=>to_json( lt_field_desc[] ).
         MESSAGE s004(zaqo_message).
 
-      WHEN 'CANCEL'.
-        lv_exit = abap_true.
+      WHEN zif_eui_manager=>mc_cmd-cancel.
         MESSAGE s130(ed) WITH 'Edit'(edt) DISPLAY LIKE 'E'.
     ENDCASE.
-
-    IF lv_exit = abap_true.
-      LEAVE TO SCREEN 0.
-    ENDIF.
   ENDMETHOD.                    "pai
 ENDCLASS.
-
-
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-MODULE pbo_0300 OUTPUT.
-  go_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
-  go_table_comp_alv->pbo( ).
-ENDMODULE.
-
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-MODULE pai_0300 INPUT.
-  go_table_comp_alv = lcl_table_comp_alv=>get_instance( ).
-  go_table_comp_alv->pai(
-   CHANGING
-     cv_cmd = gv_ok_code ).
-ENDMODULE.
