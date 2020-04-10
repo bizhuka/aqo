@@ -600,9 +600,11 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
         lv_input = '1'.
       ENDIF.
 
+      " TODO required ?
       lo_screen->customize(
        iv_fieldname = ls_fld_value->name
        iv_label     = ls_fld_value->label
+       iv_sub_fdesc = ls_fld_value->sub_fdesc
        input        = lv_input ).
     ENDLOOP.
 
