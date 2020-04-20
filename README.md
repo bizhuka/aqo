@@ -25,4 +25,5 @@ For more information read [wiki](https://github.com/bizhuka/aqo/wiki)
 You have to install [EUI](https://github.com/bizhuka/eui) library first
 
 
-### Due to installation problems the [aqo_ui5](https://github.com/bizhuka/aqo_ui5) version should installed separately as an add-in
+### Due to installation problems
+the [aqo_ui5](https://github.com/bizhuka/aqo_ui5) version should installed separately as an add-in
