@@ -767,21 +767,19 @@ CLASS lcl_unq_menu IMPLEMENTATION.
     TRY.
         CREATE OBJECT lo_screen
           EXPORTING
-            iv_dynnr   = '1020'
-            iv_cprog   = mc_prog-editor
-            ir_context = ls_dyn_scr.
+            iv_dynnr        = '1020'
+            iv_cprog        = mc_prog-editor
+            ir_context      = ls_dyn_scr
+            " Set pf-status & text
+            iv_status_name  = 'ABOUT_STATUS'
+            iv_status_prog  = mc_prog-editor
+            iv_status_title = 'Enter option description'(eod).
       CATCH zcx_eui_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
 
-    " Set pf-status & text
-    lo_screen->ms_status-is_fixed = abap_true.
-    lo_screen->ms_status-name     = 'ABOUT_STATUS'.
-    lo_screen->ms_status-prog     = mc_prog-editor.
-    lo_screen->ms_status-title    = 'Enter option description'(eod).
-
-    " Ok & Cancel
+    " Exclude buttons
     IF me->tcode = mc_prog-editor_tcode AND zcl_aqo_helper=>is_dev_mandt( ) = abap_true.
       lv_input = '1'.
       APPEND 'USER_INFO'   TO lo_screen->ms_status-exclude.
@@ -1297,17 +1295,14 @@ CLASS lcl_unq_menu IMPLEMENTATION.
     TRY.
         CREATE OBJECT lo_screen
           EXPORTING
-            iv_dynnr   = '1030'
-            iv_cprog   = mc_prog-editor
-            ir_context = ls_dyn_scr.
+            iv_dynnr        = '1030'
+            iv_cprog        = mc_prog-editor
+            ir_context      = ls_dyn_scr
+            iv_status_title = 'New file info'(nfi). " Set pf-status & text
       CATCH zcx_eui_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
-
-    " Set pf-status & text
-    lo_screen->ms_status-is_fixed = abap_true.
-    lo_screen->ms_status-title    = 'New file info'(nfi).
 
     " Ok & Cancel
     lv_input = '1'.

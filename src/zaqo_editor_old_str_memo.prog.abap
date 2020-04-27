@@ -16,7 +16,7 @@ CLASS lcl_string_memo IMPLEMENTATION.
     DATA lo_memo      TYPE REF TO zcl_eui_memo.
 
     lr_text ?= is_fld_value->cur_value.
-    IF is_fld_value->is_editable <> abap_true.
+    IF lcl_opt=>is_editable( is_fld_value->is_editable ) <> abap_true.
       lv_read_only = abap_true.
     ENDIF.
 

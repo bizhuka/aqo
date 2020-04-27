@@ -35,7 +35,7 @@ CLASS lcl_opt IMPLEMENTATION.
         ENDIF.
 
       WHEN 1010 OR 1020 OR 1030 OR 1040.
-        PERFORM auto_screen_pbo IN PROGRAM saplzfg_eui_screen.
+        CALL FUNCTION 'ZFM_EUI_PBO'.
     ENDCASE.
   ENDMETHOD.
 
