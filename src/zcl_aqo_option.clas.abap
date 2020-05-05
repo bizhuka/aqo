@@ -1,6 +1,8 @@
 class ZCL_AQO_OPTION definition
   public
-  create private .
+  create private
+
+  global friends ZCL_AQO_MENU_HANDLER .
 
 public section.
   type-pools ABAP .
@@ -413,7 +415,7 @@ ENDMETHOD.
 
 
 METHOD get_menu.
-  ro_menu = lcl_unq_menu=>get_eui_menu(
+  ro_menu = zcl_aqo_menu_handler=>get_eui_menu(
    iv_package_id = iv_package_id
    iv_option_id  = iv_option_id ).
 ENDMETHOD.
@@ -559,7 +561,7 @@ METHOD transport.
   ENDIF.
 
   lv_task = iv_task.
-  zcl_aqo_helper=>check_in_request(
+  zcl_aqo_menu_handler=>check_in_request(
    EXPORTING
      iv_table_name = 'ZTAQO_OPTION'
      iv_key1       = ms_db_item-package_id

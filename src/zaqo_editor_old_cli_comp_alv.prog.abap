@@ -213,8 +213,8 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     ENDTRY.
 
 *    " Static PF status no need on_pbo_event.
-    lo_screen->customize( iv_fieldname = 'P_4_KIND' required = '1' ).
-    lo_screen->customize( iv_fieldname = 'P_4_KEYD' required = '1' ). " input = '0' ?
+    lo_screen->customize( name = 'P_4_KIND' required = '1' ).
+    lo_screen->customize( name = 'P_4_KEYD' required = '1' ). " input = '0' ?
 
     " Set text
     lo_screen->ms_status-is_fixed = abap_true.

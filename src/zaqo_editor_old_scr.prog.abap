@@ -50,7 +50,7 @@ SELECTION-SCREEN BEGIN OF BLOCK bl_1030 WITH FRAME TITLE TEXT-030.
 PARAMETERS:
   p_3_pack TYPE ztaqo_option-package_id,       " MODIF ID gry,
   p_3_opt  TYPE ztaqo_option-option_id,        " MODIF ID gry,
-  p_3_file TYPE zsaqo_oaor_dialog-p_3_file,    " MODIF ID gry,
+  p_3_file TYPE zsaqo_oaor_dialog-p_3_file AS LISTBOX VISIBLE LENGTH 50,
   p_3_vers TYPE zsaqo_oaor_dialog-p_3_vers,    " MODIF ID gry,
 
   p_3_desc TYPE zsaqo_oaor_dialog-p_3_desc,    " MODIF ID dev,

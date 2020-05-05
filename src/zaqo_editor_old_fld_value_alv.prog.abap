@@ -217,8 +217,8 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ENDTRY.
 
     " Static PF status no need on_pbo_event.
-    lo_screen->customize( iv_fieldname = 'P_FNAME' required = '1' ).
-    lo_screen->customize( iv_fieldname = 'P_FTYPE' required = '1' ).
+    lo_screen->customize( name = 'P_FNAME' required = '1' ).
+    lo_screen->customize( name = 'P_FTYPE' required = '1' ).
 
     " Set text
     lo_screen->ms_status-is_fixed = abap_true.
@@ -602,10 +602,10 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
       " TODO required ?
       lo_screen->customize(
-       iv_fieldname = ls_fld_value->name
+       name         = ls_fld_value->name
+       input        = lv_input
        iv_label     = ls_fld_value->label
-       iv_sub_fdesc = ls_fld_value->sub_fdesc
-       input        = lv_input ).
+       iv_sub_fdesc = ls_fld_value->sub_fdesc ).
     ENDLOOP.
 
     " Always as popup ?
