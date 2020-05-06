@@ -1,5 +1,7 @@
 REPORT zaqo_tester.
 
+PARAMETERS:
+ p_cl_opt AS CHECKBOX.
 
 TYPES:
   " Table in table
@@ -73,6 +75,7 @@ CLASS lcl_main IMPLEMENTATION.
       lv_message     TYPE string.
 
     " Initials values in editor
+    " In real app is usal empty!
     set_default_values(
      CHANGING
        cs_opt = ms_opt  ).
@@ -92,6 +95,12 @@ CLASS lcl_main IMPLEMENTATION.
         MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
+
+    " Also initilize class option
+    if p_cl_opt = abap_true.
+      DATA lo_opt TYPE REF TO ZCL_AQO_TESTER.
+      CREATE OBJECT lo_opt.
+    endif.
 
     " After editing and saving data launch it again
     " Put BREAK-POINT on the message

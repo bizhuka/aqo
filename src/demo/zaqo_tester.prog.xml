@@ -40,6 +40,12 @@
      <ENTRY>Now edit option by menu or in tr ZAQO_EDITOR_OLD, ZAQO_EDITOR, ZAQO_BSP_EDITOR</ENTRY>
      <LENGTH>132</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_CL_OPT</KEY>
+     <ENTRY>Initialize class option</ENTRY>
+     <LENGTH>31</LENGTH>
+    </item>
    </TPOOL>
    <I18N_TPOOL>
     <item>
