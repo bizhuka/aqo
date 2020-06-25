@@ -1731,6 +1731,9 @@ METHOD _oaor_import.
   ENDIF.
 
 **********************************************************************
+  " Subfolder in OAOR (and classname = package_id)
+  lv_key = mv_option_id. " mo_option->ms_db_item-option_id
+
   CASE lv_oaor_mode.
 
       " First version
