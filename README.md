@@ -1,3 +1,6 @@
+Now full documentation available here https://bizhuka.github.io/aqo
+
+
 ### ABAP quick options
 User and programmer friendly options\
 Create flexible application parameters with nested tables without any effort\
@@ -55,33 +58,3 @@ The maintainable data usually stored in a program structure (or in class attribu
 * any tables (structure based tables)
 
 The first 2 are completely similar to STVARV, in strings for example you can store message templates, and tables are suitable when you need to write a large CASE that depends on a condition that can change, but creating a database table is burdensome.
-
----
-
-For more information read [wiki](https://github.com/bizhuka/aqo/wiki)
-
-| English| Русский |
-|-------------|-------------|
-|[Creating an option in SE38](https://github.com/bizhuka/aqo/wiki/en-00-SE38-ZAQO_TEST)| [Создание настройки SE38](https://github.com/bizhuka/aqo/wiki/ru-00-SE38-ZAQO_TEST) |
-|[Creating an option in SE24](https://github.com/bizhuka/aqo/wiki/en-00-SE24-ZCL_AQO_TESTER)| [Создание настройки SE24](https://github.com/bizhuka/aqo/wiki/ru-00-SE24-ZCL_AQO_TESTER)  |
-|[Which edit transaction to choose?](https://github.com/bizhuka/aqo/wiki/en-01-Which-transaction-to-choose) | [Какую транзакцию ведения выбрать?](https://github.com/bizhuka/aqo/wiki/ru-01-Какую-транзакцию-выбрать)  |
-|[Interface description](https://github.com/bizhuka/aqo/wiki/en-09-Interface-description)| [Описание интерфейса](https://github.com/bizhuka/aqo/wiki/ru-09-Описание-интерфейса)  |
-|[Changing fields descriptions](https://github.com/bizhuka/aqo/wiki/en-08-Changing-fields-descriptions)| [Изменение описания полей](https://github.com/bizhuka/aqo/wiki/ru-08-Изменение-описания-полей)  |
-|[Complex data types](https://github.com/bizhuka/aqo/wiki/en-04-Complex-data-types)| [Сложные типы данных](https://github.com/bizhuka/aqo/wiki/ru-04-Сложные-типы-данных)  |
-|[Search help in ui5](https://github.com/bizhuka/aqo/wiki/en-07-Search-help-in-ui5)| [Средство поиска в ui5](https://github.com/bizhuka/aqo/wiki/ru-07-Средство-поиска-в-ui5)  |
-|[Create option via interface](https://github.com/bizhuka/aqo/wiki/en-06-Create-Option-Via-Interface)| [Создание настройки через интерфейс](https://github.com/bizhuka/aqo/wiki/ru-06-Создание-настройки-через-интерфейс)  |
-|[Export and import data](https://github.com/bizhuka/aqo/wiki/en-05-Export-and-import-data)| [Экспорт и импорт данных](https://github.com/bizhuka/aqo/wiki/ru-05-Экспорт-и-импорт-данных)  |
-|[Extensions](https://github.com/bizhuka/aqo/wiki/en-03-Extensions)| [Расширения](https://github.com/bizhuka/aqo/wiki/ru-03-Расширения)  |
-|[Search abap code](https://github.com/bizhuka/aqo/wiki/en-02-Search-abap-code)| [Поиск кода с настройкой](https://github.com/bizhuka/aqo/wiki/ru-02-Поиск-кода-с-настройкой)  |
-|[Template storage](https://github.com/bizhuka/aqo/wiki/en-10-OAOR)| [Хранение шаблонов](https://github.com/bizhuka/aqo/wiki/ru-10-OAOR)  |
-|[Installation guide](https://github.com/bizhuka/aqo/wiki/Installation-guide)| [Инструкция по установке](https://github.com/bizhuka/aqo/wiki/Инструкция-по-установке)  |
-
-
----
-
-### From 2020
-You have to install [EUI](https://github.com/bizhuka/eui) library first
-
-
-### Due to installation problems
-the [aqo_ui5](https://github.com/bizhuka/aqo_ui5) version should installed separately as an add-in
