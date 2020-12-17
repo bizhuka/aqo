@@ -51,13 +51,13 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
 
     TYPES:
       BEGIN OF ts_fld_value,
-        icon TYPE icon_d.
+        icon         TYPE icon_d.
         INCLUDE TYPE zcl_aqo_helper=>ts_field_value.
-    TYPES:
-      cur_value    TYPE REF TO data,
-      catalog      TYPE icon_d,
-      value_button TYPE icon_d,
-      history_logs TYPE icon_d,
+      TYPES:
+        cur_value    TYPE REF TO data,
+        catalog      TYPE icon_d,
+        value_button TYPE icon_d,
+        history_logs TYPE icon_d,
       END OF ts_fld_value.
 
     CLASS-DATA:
@@ -96,6 +96,12 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
       start_of_selection
         IMPORTING
           iv_action TYPE string OPTIONAL,
+
+      fill_fields,
+
+      launch_action
+        IMPORTING
+          iv_action TYPE string,
 
       pbo,
 
@@ -175,27 +181,27 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
 
       on_pai_event FOR EVENT pai_event OF zif_eui_manager
         IMPORTING
-            sender
-            iv_command,
+          sender
+          iv_command,
 
       on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
         IMPORTING
-            e_object,
+          e_object,
 
       on_user_command FOR EVENT user_command OF cl_gui_alv_grid
         IMPORTING
-            sender
-            e_ucomm,
+          sender
+          e_ucomm,
 
       on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
         IMPORTING
-            sender
-            e_column_id es_row_no,
+          sender
+          e_column_id es_row_no,
 
       on_double_click FOR EVENT double_click OF cl_gui_alv_grid
         IMPORTING
-            sender
-            e_column e_row,
+          sender
+          e_column e_row,
 
       on_data_changed FOR EVENT data_changed OF cl_gui_alv_grid
         IMPORTING sender er_data_changed,
@@ -243,10 +249,10 @@ CLASS lcl_table_comp_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
 
     TYPES:
       BEGIN OF ts_sub_fld_desc,
-        icon TYPE icon_d.
+        icon    TYPE icon_d.
         INCLUDE TYPE zcl_eui_type=>ts_field_desc AS field_desc.
-    TYPES:
-      catalog TYPE icon_d,
+      TYPES:
+        catalog TYPE icon_d,
       END OF ts_sub_fld_desc.
 
     DATA:
@@ -264,21 +270,21 @@ CLASS lcl_table_comp_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
 
       on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
         IMPORTING
-            e_column_id es_row_no,
+          e_column_id es_row_no,
 
       on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
         IMPORTING
-            e_object,
+          e_object,
 
       on_user_command FOR EVENT user_command OF cl_gui_alv_grid
         IMPORTING
-            sender
-            e_ucomm,
+          sender
+          e_ucomm,
 
       on_pai_event FOR EVENT pai_event OF zif_eui_manager
         IMPORTING
-            sender
-            iv_command.
+          sender
+          iv_command.
 ENDCLASS.
 
 *----------------------------------------------------------------------*
@@ -339,7 +345,7 @@ CLASS lcl_logs_alv DEFINITION FINAL.
 
       on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
         IMPORTING
-            es_row_no.
+          es_row_no.
 ENDCLASS.
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*

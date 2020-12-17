@@ -465,7 +465,9 @@ METHOD check_in_request.
       EXCEPTIONS
         OTHERS    = 1.
     IF sy-subrc <> 0.
-      zcx_aqo_exception=>raise_sys_error( ).
+      " zcx_aqo_exception=>raise_sys_error( ).
+      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO cv_ok_message.
+      RETURN.
     ENDIF.
   ENDIF.
 

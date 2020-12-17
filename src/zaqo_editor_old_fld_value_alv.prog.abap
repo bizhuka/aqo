@@ -472,16 +472,8 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD data_check.
-    DATA:
-      lr_data_changed TYPE REF TO cl_alv_changed_data_protocol, "lr_msglist TYPE REF TO if_reca_message_list,
-      ls_log          TYPE bal_s_log,
-      ls_msg          TYPE bal_s_msg,
-      lt_hnd          TYPE bal_t_logh,
-      lv_hnd          TYPE balloghndl,
-      ls_prof         TYPE bal_s_prof,
-      ls_message      TYPE REF TO lvc_s_msg1.
-
     " Create protocol
+    DATA lr_data_changed TYPE REF TO cl_alv_changed_data_protocol.
     CREATE OBJECT lr_data_changed
       EXPORTING
         i_calling_alv = io_grid.
@@ -500,33 +492,17 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
     " Show without grid
     IF io_grid IS INITIAL AND lr_data_changed->mt_protocol IS NOT INITIAL.
-      CALL FUNCTION 'BAL_LOG_CREATE'
-        EXPORTING
-          i_s_log      = ls_log
-        IMPORTING
-          e_log_handle = lv_hnd.
-      LOOP AT lr_data_changed->mt_protocol REFERENCE INTO ls_message.
-        MOVE-CORRESPONDING ls_message->* TO ls_msg.
+      DATA lo_logger TYPE REF TO zcl_eui_logger.
+      CREATE OBJECT lo_logger.
+      lo_logger->add_batch( lr_data_changed->mt_protocol ).
 
-        CALL FUNCTION 'BAL_LOG_MSG_ADD'
-          EXPORTING
-            i_s_msg      = ls_msg
-            i_log_handle = lv_hnd.
-      ENDLOOP.
-
-      CALL FUNCTION 'BAL_DSP_PROFILE_POPUP_GET'
-        IMPORTING
-          e_s_display_profile = ls_prof.
-
-      ls_prof-use_grid = abap_true.
+      DATA ls_prof TYPE bal_s_prof.
       ls_prof-title    = 'Fix errors in DEV mandt first'(dis).
+      ls_prof-use_grid = abap_true.
       MESSAGE ls_prof-title TYPE 'S' DISPLAY LIKE 'E'.
 
-      INSERT lv_hnd INTO TABLE lt_hnd.
-      CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
-        EXPORTING
-          i_t_log_handle      = lt_hnd
-          i_s_display_profile = ls_prof.
+      lo_logger->show( is_profile = ls_prof
+                       iv_profile = zcl_eui_logger=>mc_profile-popup ).
     ENDIF.
 
     CHECK lr_data_changed->mt_protocol IS INITIAL.

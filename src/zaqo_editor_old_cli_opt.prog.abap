@@ -68,45 +68,66 @@ CLASS lcl_opt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD start_of_selection.
-    DATA:
-      lo_err           TYPE REF TO zcx_aqo_exception,
-      ls_field_value   TYPE REF TO zcl_aqo_helper=>ts_field_value,
-      lo_fld_value_alv TYPE REF TO lcl_fld_value_alv,
-      lv_action        LIKE iv_action.
-
     " Try to create
+    DATA lo_err TYPE REF TO zcx_aqo_exception.
     TRY.
         mo_option = zcl_aqo_option=>create(
            iv_package_id  = p_pack
            iv_option_id   = p_opt_id ).
-
-        " Mandt is open
-        mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
-
-        IF mo_option->lock( ) <> abap_true.
-          mv_read_only = abap_true.
-
-          MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E'
-           WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-        ENDIF.
-
-        " Just show values
-        IF zcl_aqo_helper=>is_in_editor( iv_is_viewer = abap_true ) = abap_true.
-          mv_read_only = abap_true.
-        ENDIF.
-
-        " Create new table
-        CLEAR mt_fld_value.
-        LOOP AT mo_option->mt_field_value REFERENCE INTO ls_field_value.
-          add_one_field( ls_field_value->* ).
-        ENDLOOP.
-
       CATCH zcx_aqo_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
 
+    " Mandt is open
+    mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
+
+    IF mo_option->lock( ) <> abap_true.
+      mv_read_only = abap_true.
+
+      MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E'
+       WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+
+    " Just show values
+    IF zcl_aqo_helper=>is_in_editor( iv_is_viewer = abap_true ) = abap_true.
+      mv_read_only = abap_true.
+    ENDIF.
+
+    fill_fields( ).
+
+    launch_action( iv_action ).
+  ENDMETHOD.
+
+  METHOD fill_fields.
+    " Create new table
+    CLEAR mt_fld_value.
+
+    DATA lt_skip_field  TYPE stringtab.
+    DATA ls_field_value TYPE REF TO zcl_aqo_helper=>ts_field_value.
+    DATA lo_err         TYPE REF TO zcx_aqo_exception.
+
+    LOOP AT mo_option->mt_field_value REFERENCE INTO ls_field_value.
+      TRY.
+          add_one_field( ls_field_value->* ).
+        CATCH zcx_aqo_exception INTO lo_err.
+          APPEND ls_field_value->name TO lt_skip_field.
+          MESSAGE lo_err TYPE 'I'.
+      ENDTRY.
+    ENDLOOP.
+
+    " Any error during importing?
+    CHECK lt_skip_field IS NOT INITIAL.
+
+    DATA lv_message TYPE string.
+    CONCATENATE LINES OF lt_skip_field INTO lv_message SEPARATED BY `, `.
+    CONCATENATE `Fields ` lv_message ` were skipped!` INTO lv_message.
+    MESSAGE lv_message TYPE 'S' DISPLAY LIKE 'E'.
+  ENDMETHOD.
+
+  METHOD launch_action.
     " Choose action
+    DATA lv_action LIKE iv_action.
     lv_action = iv_action.
     IF lv_action IS INITIAL.
       CASE mv_is_dev.
@@ -130,32 +151,37 @@ CLASS lcl_opt IMPLEMENTATION.
     ENDIF.
 
     " Decide what to do
+    DATA lo_fld_value_alv TYPE REF TO lcl_fld_value_alv.
     lo_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
     CASE lv_action.
       WHEN mc_action-tech_view.
         lo_fld_value_alv->call_screen( ).
 
       WHEN mc_action-edit_values.
+        IF mo_option->ms_db_item-fields IS INITIAL.
+          MESSAGE 'Option do not exist' TYPE 'S' DISPLAY LIKE 'E'.
+          RETURN.
+        ENDIF.
         " Custom checks
         CHECK lo_fld_value_alv->data_check( ) = abap_true.
         lo_fld_value_alv->sel_screen_show( ).
     ENDCASE.
-
-  ENDMETHOD.                    "START_OF_SELECTION
+  ENDMETHOD.
 
   METHOD add_one_field.
-    DATA:
-      ls_fld_value     TYPE REF TO ts_fld_value.
+    " Get current value
+    DATA lr_value TYPE REF TO data.
+    IF ir_data IS NOT INITIAL.
+      lr_value = ir_data.
+    ELSE.
+      lr_value = mo_option->get_field_value( is_field_value-name ).
+    ENDIF.
 
+    DATA ls_fld_value     TYPE REF TO ts_fld_value.
+    " Paste new data
     APPEND INITIAL LINE TO mt_fld_value REFERENCE INTO ls_fld_value.
     MOVE-CORRESPONDING is_field_value TO ls_fld_value->*.
-
-    " Get current value
-    IF ir_data IS INITIAL.
-      ls_fld_value->cur_value = mo_option->get_field_value( ls_fld_value->name ).
-    ELSE.
-      ls_fld_value->cur_value = ir_data.
-    ENDIF.
+    ls_fld_value->cur_value = lr_value.
 
     " Quick edit for all type of fields
     ls_fld_value->value_button = icon_display_more.

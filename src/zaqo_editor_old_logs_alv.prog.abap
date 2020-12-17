@@ -81,6 +81,7 @@ CLASS lcl_logs_alv IMPLEMENTATION.
       zcl_eui_conv=>from_json(
        EXPORTING
         iv_json = lr_history_value->h_value
+        iv_mode = zcl_eui_conv=>mc_json_mode-safe
        IMPORTING
         ex_data = <lv_value> ).
 
