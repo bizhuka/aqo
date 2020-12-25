@@ -22,15 +22,11 @@ CLASS lcl_logs_alv             DEFINITION DEFERRED.
 
 
 DATA:
-  " OK_CODE 4 screens
-  gv_ok_code        TYPE syucomm,
-
   " Cannot use static =>mo_instance in old versions
-  go_table_comp_alv TYPE REF TO lcl_table_comp_alv,
-  go_fld_value_alv  TYPE REF TO lcl_fld_value_alv,
-  go_string_memo    TYPE REF TO lcl_string_memo,
-  go_table_alv      TYPE REF TO lcl_table_alv,
-  go_logs_alv       TYPE REF TO lcl_logs_alv.
+  go_fld_value_alv TYPE REF TO lcl_fld_value_alv,
+  go_string_memo   TYPE REF TO lcl_string_memo,
+  go_table_alv     TYPE REF TO lcl_table_alv,
+  go_logs_alv      TYPE REF TO lcl_logs_alv.
 
 TYPES:
   tt_rsdsfldnum TYPE STANDARD TABLE OF rsdsfldnum.
@@ -66,7 +62,8 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
 
       mv_read_only TYPE abap_bool, " Highest priority
       mv_is_dev    TYPE abap_bool,
-      mo_eui_menu  TYPE REF TO zcl_eui_menu.
+      mo_eui_menu  TYPE REF TO zcl_eui_menu,
+      mt_f4_tables TYPE lvc_t_dral.
 
     CLASS-METHODS:
       add_one_field
@@ -98,6 +95,8 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
           iv_action TYPE string OPTIONAL,
 
       fill_fields,
+
+      find_f4_tables,
 
       launch_action
         IMPORTING
@@ -136,9 +135,7 @@ CLASS lcl_nested_instance DEFINITION.
      mt_instance TYPE SORTED TABLE OF ts_instance WITH UNIQUE KEY cl_name level.
 
     " Current level
-    DATA:
-      mv_level    TYPE i,
-      mv_last_cmd TYPE syucomm.
+    DATA mv_level TYPE i.
 
     CLASS-METHODS:
       get_instance_by_level
@@ -179,31 +176,29 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
           er_data       TYPE REF TO data
           es_field_desc TYPE zcl_eui_type=>ts_field_desc,
 
-      on_pai_event FOR EVENT pai_event OF zif_eui_manager
+      on_pai_event FOR EVENT pai_event OF zif_eui_manager   "#EC CALLED
         IMPORTING
           sender
           iv_command,
 
-      on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
+      on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid       "#EC CALLED
         IMPORTING
           e_object,
 
-      on_user_command FOR EVENT user_command OF cl_gui_alv_grid
+      on_user_command FOR EVENT user_command OF cl_gui_alv_grid "#EC CALLED
         IMPORTING
           sender
           e_ucomm,
 
-      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
+      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid "#EC CALLED
         IMPORTING
-          sender
           e_column_id es_row_no,
 
-      on_double_click FOR EVENT double_click OF cl_gui_alv_grid
+      on_double_click FOR EVENT double_click OF cl_gui_alv_grid "#EC CALLED
         IMPORTING
-          sender
           e_column e_row,
 
-      on_data_changed FOR EVENT data_changed OF cl_gui_alv_grid
+      on_data_changed FOR EVENT data_changed OF cl_gui_alv_grid "#EC CALLED
         IMPORTING sender er_data_changed,
 
       data_check
@@ -227,11 +222,11 @@ CLASS lcl_scr_free_sel DEFINITION FINAL.
     METHODS:
       pbo
         IMPORTING
-          it_dsfldnum TYPE tt_rsdsfldnum,
+          it_dsfldnum TYPE tt_rsdsfldnum, "#EC NEEDED
 
       pai
         IMPORTING
-          it_dsfldnum TYPE tt_rsdsfldnum
+          it_dsfldnum TYPE tt_rsdsfldnum  "#EC NEEDED
         CHANGING
           cv_cmd      TYPE syucomm.
 ENDCLASS.
@@ -253,11 +248,12 @@ CLASS lcl_table_comp_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
         INCLUDE TYPE zcl_eui_type=>ts_field_desc AS field_desc.
       TYPES:
         catalog TYPE icon_d,
-      END OF ts_sub_fld_desc.
+      END OF ts_sub_fld_desc,
+      tt_sub_fld_desc TYPE STANDARD TABLE OF ts_sub_fld_desc WITH DEFAULT KEY.
 
     DATA:
       ms_field_desc   TYPE REF TO zcl_eui_type=>ts_field_desc,
-      mt_sub_fld_desc TYPE STANDARD TABLE OF ts_sub_fld_desc WITH DEFAULT KEY,
+      mt_sub_fld_desc TYPE tt_sub_fld_desc,
       mv_editable     TYPE abap_bool.
 
     METHODS:
@@ -268,22 +264,25 @@ CLASS lcl_table_comp_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
 
       change_key,
 
-      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
+      on_pbo_event FOR EVENT pbo_event OF zif_eui_manager   "#EC CALLED
+        IMPORTING
+          sender,
+
+      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid "#EC CALLED
         IMPORTING
           e_column_id es_row_no,
 
-      on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
+      on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid       "#EC CALLED
         IMPORTING
           e_object,
 
-      on_user_command FOR EVENT user_command OF cl_gui_alv_grid
+      on_user_command FOR EVENT user_command OF cl_gui_alv_grid "#EC CALLED
         IMPORTING
           sender
           e_ucomm,
 
-      on_pai_event FOR EVENT pai_event OF zif_eui_manager
+      on_pai_event FOR EVENT pai_event OF zif_eui_manager   "#EC CALLED
         IMPORTING
-          sender
           iv_command.
 ENDCLASS.
 
@@ -298,10 +297,18 @@ CLASS lcl_table_alv DEFINITION INHERITING FROM lcl_nested_instance FINAL.
                   VALUE(iv_level)    TYPE i OPTIONAL
         RETURNING VALUE(ro_instance) TYPE REF TO lcl_table_alv.
 
+    DATA:
+      ms_fld_value TYPE REF TO lcl_opt=>ts_fld_value.
+
     METHODS:
       call_screen
         IMPORTING
-          is_fld_value TYPE REF TO lcl_opt=>ts_fld_value.
+          is_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
+
+      _get_f4_catalog
+        EXPORTING
+          et_catalog  TYPE lvc_t_fcat
+          et_f4_table TYPE zcl_eui_alv=>tt_f4_table.
 ENDCLASS.
 
 *----------------------------------------------------------------------*
@@ -343,7 +350,7 @@ CLASS lcl_logs_alv DEFINITION FINAL.
         IMPORTING
           is_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
 
-      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
+      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid "#EC CALLED
         IMPORTING
           es_row_no.
 ENDCLASS.

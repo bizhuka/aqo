@@ -23,19 +23,6 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
       lv_read_only = abap_true.
     ENDIF.
 
-    " Table to show
-    DATA lv_ok TYPE abap_bool.
-    zcl_eui_conv=>from_json(
-     EXPORTING
-      iv_json = ms_field_desc->sub_fdesc
-     IMPORTING
-      ev_ok   = lv_ok
-      ex_data = mt_sub_fld_desc ).
-    IF lv_ok <> abap_true.
-      MESSAGE s017(zaqo_message) WITH ms_field_desc->name DISPLAY LIKE 'E'.
-      RETURN.
-    ENDIF.
-
 **********************************************************************
     " Main table
     DATA lr_table TYPE REF TO data.
@@ -45,7 +32,7 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     " Prepare layout
     DATA ls_layout TYPE lvc_s_layo.
     " ls_layout-no_toolbar = abap_true.
-    CONCATENATE `Field catalog of ` ms_field_desc->name INTO ls_layout-grid_title.
+    CONCATENATE 'Field catalog of'(fco) ms_field_desc->name INTO ls_layout-grid_title SEPARATED BY space.
     ls_layout-smalltitle = abap_true.
 
 **********************************************************************
@@ -65,6 +52,15 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     ls_fieldcat->edit = mv_editable.
     add_fcat_field '+ROLLNAME' ''.    add_fcat_field '+LABEL' ''.
 
+    " has f4 tables?
+    LOOP AT lcl_opt=>mt_f4_tables TRANSPORTING NO FIELDS WHERE int_value <> is_field_desc->name.
+      add_fcat_field 'F4_TABLE' ''.
+      ls_fieldcat->edit       = mv_editable.
+      ls_fieldcat->drdn_hndl  = 154.
+      ls_fieldcat->drdn_alias = abap_true.
+      EXIT.
+    ENDLOOP.
+
     " Hide table specific fields
     add_fcat_field '+' ''.
     ls_fieldcat->tech = abap_true.
@@ -77,16 +73,24 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
 
     " Only 1 type of icons
     ls_fieldcat->tech = abap_true.
-    LOOP AT mt_sub_fld_desc REFERENCE INTO ls_sub_fld_desc.
-      lcl_opt=>set_icons(
-       EXPORTING
-         iv_ui_type = ls_sub_fld_desc->ui_type
-       IMPORTING
-         ev_icon    = ls_sub_fld_desc->icon
-         ev_catalog = ls_sub_fld_desc->catalog ).
+
+    " Table to show
+    DATA lt_sub_fld TYPE zcl_eui_type=>tt_field_desc.
+    lt_sub_fld = zcl_eui_type=>get_sub_field_desc( ms_field_desc->* ).
+    CHECK lt_sub_fld IS NOT INITIAL.
+
+    FIELD-SYMBOLS <ls_sub_fld> LIKE LINE OF lt_sub_fld.
+    CLEAR mt_sub_fld_desc.
+    LOOP AT lt_sub_fld ASSIGNING <ls_sub_fld>.
+      APPEND INITIAL LINE TO mt_sub_fld_desc REFERENCE INTO ls_sub_fld_desc.
+      MOVE-CORRESPONDING <ls_sub_fld> TO ls_sub_fld_desc->*.
+
+      lcl_opt=>set_icons( EXPORTING iv_ui_type = ls_sub_fld_desc->ui_type
+                          IMPORTING ev_icon    = ls_sub_fld_desc->icon
+                                    ev_catalog = ls_sub_fld_desc->catalog ).
 
       CHECK ls_sub_fld_desc->ui_type = zcl_eui_type=>mc_ui_type-table.
-      ls_fieldcat->tech = abap_false.
+      ls_fieldcat->tech       = abap_false.
     ENDLOOP.
 
 **********************************************************************
@@ -110,15 +114,16 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
 **********************************************************************
     " Show by ALV manager
 **********************************************************************
-    DATA lo_eui_alv TYPE REF TO zif_eui_manager.
+    DATA lo_eui_alv TYPE REF TO zcl_eui_alv.
     DATA ls_status  TYPE REF TO lo_eui_alv->ts_status.
 
     " Pass by reference
-    CREATE OBJECT lo_eui_alv TYPE zcl_eui_alv
+    CREATE OBJECT lo_eui_alv
       EXPORTING
         ir_table       = lr_table
         " grid parameters
         is_layout      = ls_layout
+        is_variant     = ls_variant
         it_mod_catalog = lt_fieldcat
         it_toolbar     = lt_toolbar
         iv_read_only   = lv_read_only.
@@ -134,6 +139,24 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     lo_eui_alv->show( io_handler = me ).
   ENDMETHOD.                    "call_screen
 
+  METHOD on_pbo_event.
+    DATA lo_alv  TYPE REF TO zcl_eui_alv.
+    DATA lo_grid TYPE REF TO cl_gui_alv_grid.
+
+    lo_alv ?= sender.
+    lo_grid = lo_alv->get_grid( ).
+
+    CHECK lo_grid IS NOT INITIAL.
+
+    " Make copy
+    DATA lt_drop_down LIKE lcl_opt=>mt_f4_tables .
+    lt_drop_down = lcl_opt=>mt_f4_tables.
+    DELETE lt_drop_down WHERE int_value = ms_field_desc->name.
+
+    lo_grid->set_drop_down_table( it_drop_down_alias = lt_drop_down ).
+    lo_grid->refresh_table_display( ).
+  ENDMETHOD.
+
   METHOD on_toolbar.
     go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
     go_fld_value_alv->set_exclude_toolbar(
@@ -144,7 +167,6 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD on_user_command.
-    DATA lr_data         TYPE REF TO data.
     DATA ls_sub_fld_desc TYPE ts_sub_fld_desc.
     DATA lv_fname        TYPE zcl_eui_type=>ts_field_desc-name.
 
@@ -155,8 +177,7 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
         " Get full description
         go_fld_value_alv = lcl_fld_value_alv=>get_instance( ).
         go_fld_value_alv->add_new_field(
-         IMPORTING
-           er_data       = lr_data
+         IMPORTING "er_data = lr_data
            es_field_desc = ls_sub_fld_desc-field_desc ).
         CHECK ls_sub_fld_desc-field_desc IS NOT INITIAL.
 
@@ -181,7 +202,7 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
 
   METHOD change_key.
     " Show in screen
-    DATA ls_dyn_scr  TYPE REF TO zsaqo_table_key_dialog. " PARAMETERS & SELECT-OPTIONS
+    DATA ls_dyn_scr TYPE REF TO zsaqo_table_key_dialog. " PARAMETERS & SELECT-OPTIONS
     DATA lo_screen   TYPE REF TO zcl_eui_screen.
     DATA lo_err      TYPE REF TO cx_root.
     DATA lr_key_desr TYPE REF TO abap_keydescr.

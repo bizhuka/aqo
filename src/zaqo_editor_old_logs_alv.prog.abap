@@ -100,7 +100,7 @@ CLASS lcl_logs_alv IMPLEMENTATION.
     " Layout
 **********************************************************************
     DATA ls_layout TYPE lvc_s_layo.
-    CONCATENATE `Change logs of ` ms_fld_value->name INTO ls_layout-grid_title.
+    CONCATENATE 'View logs of'(clo) ms_fld_value->name INTO ls_layout-grid_title SEPARATED BY space.
     ls_layout-smalltitle = abap_true.
 
 **********************************************************************

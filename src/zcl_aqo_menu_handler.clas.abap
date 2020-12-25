@@ -654,13 +654,16 @@ METHOD _about.
   TRY.
       CREATE OBJECT lo_screen
         EXPORTING
-          iv_dynnr        = '1020'
-          iv_cprog        = mc_prog-editor
-          ir_context      = ls_dyn_scr
-          " Set pf-status & text
-          iv_status_name  = 'ABOUT_STATUS'
-          iv_status_prog  = mc_prog-editor
-          iv_status_title = 'Enter option description'(eod).
+          iv_dynnr   = '1020'
+          iv_cprog   = mc_prog-editor
+          ir_context = ls_dyn_scr.
+
+      DATA ls_status TYPE zcl_eui_manager=>ts_status.
+      ls_status-name  = 'ABOUT_STATUS'.
+      ls_status-prog  = mc_prog-editor.
+      ls_status-title = 'Enter option description'(eod).
+      lo_screen->set_status( ls_status ).
+
     CATCH zcx_eui_exception INTO lo_err.
       MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
       RETURN.
@@ -1482,10 +1485,13 @@ METHOD _oaor_diloag_screen.
   TRY.
       CREATE OBJECT lo_screen
         EXPORTING
-          iv_dynnr        = '1030'
-          iv_cprog        = mc_prog-editor
-          ir_context      = ls_dyn_scr
-          iv_status_title = iv_title. " 'New file info'(nfi). " Set pf-status & text
+          iv_dynnr   = '1030'
+          iv_cprog   = mc_prog-editor
+          ir_context = ls_dyn_scr.
+
+      DATA ls_status TYPE zcl_eui_manager=>ts_status.
+      ls_status-title = iv_title. " 'New file info'(nfi). " Set pf-status & text
+      lo_screen->set_status( ls_status ).
     CATCH zcx_eui_exception INTO lo_err.
       MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
       RETURN.

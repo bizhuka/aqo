@@ -273,7 +273,7 @@
      <ID>I</ID>
      <KEY>020</KEY>
      <ENTRY>Option info</ENTRY>
-     <LENGTH>21</LENGTH>
+     <LENGTH>30</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -304,6 +304,12 @@
      <KEY>CLN</KEY>
      <ENTRY>Specify the client number</ENTRY>
      <LENGTH>50</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>CLO</KEY>
+     <ENTRY>View logs of</ENTRY>
+     <LENGTH>24</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -345,13 +351,19 @@
      <ID>I</ID>
      <KEY>EOP</KEY>
      <ENTRY>Edit option</ENTRY>
-     <LENGTH>21</LENGTH>
+     <LENGTH>25</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>EXP</KEY>
      <ENTRY>Export option</ENTRY>
-     <LENGTH>23</LENGTH>
+     <LENGTH>25</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>FCO</KEY>
+     <ENTRY>Field catalog of</ENTRY>
+     <LENGTH>26</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -368,8 +380,20 @@
     <item>
      <ID>I</ID>
      <KEY>LOG</KEY>
-     <ENTRY>Сhange logs</ENTRY>
+     <ENTRY>View logs</ENTRY>
      <LENGTH>21</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>MS1</KEY>
+     <ENTRY>Check existence of option by code scanning. For search help use upper field!</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>MS2</KEY>
+     <ENTRY>Please use ZAQO* transactions instead!</ENTRY>
+     <LENGTH>76</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -385,6 +409,18 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>OAE</KEY>
+     <ENTRY>Option already exist</ENTRY>
+     <LENGTH>40</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>ODN</KEY>
+     <ENTRY>Option do not exist</ENTRY>
+     <LENGTH>35</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>OPT</KEY>
      <ENTRY>Parameters</ENTRY>
      <LENGTH>20</LENGTH>
@@ -393,7 +429,7 @@
      <ID>I</ID>
      <KEY>QED</KEY>
      <ENTRY>Quick edit</ENTRY>
-     <LENGTH>20</LENGTH>
+     <LENGTH>25</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -406,6 +442,18 @@
      <KEY>TIT</KEY>
      <ENTRY>Maintenance parameters</ENTRY>
      <LENGTH>44</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>VEW</KEY>
+     <ENTRY>View</ENTRY>
+     <LENGTH>14</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>VOF</KEY>
+     <ENTRY>values of</ENTRY>
+     <LENGTH>19</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -576,6 +624,215 @@
     <item>
      <LANGUAGE>R</LANGUAGE>
      <TEXTPOOL>
+      <item>
+       <ID>I</ID>
+       <KEY>010</KEY>
+       <ENTRY>Изменить описание в коде и снова запустить намного проще!</ENTRY>
+       <LENGTH>96</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>020</KEY>
+       <ENTRY>Информация о настройке</ENTRY>
+       <LENGTH>30</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>030</KEY>
+       <ENTRY>Версия OAOR</ENTRY>
+       <LENGTH>22</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>ANF</KEY>
+       <ENTRY>Добавить новое поле</ENTRY>
+       <LENGTH>23</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CAT</KEY>
+       <ENTRY>Каталог</ENTRY>
+       <LENGTH>17</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CHK</KEY>
+       <ENTRY>Изменить ключ</ENTRY>
+       <LENGTH>20</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CLN</KEY>
+       <ENTRY>Укажите мандант</ENTRY>
+       <LENGTH>50</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CLO</KEY>
+       <ENTRY>Просмотр лога</ENTRY>
+       <LENGTH>24</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CNT</KEY>
+       <ENTRY>Количество</ENTRY>
+       <LENGTH>15</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CRT</KEY>
+       <ENTRY>Создать новую настройку</ENTRY>
+       <LENGTH>27</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CTD</KEY>
+       <ENTRY>Изменить опиание</ENTRY>
+       <LENGTH>28</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DIS</KEY>
+       <ENTRY>Исправьте сначала ошибки в DEV</ENTRY>
+       <LENGTH>58</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EDT</KEY>
+       <ENTRY>Редактировать</ENTRY>
+       <LENGTH>14</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EOD</KEY>
+       <ENTRY>Введите описание настройки</ENTRY>
+       <LENGTH>48</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EOP</KEY>
+       <ENTRY>Редактировать настройку</ENTRY>
+       <LENGTH>25</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EXP</KEY>
+       <ENTRY>Экспортировать настройку</ENTRY>
+       <LENGTH>25</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>FCO</KEY>
+       <ENTRY>Каталог полей</ENTRY>
+       <LENGTH>26</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>IMP</KEY>
+       <ENTRY>Импортировать настройку</ENTRY>
+       <LENGTH>23</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>KND</KEY>
+       <ENTRY>Вид</ENTRY>
+       <LENGTH>14</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>LOG</KEY>
+       <ENTRY>Просмотр логов</ENTRY>
+       <LENGTH>21</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>MS1</KEY>
+       <ENTRY>Проверьте наличие настройки сканированием кода. Для СП при поиске используйте верхнее поле!</ENTRY>
+       <LENGTH>132</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>MS2</KEY>
+       <ENTRY>Пожалуйста, используйте транзакции ZAQO *!</ENTRY>
+       <LENGTH>76</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NAM</KEY>
+       <ENTRY>Имя</ENTRY>
+       <LENGTH>14</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NCL</KEY>
+       <ENTRY>Предыдущие вызовы не найдены</ENTRY>
+       <LENGTH>52</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>OAE</KEY>
+       <ENTRY>Настройка уже существует</ENTRY>
+       <LENGTH>40</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>ODN</KEY>
+       <ENTRY>Настройка не существует</ENTRY>
+       <LENGTH>35</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>OPT</KEY>
+       <ENTRY>Параметры</ENTRY>
+       <LENGTH>20</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>QED</KEY>
+       <ENTRY>Быстрое редактирован</ENTRY>
+       <LENGTH>25</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SHL</KEY>
+       <ENTRY>Показ логов</ENTRY>
+       <LENGTH>19</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>TIT</KEY>
+       <ENTRY>Поля настройки</ENTRY>
+       <LENGTH>44</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VEW</KEY>
+       <ENTRY>Просмотр</ENTRY>
+       <LENGTH>14</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VOF</KEY>
+       <ENTRY>Значения</ENTRY>
+       <LENGTH>19</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VOP</KEY>
+       <ENTRY>Просмотр настройки</ENTRY>
+       <LENGTH>21</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>WUL</KEY>
+       <ENTRY>Просмотр использования</ENTRY>
+       <LENGTH>25</LENGTH>
+      </item>
+      <item>
+       <ID>R</ID>
+       <ENTRY>Редактировать настройку</ENTRY>
+       <LENGTH>70</LENGTH>
+      </item>
       <item>
        <ID>S</ID>
        <KEY>P_2_DATE</KEY>

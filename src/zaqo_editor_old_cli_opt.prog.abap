@@ -7,7 +7,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
     " se38 or se80 (todo ZAQO_EDITOR)
     IF sy-tcode CP 'SE*'.
-      zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!' ).
+      zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!'(ms2) ).
     ENDIF.
 
     GET PARAMETER ID 'ZAQO_PACKAGE_ID' FIELD p_pack.
@@ -96,6 +96,8 @@ CLASS lcl_opt IMPLEMENTATION.
 
     fill_fields( ).
 
+    find_f4_tables( ).
+
     launch_action( iv_action ).
   ENDMETHOD.
 
@@ -119,10 +121,29 @@ CLASS lcl_opt IMPLEMENTATION.
     " Any error during importing?
     CHECK lt_skip_field IS NOT INITIAL.
 
-    DATA lv_message TYPE string.
-    CONCATENATE LINES OF lt_skip_field INTO lv_message SEPARATED BY `, `.
-    CONCATENATE `Fields ` lv_message ` were skipped!` INTO lv_message.
-    MESSAGE lv_message TYPE 'S' DISPLAY LIKE 'E'.
+    DATA lv_fields TYPE string.
+    CONCATENATE LINES OF lt_skip_field INTO lv_fields SEPARATED BY `, `.
+    MESSAGE s040(zaqo_message) WITH lv_fields DISPLAY LIKE 'E'.
+  ENDMETHOD.
+
+  METHOD find_f4_tables.
+    DATA ls_field_value TYPE REF TO zcl_aqo_helper=>ts_field_value.
+
+    LOOP AT mo_option->mt_field_value REFERENCE INTO ls_field_value
+                                      WHERE ui_type     = zcl_eui_type=>mc_ui_type-table
+                                        AND ( table_kind  = cl_abap_tabledescr=>tablekind_sorted
+                                           OR table_kind  = cl_abap_tabledescr=>tablekind_hashed )
+                                        AND key_defkind = cl_abap_tabledescr=>keydefkind_user
+                                        AND unique      = abap_true.  "#EC CI_HASHSEQ
+      " Only for relations 1 - 1
+      CHECK lines( ls_field_value->key[] ) = 1.
+
+      DATA lr_ft_table TYPE REF TO lvc_s_dral.
+      APPEND INITIAL LINE TO mt_f4_tables REFERENCE INTO lr_ft_table.
+      lr_ft_table->handle    = 154.
+      lr_ft_table->int_value = ls_field_value->name.
+      CONCATENATE ls_field_value->name ` - ` ls_field_value->label INTO lr_ft_table->value.
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD launch_action.
@@ -146,7 +167,7 @@ CLASS lcl_opt IMPLEMENTATION.
       MESSAGE 'Create new option'(crt) TYPE 'S'.
       " Is not new ?
       IF mo_option->ms_db_item-fields IS NOT INITIAL.
-        MESSAGE 'Option already exist' TYPE 'S' DISPLAY LIKE 'E'.
+        MESSAGE 'Option already exist'(oae) TYPE 'S' DISPLAY LIKE 'E'.
       ENDIF.
     ENDIF.
 
@@ -159,7 +180,7 @@ CLASS lcl_opt IMPLEMENTATION.
 
       WHEN mc_action-edit_values.
         IF mo_option->ms_db_item-fields IS INITIAL.
-          MESSAGE 'Option do not exist' TYPE 'S' DISPLAY LIKE 'E'.
+          MESSAGE 'Option do not exist'(odn) TYPE 'S' DISPLAY LIKE 'E'.
           RETURN.
         ENDIF.
         " Custom checks
@@ -338,7 +359,7 @@ CLASS lcl_opt IMPLEMENTATION.
       lt_ret   TYPE STANDARD TABLE OF ddshretval,
       ls_ret   TYPE REF TO ddshretval,
       ls_usage TYPE zcl_aqo_helper=>ts_usage.
-    MESSAGE 'Check existence of option by code scanning. For search help use upper field!' TYPE 'S' DISPLAY LIKE 'W'.
+    MESSAGE 'Check existence of option by code scanning. For search help use upper field!'(ms1) TYPE 'S' DISPLAY LIKE 'W'.
 
     " Show SH
     CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'

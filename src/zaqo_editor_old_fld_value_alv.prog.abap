@@ -68,7 +68,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ENDLOOP.
 
     " If have history
-    add_fcat_field 'HISTORY_LOGS'  'Сhange logs'(log).
+    add_fcat_field 'HISTORY_LOGS'  'View logs'(log).
     ls_fieldcat->hotspot   = abap_true.
     ls_fieldcat->tech = abap_true.
     LOOP AT lcl_opt=>mt_fld_value REFERENCE INTO ls_fld_value.
@@ -81,8 +81,9 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     add_fcat_field '+' ''. " Begin of group
     ls_fieldcat->tech = abap_true.
 
-    add_fcat_field '+SYS_TYPE'    ''.  add_fcat_field '+LENGTH'      ''.  add_fcat_field '+DECIMALS'    ''.  add_fcat_field '+TABLE_KIND'  ''.
-    add_fcat_field '+UNIQUE'      ''.  add_fcat_field '+KEY'         ''.  add_fcat_field '+KEY_DEFKIND' ''.  add_fcat_field '+SUB_FDESC'   ''.
+    add_fcat_field '+SYS_TYPE'    ''.  add_fcat_field '+LENGTH'      ''.  add_fcat_field '+DECIMALS'    ''.
+    add_fcat_field '+TABLE_KIND'  ''.  add_fcat_field '+UNIQUE'      ''.  add_fcat_field '+KEY'         ''.
+    add_fcat_field '+KEY_DEFKIND' ''.  add_fcat_field '+SUB_FDESC'   ''.  add_fcat_field '+F4_TABLE'    ''.
 **********************************************************************
     " Toolbar
     DATA lt_toolbar TYPE ttb_button.
@@ -99,16 +100,17 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 **********************************************************************
     " Show by ALV manager
 **********************************************************************
-    DATA lo_eui_alv TYPE REF TO zif_eui_manager.
+    DATA lo_eui_alv TYPE REF TO zcl_eui_alv.
     DATA ls_status  TYPE REF TO lo_eui_alv->ts_status.
     DATA lv_desc    TYPE ztaqo_option-description.
 
     " Pass by reference
-    CREATE OBJECT lo_eui_alv TYPE zcl_eui_alv
+    CREATE OBJECT lo_eui_alv
       EXPORTING
         ir_table       = lr_table
         " grid parameters
       " is_layout      = ls_layout
+        is_variant     = ls_variant
         it_mod_catalog = lt_fieldcat
         it_toolbar     = lt_toolbar
         iv_read_only   = lv_read_only.
@@ -411,7 +413,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     DATA:
       ls_fld_value TYPE REF TO lcl_opt=>ts_fld_value,
       lv_row       TYPE i,
-      lt_unq       TYPE zcl_eui_type=>tt_unique_type,
+      lt_unq       TYPE zcl_eui_type=>tt_unique_type, "#EC NEEDED (just insert)
       lv_unq       TYPE string.
 
     LOOP AT lcl_opt=>mt_fld_value REFERENCE INTO ls_fld_value.

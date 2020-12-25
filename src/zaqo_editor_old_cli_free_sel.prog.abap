@@ -93,7 +93,7 @@ ENDCLASS.
 
 *&---------------------------------------------------------------------*
 *----------------------------------------------------------------------*
-FORM sel_screen_pbo TABLES ct_seldyn STRUCTURE rsseldyn
+FORM sel_screen_pbo TABLES ct_seldyn STRUCTURE rsseldyn     "#EC NEEDED
                            ct_fldnum STRUCTURE rsdsfldnum.  "#EC CALLED
   DATA:
     lo_scr_free_sel TYPE REF TO lcl_scr_free_sel.
@@ -106,7 +106,7 @@ ENDFORM.
 
 *&---------------------------------------------------------------------*
 *----------------------------------------------------------------------*
-FORM sel_screen_pai TABLES ct_seldyn STRUCTURE rsseldyn
+FORM sel_screen_pai TABLES ct_seldyn STRUCTURE rsseldyn     "#EC NEEDED
                            ct_fldnum STRUCTURE rsdsfldnum.  "#EC CALLED
   DATA:
     lo_scr_free_sel TYPE REF TO lcl_scr_free_sel.

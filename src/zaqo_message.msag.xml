@@ -78,7 +78,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>011</MSGNR>
-     <TEXT>Deletion is permited in DEV sytem only</TEXT>
+     <TEXT>Deletion is permitted in DEV system only</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -96,7 +96,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>014</MSGNR>
-     <TEXT>Add ZCL_AQO_OPTION class to frieds of &amp;1</TEXT>
+     <TEXT>Add ZCL_AQO_OPTION class to friends of &amp;1</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -247,6 +247,12 @@
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>039</MSGNR>
      <TEXT>The file &amp;1 - &amp;2 was put to request &amp;3</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>040</MSGNR>
+     <TEXT>Fields &apos;&amp;1&apos; were skipped!</TEXT>
     </T100>
    </T100>
   </asx:values>
