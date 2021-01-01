@@ -596,6 +596,7 @@ METHOD get_eui_menu.
 
   " And return
   ro_eui_menu = lo_unq_menu->mo_eui_menu.
+  CHECK ro_eui_menu IS NOT INITIAL.
   ro_eui_menu->add_handler( lo_unq_menu ).
 ENDMETHOD.
 
