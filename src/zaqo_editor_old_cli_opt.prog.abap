@@ -35,7 +35,7 @@ CLASS lcl_opt IMPLEMENTATION.
         ENDIF.
 
       WHEN 1010 OR 1020 OR 1030 OR 1040.
-        CALL FUNCTION 'ZFM_EUI_PBO'.
+        zcl_eui_screen=>top_pbo( ).
     ENDCASE.
   ENDMETHOD.
 
