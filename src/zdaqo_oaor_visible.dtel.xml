@@ -18,6 +18,19 @@
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>
+   <I18N_LANGS>
+    <LANGU>R</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>R</DDLANGUAGE>
+     <DDTEXT>Видимо для конечного пользователя</DDTEXT>
+     <REPTEXT>Видимо для конечного пользователя</REPTEXT>
+     <SCRTEXT_S>Видимо</SCRTEXT_S>
+     <SCRTEXT_M>Видно пользователю</SCRTEXT_M>
+     <SCRTEXT_L>Видимо для конечного пользователя</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

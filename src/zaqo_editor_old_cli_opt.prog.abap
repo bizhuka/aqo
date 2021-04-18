@@ -4,21 +4,19 @@
 CLASS lcl_opt IMPLEMENTATION.
   METHOD initialization.
     DATA lv_command TYPE syucomm.
-
-    " se38 or se80 (todo ZAQO_EDITOR)
-    IF sy-tcode CP 'SE*'.
-      zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!'(ms2) ).
-    ENDIF.
-
-    GET PARAMETER ID 'ZAQO_PACKAGE_ID' FIELD p_pack.
-    GET PARAMETER ID 'ZAQO_OPTION_ID'  FIELD p_opt_id.
-    GET PARAMETER ID 'ZAQO_COMMAND'    FIELD lv_command.
-
+    GET PARAMETER ID: 'ZAQO_PACKAGE_ID' FIELD p_pack,
+                      'ZAQO_OPTION_ID'  FIELD p_opt_id,
+                      'ZAQO_COMMAND'    FIELD lv_command.
     " 1 time only
     SET PARAMETER ID 'ZAQO_COMMAND' FIELD ''.
 
-    CHECK p_pack IS NOT INITIAL AND p_opt_id IS NOT INITIAL.
+    " se38 or se80 (todo ZAQO_EDITOR)
+    IF sy-tcode CP 'SE*' AND lv_command IS INITIAL.
+      zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!'(ms2) ).
+    ENDIF.
 
+    CHECK p_pack IS NOT INITIAL AND p_opt_id IS NOT INITIAL.
+    "zcl_aqo_helper=>is_in_editor( iv_tcode = 'ZAQO_EDITOR_OLD' ).
     pai( CHANGING cv_cmd = lv_command ).
   ENDMETHOD.
 
@@ -34,8 +32,7 @@ CLASS lcl_opt IMPLEMENTATION.
           SET TITLEBAR 'TITLE_100' OF PROGRAM c_ui_app WITH 'Edit option'(eop).
         ENDIF.
 
-      WHEN 1010 OR 1020 OR 1030 OR 1040.
-        zcl_eui_screen=>top_pbo( ).
+      WHEN OTHERS.
     ENDCASE.
   ENDMETHOD.
 
@@ -134,7 +131,7 @@ CLASS lcl_opt IMPLEMENTATION.
                                         AND ( table_kind  = cl_abap_tabledescr=>tablekind_sorted
                                            OR table_kind  = cl_abap_tabledescr=>tablekind_hashed )
                                         AND key_defkind = cl_abap_tabledescr=>keydefkind_user
-                                        AND unique      = abap_true.  "#EC CI_HASHSEQ
+                                        AND unique      = abap_true. "#EC CI_HASHSEQ
       " Only for relations 1 - 1
       CHECK lines( ls_field_value->key[] ) = 1.
 

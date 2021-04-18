@@ -17,15 +17,10 @@ CLASS lcl_table_alv IMPLEMENTATION.
 **********************************************************************
     " Layout
     DATA ls_layout TYPE lvc_s_layo.
-    DATA lv_read_only TYPE abap_bool.
-
     " Can edit ?
     ls_layout-edit = lcl_opt=>is_editable( is_fld_value->is_editable ).
-    IF ls_layout-edit <> abap_true.
-      lv_read_only = abap_true.
-    ENDIF.
 
-    IF lv_read_only = abap_true.
+    IF ls_layout-edit <> abap_true.
       ls_layout-grid_title = 'View'(vew).
       ls_layout-zebra      = abap_true. " for view only
     ELSE.
@@ -55,7 +50,6 @@ CLASS lcl_table_alv IMPLEMENTATION.
         " grid parameters
         is_layout      = ls_layout
         is_variant     = ls_variant
-        iv_read_only   = lv_read_only
         it_mod_catalog = lt_catalog.
 
     " Pass by reference

@@ -17,11 +17,7 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     ms_field_desc = is_field_desc.
 
     " Can edit ?
-    DATA lv_read_only TYPE abap_bool.
-    mv_editable   = iv_editable.
-    IF mv_editable <> abap_true.
-      lv_read_only = abap_true.
-    ENDIF.
+    mv_editable = iv_editable.
 
 **********************************************************************
     " Main table
@@ -125,8 +121,7 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
         is_layout      = ls_layout
         is_variant     = ls_variant
         it_mod_catalog = lt_fieldcat
-        it_toolbar     = lt_toolbar
-        iv_read_only   = lv_read_only.
+        it_toolbar     = lt_toolbar.
 
     " Instead of set handler
     lo_eui_alv->popup( ).
@@ -202,12 +197,12 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
 
   METHOD change_key.
     " Show in screen
-    DATA ls_dyn_scr TYPE REF TO zsaqo_table_key_dialog. " PARAMETERS & SELECT-OPTIONS
+    DATA ls_dyn_scr  TYPE REF TO zsaqo_table_key_dialog. " PARAMETERS & SELECT-OPTIONS
     DATA lo_screen   TYPE REF TO zcl_eui_screen.
     DATA lo_err      TYPE REF TO cx_root.
     DATA lr_key_desr TYPE REF TO abap_keydescr.
     DATA ls_key_desr TYPE abap_keydescr.
-    DATA ls_key      LIKE LINE OF s_4_key.
+    DATA ls_key      LIKE LINE OF ls_dyn_scr->s_4_key.
 
     " Where to store data
     CREATE DATA ls_dyn_scr.
@@ -223,10 +218,12 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
 
     " Create screen manager
     TRY.
+        DATA lv_prog TYPE sycprog.
+        CONCATENATE sy-cprog `CHANGE_KEY` INTO lv_prog.
         CREATE OBJECT lo_screen
           EXPORTING
-            iv_dynnr   = '1040'
-            iv_cprog   = sy-cprog
+            iv_dynnr   = zcl_eui_screen=>mc_dynnr-dynamic
+            iv_cprog   = lv_prog
             ir_context = ls_dyn_scr.
       CATCH zcx_eui_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
@@ -248,9 +245,9 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
 
     " As popup
     lo_screen->popup( iv_col_beg  = 1
-                       iv_row_beg  = 1
-                       iv_col_end  = 118
-                       iv_row_end  = 30 ).
+                      iv_row_beg  = 1
+                      iv_col_end  = 114
+                      iv_row_end  = 30 ).
 
     " Check OK pressed
     CHECK lo_screen->show( ) = 'OK'.

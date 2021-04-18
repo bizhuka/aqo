@@ -124,8 +124,7 @@ CLASS lcl_logs_alv IMPLEMENTATION.
         ir_table       = mr_hist_table
         " grid parameters
         is_layout      = ls_layout
-        it_mod_catalog = lt_fieldcat
-        iv_read_only   = abap_true.
+        it_mod_catalog = lt_fieldcat.
 
     " In popup
     lo_eui_alv->popup( ).

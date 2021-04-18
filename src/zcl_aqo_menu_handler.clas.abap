@@ -653,10 +653,12 @@ METHOD _about.
 
   " Create screen manager
   TRY.
+      DATA lv_prog TYPE sycprog.
+      CONCATENATE mc_prog-editor `ABOUT_SCR` INTO lv_prog.
       CREATE OBJECT lo_screen
         EXPORTING
-          iv_dynnr   = '1020'
-          iv_cprog   = mc_prog-editor
+          iv_dynnr   = zcl_eui_screen=>mc_dynnr-dynamic
+          iv_cprog   = lv_prog
           ir_context = ls_dyn_scr.
 
       DATA ls_status TYPE zcl_eui_manager=>ts_status.
@@ -698,7 +700,7 @@ METHOD _about.
   lo_screen->customize( name = 'P_2_MENU'   input = lv_input ).
 
   " As popup
-  lo_screen->popup( ).
+  lo_screen->popup( iv_col_end = 114 ).
 
   " Process action
   lv_cmd = lo_screen->show(
@@ -1280,7 +1282,7 @@ METHOD _menu_get_buttons.
         IF <ls_menu>-butn_type = cntb_btype_sep.
           <ls_menu>-hide = lv_prev_hide.
         ELSEIF <ls_menu>-function <> lv_root_func.
-          zcx_aqo_exception=>raise_dump( iv_message = 'Unknouwn button'(unb) ).
+          zcx_aqo_exception=>raise_dump( iv_message = 'Unknown button'(unb) ).
         ENDIF.
     ENDCASE.
 
@@ -1484,10 +1486,12 @@ METHOD _oaor_diloag_screen.
 
   " Create screen manager
   TRY.
+      DATA lv_prog TYPE sycprog.
+      CONCATENATE mc_prog-editor `OAOR_SCR` INTO lv_prog.
       CREATE OBJECT lo_screen
         EXPORTING
-          iv_dynnr   = '1030'
-          iv_cprog   = mc_prog-editor
+          iv_dynnr   = zcl_eui_screen=>mc_dynnr-dynamic
+          iv_cprog   = lv_prog
           ir_context = ls_dyn_scr.
 
       DATA ls_status TYPE zcl_eui_manager=>ts_status.
@@ -1515,7 +1519,7 @@ METHOD _oaor_diloag_screen.
   lo_screen->customize( name = 'P_3_VIS'    input = lv_input ).
 
   " As popup
-  lo_screen->popup( iv_col_end = 118 ).
+  lo_screen->popup( iv_col_end = 114 ).
 
   " Process action
   lv_cmd = lo_screen->show( ).

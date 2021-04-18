@@ -10,13 +10,8 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
   ENDMETHOD.                    "get_instance
 
   METHOD call_screen.
-    DATA lv_read_only TYPE abap_bool.
-
     " Can edit ?
     mv_editable = lcl_opt=>is_editable( ).
-    IF mv_editable <> abap_true.
-      lv_read_only = abap_true.
-    ENDIF.
 **********************************************************************
     " Main table
     DATA lr_table TYPE REF TO data.
@@ -112,8 +107,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       " is_layout      = ls_layout
         is_variant     = ls_variant
         it_mod_catalog = lt_fieldcat
-        it_toolbar     = lt_toolbar
-        iv_read_only   = lv_read_only.
+        it_toolbar     = lt_toolbar.
 
     " Static PF status no need on_pbo_event.
     GET REFERENCE OF lo_eui_alv->ms_status INTO ls_status.
@@ -125,22 +119,13 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
     " Own buttons
     IF mv_editable = abap_true.
-      APPEND 'VIEW'       TO ls_status->exclude.
-      ls_status->title = 'Edit option'(eop).
+      APPEND 'VIEW' TO ls_status->exclude.
     ELSE.
-      APPEND 'EDIT'       TO ls_status->exclude.
-      ls_status->title = 'View option'(vop).
+      APPEND 'EDIT' TO ls_status->exclude.
     ENDIF.
-
-    " Add tech info
-    CONCATENATE ls_status->title ` ` lcl_opt=>mo_option->ms_db_item-package_id ` - ` lcl_opt=>mo_option->ms_db_item-option_id
-     INTO ls_status->title.
 
     " Add texts info
-    lv_desc = get_title( ).
-    IF lv_desc IS NOT INITIAL.
-      CONCATENATE ls_status->title ` (` lv_desc `)` INTO ls_status->title.
-    ENDIF.
+    ls_status->title = get_title( ).
 
     " Instead of set handler
     lo_eui_alv->show(
@@ -151,15 +136,28 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
   ENDMETHOD.                    "call_screen
 
   METHOD get_title.
-    rv_title = lcl_opt=>mo_option->ms_db_item-description.
-    CHECK rv_title IS INITIAL.
+    " Own buttons
+    IF mv_editable = abap_true.
+      rv_title = 'Edit option'(eop).
+    ELSE.
+      rv_title = 'View option'(vop).
+    ENDIF.
+    " Add tech info
+    CONCATENATE rv_title ` ` lcl_opt=>mo_option->ms_db_item-package_id ` - `
+                             lcl_opt=>mo_option->ms_db_item-option_id INTO rv_title.
 
-    DATA lv_ctext TYPE tdevct-ctext.
-    SELECT SINGLE ctext INTO lv_ctext
-    FROM tdevct
-    WHERE devclass = lcl_opt=>mo_option->ms_db_item-package_id
-      AND spras    = sy-langu.
-    rv_title = lv_ctext.
+    DATA lv_desc TYPE string.
+    lv_desc = lcl_opt=>mo_option->ms_db_item-description.
+    IF lv_desc IS INITIAL.
+      DATA lv_ctext TYPE tdevct-ctext.
+      SELECT SINGLE ctext INTO lv_ctext
+      FROM tdevct
+      WHERE devclass = lcl_opt=>mo_option->ms_db_item-package_id
+        AND spras    = sy-langu.
+      lv_desc = lv_ctext.
+    ENDIF.
+
+    CONCATENATE rv_title ` (` lv_desc `)` INTO rv_title.
   ENDMETHOD.
 
   METHOD set_exclude_toolbar.
@@ -208,10 +206,12 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
     " Create screen manager
     TRY.
+        DATA lv_prog TYPE sycprog.
+        CONCATENATE sy-cprog `ADD_FIELD_SCR` INTO lv_prog.
         CREATE OBJECT lo_screen
           EXPORTING
-            iv_dynnr   = '1010'
-            iv_cprog   = sy-cprog
+            iv_dynnr   = zcl_eui_screen=>mc_dynnr-dynamic
+            iv_cprog   = lv_prog
             ir_context = ls_dyn_scr.
       CATCH zcx_eui_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
@@ -234,7 +234,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     " As popup
     lo_screen->popup( iv_col_beg  = 1
                       iv_row_beg  = 1
-                      iv_col_end  = 118
+                      iv_col_end  = 114
                       iv_row_end  = 30 ).
 
     " Check OK pressed
@@ -551,13 +551,28 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       <lv_dest> = <lv_src>.
     ENDLOOP.
 
+    DATA: lv_unq_prog TYPE programm, lo_crc64 TYPE REF TO zcl_eui_crc64, lv_pack TYPE c LENGTH 9.
+    CREATE OBJECT lo_crc64.
+    lo_crc64->add_to_hash( p_pack ).
+    lo_crc64->add_to_hash( p_opt_id ).
+
+    lv_unq_prog = lo_crc64->get_hash( ).
+    lv_pack     =  p_pack+1. " No more than 9
+    CONCATENATE `ZAQO` lv_pack lv_unq_prog INTO lv_unq_prog.
+
     " Create screen manager
     TRY.
+        DATA lv_editable TYPE abap_bool.
+        IF lcl_opt=>mv_read_only <> abap_true.
+          lv_editable = abap_true.
+        ENDIF.
+
         CREATE OBJECT lo_screen
           EXPORTING
-            iv_dynnr     = zcl_eui_screen=>mc_dynnr-free_sel
-            ir_context   = lr_dyn_screen
-            iv_read_only = lcl_opt=>mv_read_only. " NOT mv_editable ?
+            iv_dynnr    = zcl_eui_screen=>mc_dynnr-dynamic
+            iv_cprog    = lv_unq_prog
+            ir_context  = lr_dyn_screen
+            iv_editable = lv_editable. " NOT mv_editable ?
       CATCH zcx_eui_exception INTO lo_err.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
@@ -589,7 +604,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     " Always as popup ?
     lo_screen->popup( iv_col_beg  = 1
                       iv_row_beg  = 1
-                      iv_col_end  = 118
+                      iv_col_end  = 114
                       iv_row_end  = 30 ).
 
     " Hide

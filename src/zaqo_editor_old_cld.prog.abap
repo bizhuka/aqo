@@ -1,7 +1,6 @@
 
 TABLES:
-  sscrfields,
-  zsaqo_keydescr.
+  sscrfields.
 
 TYPE-POOLS:
   abap,
