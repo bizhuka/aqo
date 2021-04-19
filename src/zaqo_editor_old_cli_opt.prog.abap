@@ -3,6 +3,11 @@
 
 CLASS lcl_opt IMPLEMENTATION.
   METHOD initialization.
+    " se38 or se80 (todo ZAQO_EDITOR)
+    IF sy-tcode CP 'SE*'.
+      zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!'(ms2) ).
+    ENDIF.
+
     DATA lv_command TYPE syucomm.
     GET PARAMETER ID: 'ZAQO_PACKAGE_ID' FIELD p_pack,
                       'ZAQO_OPTION_ID'  FIELD p_opt_id,
@@ -10,13 +15,7 @@ CLASS lcl_opt IMPLEMENTATION.
     " 1 time only
     SET PARAMETER ID 'ZAQO_COMMAND' FIELD ''.
 
-    " se38 or se80 (todo ZAQO_EDITOR)
-    IF sy-tcode CP 'SE*' AND lv_command IS INITIAL.
-      zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!'(ms2) ).
-    ENDIF.
-
     CHECK p_pack IS NOT INITIAL AND p_opt_id IS NOT INITIAL.
-    "zcl_aqo_helper=>is_in_editor( iv_tcode = 'ZAQO_EDITOR_OLD' ).
     pai( CHANGING cv_cmd = lv_command ).
   ENDMETHOD.
 
