@@ -128,18 +128,12 @@
       <PFK_CODE>000003</PFK_CODE>
       <CODE>0001</CODE>
       <NO>02</NO>
-      <PFNO>13</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000003</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>03</NO>
       <PFNO>14</PFNO>
      </RSMPE_BUT>
      <RSMPE_BUT>
       <PFK_CODE>000003</PFK_CODE>
       <CODE>0001</CODE>
-      <NO>04</NO>
+      <NO>03</NO>
       <PFNO>12</PFNO>
      </RSMPE_BUT>
     </BUT>

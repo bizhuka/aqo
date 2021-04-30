@@ -11,12 +11,14 @@ public section.
   interfaces ZIF_AQO_EXT .
 
   types:
+    T002_RAB type standard table of T002 .
+  types:
     TR_BUKRS_RANGE type range of BUKRS .
 
   data BUKRS type BUKRS read-only value '1000' ##NO_TEXT.
   data BUKRS_RANGE type TR_BUKRS_RANGE read-only .
   data BUKRS_TEXT type STRING read-only value '123' ##NO_TEXT.
-  data T002_TAB type TTAB_T002 read-only .
+  data T002_TAB type T002_RAB read-only .
 
   methods CONSTRUCTOR .
 protected section.

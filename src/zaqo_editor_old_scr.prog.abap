@@ -16,7 +16,7 @@ AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_pack.
   lcl_opt=>on_f4( ).
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_opt_id.
-  lcl_opt=>on_f4( abap_true ).
+  lcl_opt=>code_scan_f4( ).
 
 INITIALIZATION.
   lcl_opt=>initialization( ).

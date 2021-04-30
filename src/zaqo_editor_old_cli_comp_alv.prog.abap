@@ -46,7 +46,12 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     " Editable fields
     add_fcat_field '+' ''.
     ls_fieldcat->edit = mv_editable.
-    add_fcat_field '+ROLLNAME' ''.    add_fcat_field '+LABEL' ''.
+    add_fcat_field '+ROLLNAME' ''. add_fcat_field '+LABEL'    ''.
+
+    add_fcat_field 'UI_TYPE'  ''.
+    ls_fieldcat->edit      = mv_editable.
+    ls_fieldcat->ref_table = 'ZSAQO_F4'.
+    ls_fieldcat->ref_field = 'UI_TYPE'.
 
     " has f4 tables?
     LOOP AT lcl_opt=>mt_f4_tables TRANSPORTING NO FIELDS WHERE int_value <> is_field_desc->name.

@@ -7,6 +7,7 @@ public section.
 *"* public components of class ZCL_AQO_HELPER
 *"* do not include other source files here!!!
   type-pools ABAP .
+  CLASS zcl_eui_type DEFINITION LOAD.
 
   types:
     abap_attrname_tab TYPE HASHED TABLE OF abap_attrname WITH UNIQUE KEY table_line .
@@ -38,12 +39,14 @@ public section.
         uname      TYPE syuname, "wbcrossgt-uname,
         udate      TYPE sydatum, "wbcrossgt-udate,
         uzeit      TYPE syuzeit, "wbcrossgt-uzeit,
-        found      TYPE xsdboolean,
+        found      TYPE os_boolean,
       END OF ts_usage .
   types:
     tt_usage TYPE STANDARD TABLE OF ts_usage WITH DEFAULT KEY .
   types:
     tt_e071 TYPE STANDARD TABLE OF e071 WITH DEFAULT KEY .
+  types:
+    tt_e071k TYPE STANDARD TABLE OF e071k WITH DEFAULT KEY .
 
   class-methods IS_DEV_MANDT
     returning
@@ -85,6 +88,28 @@ public section.
       !IV_NUMBER type SYMSGNO
     returning
       value(RV_INFO) type STRING .
+  class-methods FIND_REQUEST
+    importing
+      !IV_TABLE_NAME type CSEQUENCE
+      !IV_KEY1 type CLIKE
+      !IV_KEY2 type CLIKE optional
+      !IV_KEY3 type CLIKE optional
+    changing
+      !CV_TASK type E070-TRKORR
+      !CV_OK_MESSAGE type CSEQUENCE
+    raising
+      ZCX_AQO_EXCEPTION .
+  class-methods PUT_2_REQUEST
+    importing
+      !IT_E071 type TT_E071
+      !IT_E071K type TT_E071K optional
+    exporting
+      !EV_REQUEST type E070-TRKORR
+    changing
+      !CV_TASK type E070-TRKORR
+      !CV_OK_MESSAGE type CSEQUENCE
+    raising
+      ZCX_AQO_EXCEPTION .
 protected section.
 private section.
 
@@ -128,6 +153,76 @@ METHOD drill_down.
   " Show as error
   CHECK sy-subrc <> 0.
   MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDMETHOD.
+
+
+METHOD find_request.
+  DATA: ls_e071  TYPE e071, ls_e071k TYPE e071k.
+  " Always the same
+  ls_e071-pgmid = ls_e071k-pgmid = 'R3TR'.
+
+  " Create key for table
+  DATA: lv_off   TYPE i, lv_index TYPE char1, lv_name TYPE string.
+  DO 3 TIMES.
+    " Create name
+    lv_index = sy-index.
+    CONCATENATE 'IV_KEY' lv_index INTO lv_name.
+
+    " Is supplied
+    FIELD-SYMBOLS <lv_key> TYPE clike.
+    ASSIGN (lv_name) TO <lv_key>.
+    CHECK sy-subrc = 0 AND <lv_key> IS NOT INITIAL.
+
+    " Create key
+    DATA lv_len TYPE i.
+    DESCRIBE FIELD <lv_key> LENGTH lv_len IN CHARACTER MODE.
+    ls_e071k-tabkey+lv_off(lv_len)  = <lv_key>.
+
+    " Move to next
+    ADD lv_len TO lv_off.
+  ENDDO.
+
+  " Struc 1
+  ls_e071-object      = 'TABU'.
+  ls_e071-obj_name    = iv_table_name.
+  ls_e071-objfunc     = 'K'.
+
+  " Struc 2
+  ls_e071k-object     = ls_e071k-mastertype = 'TABU'.
+  ls_e071k-objname    = ls_e071k-mastername = iv_table_name.
+
+  " Find new task or this is OK?
+  IF cv_task IS INITIAL.
+    " Try to find
+    SELECT SINGLE e070~trkorr INTO cv_task " e070~strkorr cv_request
+    FROM e070 INNER JOIN e071k ON e071k~trkorr     = e070~trkorr
+                              AND e071k~pgmid      = ls_e071k-pgmid
+                              AND e071k~object     = ls_e071k-object
+                              AND e071k~objname    = ls_e071k-objname
+                              AND e071k~mastertype = ls_e071k-mastertype
+                              AND e071k~mastername = ls_e071k-mastername
+                              AND e071k~tabkey     = ls_e071k-tabkey
+    " Current user ( e070~as4user = sy-uname AND ) + Not released (trstatus<>R) + strkorr <> space Task or sub-request has parent item
+    WHERE ( e070~trstatus = 'D' OR e070~trstatus = 'L' ) AND e070~strkorr <> space. " ? e070~trfunction = 'S'
+  ENDIF.
+
+  DATA:
+    lt_e071  TYPE tt_e071,
+    lt_e071k TYPE tt_e071k.
+
+  APPEND:
+   ls_e071  TO lt_e071,
+   ls_e071k TO lt_e071k.
+
+  DATA lv_request TYPE e070-trkorr.
+  put_2_request( EXPORTING it_e071       = lt_e071
+                           it_e071k      = lt_e071k
+                 IMPORTING ev_request    = lv_request
+                 CHANGING  cv_task       = cv_task
+                           cv_ok_message = cv_ok_message ).
+  " Ok
+  CHECK lv_request IS NOT INITIAL AND cv_task IS NOT INITIAL.
+  MESSAGE s023(zaqo_message) WITH iv_key1 iv_key2 iv_key3 lv_request INTO cv_ok_message.
 ENDMETHOD.
 
 
@@ -401,6 +496,61 @@ METHOD navigate_to.
 
   " All ok
   rv_ok = abap_true.
+ENDMETHOD.
+
+
+METHOD put_2_request.
+  CLEAR ev_request.
+
+  DATA lt_e071  LIKE it_e071.
+  DATA lt_e071k LIKE it_e071k.
+  lt_e071  = it_e071[].
+  lt_e071k = it_e071k[].
+
+  DO 1 TIMES.
+    " Show dialog if task is empty and in old editor
+    CHECK cv_task IS INITIAL
+      AND zcl_aqo_helper=>is_in_editor(  ) = abap_true
+      AND zcl_aqo_helper=>is_in_editor( iv_is_sapui5 = abap_true ) <> abap_true
+      AND zcl_aqo_helper=>is_dev_mandt( )  = abap_true.
+
+    " select request/task
+    CALL FUNCTION 'TR_ORDER_CHOICE_CORRECTION'
+      EXPORTING
+        iv_category = 'SYST'                                "#EC NOTEXT
+      IMPORTING
+        " ev_order    = cv_request
+        ev_task     = cv_task " Can be empty
+      EXCEPTIONS
+        OTHERS      = 1.
+    IF sy-subrc <> 0.
+      zcx_aqo_exception=>raise_sys_error( ).
+    ENDIF.
+  ENDDO.
+
+  " include data to request
+  CHECK cv_task IS NOT INITIAL.
+  CALL FUNCTION 'TR_APPEND_TO_COMM_OBJS_KEYS'
+    EXPORTING
+      wi_trkorr = cv_task
+    TABLES
+      wt_e071   = lt_e071
+      wt_e071k  = lt_e071k
+    EXCEPTIONS
+      OTHERS    = 1.
+  IF sy-subrc <> 0.
+    " zcx_aqo_exception=>raise_sys_error( ).
+    MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO cv_ok_message.
+    RETURN.
+  ENDIF.
+
+  " Find request
+  SELECT SINGLE strkorr INTO ev_request
+  FROM e070
+  WHERE trkorr = cv_task.
+  IF ev_request IS INITIAL.
+    ev_request = cv_task.
+  ENDIF.
 ENDMETHOD.
 
 

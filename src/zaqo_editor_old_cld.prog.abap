@@ -1,7 +1,3 @@
-
-TABLES:
-  sscrfields.
-
 TYPE-POOLS:
   abap,
   icon,
@@ -13,7 +9,6 @@ TYPE-POOLS:
 
 CLASS lcl_opt                  DEFINITION DEFERRED.
 CLASS lcl_fld_value_alv        DEFINITION DEFERRED.
-CLASS lcl_scr_free_sel         DEFINITION DEFERRED.
 CLASS lcl_table_comp_alv       DEFINITION DEFERRED.
 CLASS lcl_table_alv            DEFINITION DEFERRED.
 CLASS lcl_string_memo          DEFINITION DEFERRED.
@@ -34,7 +29,7 @@ TYPES:
 *&---------------------------------------------------------------------*
 
 CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
-   lcl_fld_value_alv lcl_table_alv lcl_scr_free_sel lcl_table_comp_alv lcl_string_memo lcl_logs_alv.
+   lcl_fld_value_alv lcl_table_alv lcl_table_comp_alv lcl_string_memo lcl_logs_alv.
   PUBLIC SECTION.
 
     CONSTANTS:
@@ -107,9 +102,7 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
         CHANGING
           cv_cmd TYPE syucomm,
 
-      on_f4
-        IMPORTING
-          iv_code_scan TYPE abap_bool OPTIONAL,
+      on_f4,
 
       code_scan_f4,
 
@@ -207,28 +200,6 @@ CLASS lcl_fld_value_alv DEFINITION FINAL.
 
       sel_screen_show.
 ENDCLASS.                    "lcl_fld_value_alv DEFINITION
-
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-CLASS lcl_scr_free_sel DEFINITION FINAL.
-  PUBLIC SECTION.
-    CLASS-DATA:
-      mo_instance TYPE REF TO lcl_scr_free_sel.
-
-    CLASS-METHODS:
-      get_instance RETURNING VALUE(ro_instance) TYPE REF TO lcl_scr_free_sel.
-
-    METHODS:
-      pbo
-        IMPORTING
-          it_dsfldnum TYPE tt_rsdsfldnum, "#EC NEEDED
-
-      pai
-        IMPORTING
-          it_dsfldnum TYPE tt_rsdsfldnum  "#EC NEEDED
-        CHANGING
-          cv_cmd      TYPE syucomm.
-ENDCLASS.
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*

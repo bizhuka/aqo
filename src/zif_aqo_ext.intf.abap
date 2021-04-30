@@ -1,6 +1,7 @@
 interface ZIF_AQO_EXT
   public .
 
+  type-pools ABAP .
 
   class-methods BEFORE_OPTION_SAVE
     importing

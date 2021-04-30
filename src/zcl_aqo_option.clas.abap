@@ -6,7 +6,6 @@ class ZCL_AQO_OPTION definition
 
 public section.
   type-pools ABAP .
-
   data MS_DB_ITEM type ZTAQO_OPTION read-only .
 
   class-methods CREATE
@@ -75,6 +74,17 @@ private section.
       !IV_NAME type CSEQUENCE
     returning
       value(RR_DATA) type ref to DATA .
+  class-methods _CHECK_ABAP_DECLARATION
+    importing
+      !IO_OPTION type ref to ZCL_AQO_OPTION
+      !IR_DATA type ref to DATA
+      !IO_DATA type ref to OBJECT
+      !IV_REPAIR type ABAP_BOOL
+    changing
+      !CT_FIELD_VALUE type ZCL_AQO_HELPER=>TT_FIELD_VALUE
+      !CV_CHANGED type ABAP_BOOL
+    raising
+      ZCX_AQO_EXCEPTION .
 ENDCLASS.
 
 
@@ -183,7 +193,7 @@ METHOD create.
 
 **********************************************************************
   " read current values and check them
-  lcl_helper=>check_abap_declaration(
+  _check_abap_declaration(
    EXPORTING
      io_option      = ro_opt
      io_data        = io_data
@@ -551,23 +561,196 @@ ENDMETHOD.
 
 
 METHOD transport.
-  DATA:
-    lv_task TYPE e070-trkorr.
-
   " No need to transport
   IF ms_db_item-package_id CP '$*'.
     rv_info = `No need to transport temporary options`.
     RETURN.
   ENDIF.
 
+  " Already supplied by UI5 interface ?
+  DATA lv_task TYPE e070-trkorr.
   lv_task = iv_task.
-  zcl_aqo_menu_handler=>check_in_request(
-   EXPORTING
-     iv_table_name = 'ZTAQO_OPTION'
-     iv_key1       = ms_db_item-package_id
-     iv_key2       = ms_db_item-option_id
-   CHANGING
-     cv_task       = lv_task
-     cv_ok_message = rv_info ).
+
+  zcl_aqo_helper=>find_request( EXPORTING iv_table_name = 'ZTAQO_OPTION'
+                                          iv_key1       = ms_db_item-package_id
+                                          iv_key2       = ms_db_item-option_id
+                                CHANGING  cv_task       = lv_task
+                                          cv_ok_message = rv_info ).
+ENDMETHOD.
+
+
+METHOD _check_abap_declaration.
+  DATA:
+    lv_in_editor      TYPE abap_bool,
+    lo_struc          TYPE REF TO cl_abap_structdescr,
+    lo_class          TYPE REF TO cl_abap_classdescr,
+    ls_comp           TYPE REF TO abap_compdescr,
+    ls_attr           TYPE REF TO abap_attrdescr,
+    lv_name           TYPE string,
+    lv_field_name     TYPE abap_attrname,
+    lt_friend         TYPE abap_frndtypes_tab,
+    lv_is_stat        TYPE abap_bool,
+    lt_declared_field TYPE zcl_aqo_helper=>abap_attrname_tab,
+    lr_unique_type    TYPE REF TO zcl_eui_type=>tt_unique_type,
+    lo_error          TYPE REF TO zcx_eui_exception.
+
+  " No error in editor
+  lv_in_editor = zcl_aqo_helper=>is_in_editor( ).
+
+**********************************************************************
+  " №1 Based on class
+  IF io_data IS NOT INITIAL.
+    lo_class ?= cl_abap_classdescr=>describe_by_object_ref( io_data ).
+    lv_name = lo_class->get_relative_name( ).
+
+    " Check class
+    lt_friend = lo_class->get_friend_types( ).
+    READ TABLE lt_friend TRANSPORTING NO FIELDS
+     WITH KEY table_line->absolute_name = '\CLASS=ZCL_AQO_OPTION'.
+    IF sy-subrc <> 0.
+      MESSAGE s014(zaqo_message) WITH lv_name INTO sy-msgli.
+      zcx_aqo_exception=>raise_sys_error( ).
+    ENDIF.
+
+    " name type_kind length decimals
+    lv_is_stat = abap_undefined.
+    LOOP AT lo_class->attributes REFERENCE INTO ls_attr
+       WHERE visibility   = cl_abap_objectdescr=>public
+         AND is_read_only = abap_true
+         AND is_inherited = abap_false
+         AND is_constant  = abap_false
+         " AND is_class     = abap_false  Also initialize class data
+         AND is_virtual   = abap_false.
+
+      " Check instance or static
+      IF lv_is_stat <> abap_undefined AND lv_is_stat <> ls_attr->is_class.
+        MESSAGE s014(zaqo_message) WITH ls_attr->name INTO sy-msgli.
+        zcx_aqo_exception=>raise_sys_error( ).
+      ENDIF.
+      lv_is_stat = ls_attr->is_class.
+
+      " And add to list
+      INSERT ls_attr->name INTO TABLE lt_declared_field.
+    ENDLOOP.
+  ENDIF.
+
+**********************************************************************
+  " №2 Based on structure
+  IF ir_data IS NOT INITIAL.
+    lo_struc ?= cl_abap_structdescr=>describe_by_data_ref( ir_data ).
+
+    " name type_kind length decimals
+    LOOP AT lo_struc->components REFERENCE INTO ls_comp.
+      " And add to list
+      lv_field_name = ls_comp->name.
+      INSERT lv_field_name INTO TABLE lt_declared_field.
+    ENDLOOP.
+  ENDIF.
+
+**********************************************************************
+  " Check abap declaration
+**********************************************************************
+  DATA:
+    lr_data         TYPE REF TO data,
+    lr_new_field    TYPE REF TO abap_attrname,
+    lt_editor_field LIKE lt_declared_field,
+    ls_field_value  TYPE zcl_aqo_helper=>ts_field_value,
+    lr_field_value  TYPE REF TO zcl_aqo_helper=>ts_field_value,
+    ls_old          TYPE REF TO zcl_eui_type=>ts_field_desc,
+    lv_value        TYPE string.
+  FIELD-SYMBOLS:
+    <lv_value> TYPE any.
+
+  " Just show warning
+  IF iv_repair = abap_true AND lv_in_editor <> abap_true.
+    MESSAGE s029(zaqo_message) DISPLAY LIKE 'W'.
+  ENDIF.
+
+  " Check declarations
+  LOOP AT ct_field_value REFERENCE INTO lr_field_value.
+    " Is not declared in ABAP code
+    DELETE lt_declared_field WHERE table_line = lr_field_value->name.
+    IF sy-subrc <> 0.
+      INSERT lr_field_value->name INTO TABLE lt_editor_field.
+      CONTINUE.
+    ENDIF.
+
+    " Get from declaration
+    lr_data = io_option->get_abap_value(
+       io_data = io_data
+       ir_data = ir_data
+       iv_name = lr_field_value->name ).
+    ASSIGN lr_data->* TO <lv_value>.
+
+    " Check existing decalration with editor field
+    TRY.
+        ls_field_value-field_desc = zcl_eui_type=>get_field_desc(
+            iv_field_name = lr_field_value->name
+            iv_data       = <lv_value> ).
+      CATCH zcx_eui_exception INTO lo_error.
+        zcx_aqo_exception=>raise_sys_error( io_error = lo_error ).
+    ENDTRY.
+
+    " Compare each existing field
+    GET REFERENCE OF lr_field_value->field_desc INTO ls_old.
+    lcl_helper=>compare_2_fields(
+     EXPORTING
+       is_new     = ls_field_value-field_desc " abap code declaration
+       iv_repair  = iv_repair
+       cs_old     = ls_old
+     CHANGING
+       cv_changed = cv_changed ).
+  ENDLOOP.
+
+  " ERROR - IF lines( mt_field_value ) > lines( lt_declared_field )
+  IF lv_in_editor <> abap_true AND lt_editor_field IS NOT INITIAL.
+    " Dont't have fields in abap source code
+    " ---> lt_editor_field[]
+    IF 1 = 2.
+      MESSAGE s027(zaqo_message) WITH '' '' '' ''.
+    ENDIF.
+
+    " Show error
+    zcl_aqo_helper=>message_with_fields(
+     it_field  = lt_editor_field[]
+     iv_number = 027 ).
+    zcx_aqo_exception=>raise_sys_error( ).
+  ENDIF.
+
+**********************************************************************
+  " OK - add description one by one (have something new in ABAP code)
+  " IF lines( mt_field_value ) < lines( lt_declared_field )
+  CREATE DATA lr_unique_type.
+  LOOP AT lt_declared_field REFERENCE INTO lr_new_field.
+    cv_changed = abap_true.
+
+    " Get from declaration
+    lr_data = io_option->get_abap_value(
+       io_data = io_data
+       ir_data = ir_data
+       iv_name = lr_new_field->* ).
+    ASSIGN lr_data->* TO <lv_value>.
+    lv_value = zcl_eui_conv=>to_json( <lv_value> ).
+
+    " Field cescription
+    TRY.
+        ls_field_value-field_desc = zcl_eui_type=>get_field_desc(
+          iv_field_name  = lr_new_field->*
+          iv_data        = <lv_value>
+          ir_unique_type = lr_unique_type ).
+      CATCH zcx_eui_exception INTO lo_error.
+        zcx_aqo_exception=>raise_sys_error( io_error = lo_error ).
+    ENDTRY.
+
+    " Add to history
+    io_option->add_history_value(
+     EXPORTING
+       iv_value       = lv_value
+     CHANGING
+       cs_field_value = ls_field_value ).
+
+    " And finally add new field option
+    INSERT ls_field_value INTO TABLE ct_field_value.
+  ENDLOOP.
 ENDMETHOD.
 ENDCLASS.

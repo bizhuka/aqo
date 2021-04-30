@@ -1,5 +1,8 @@
 REPORT zaqo_tester.
 
+TYPE-POOLS:
+ abap.
+
 PARAMETERS:
  p_cl_opt AS CHECKBOX.
 
@@ -32,7 +35,7 @@ TYPES:
   BEGIN OF ts_main_opt,
     meins         TYPE meins,                " Char + conversion exit
     edit_mask     TYPE text30,               " CHAR
-    pack_blocked  TYPE xsdboolean,           " ABAP_BOOL     swd_blocks
+    pack_blocked  TYPE os_boolean,           " ABAP_BOOL     swd_blocks
     msg_count     TYPE syst-tabix,           " Number
     due_date      TYPE syst-datum,           " D
     due_time      TYPE syst-uzeit,           " T
