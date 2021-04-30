@@ -348,11 +348,11 @@ CLASS lcl_opt IMPLEMENTATION.
 
   METHOD code_scan_f4.
     MESSAGE 'Check existence of option by code scanning. For search help use upper field!'(ms1) TYPE 'S' DISPLAY LIKE 'W'.
-    CHECK p_pack IS NOT INITIAL AND p_opt_id IS NOT INITIAL.
 
     " Read from memory
     GET PARAMETER ID 'ZAQO_PACKAGE_ID' FIELD p_pack.
     GET PARAMETER ID 'ZAQO_OPTION_ID'  FIELD p_opt_id.
+    CHECK p_pack IS NOT INITIAL AND p_opt_id IS NOT INITIAL.
 
     " All usage
     DATA lt_usage TYPE zcl_aqo_helper=>tt_usage.
