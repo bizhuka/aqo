@@ -349,8 +349,7 @@ METHOD _about.
     lv_input = '1'.
   ELSE.
     lv_input = '0'.
-    APPEND 'MODIFY'      TO lo_screen->ms_status-exclude.
-    APPEND 'DEV_INFO'    TO lo_screen->ms_status-exclude.
+    APPEND 'MODIFY' TO lo_screen->ms_status-exclude.
   ENDIF.
 
   " Static PF status no need on_pbo_event.
@@ -364,7 +363,7 @@ METHOD _about.
   lo_screen->customize( name = 'P_2_MENU'   input = lv_input ).
 
   " As popup
-  lo_screen->popup( iv_col_end = 114 ).
+  lo_screen->popup( iv_col_end = 87 ).
 
   " Process action
   lv_cmd = lo_screen->show(
@@ -414,17 +413,6 @@ METHOD _about_on_pai.
        iv_menu_mode   = ls_dyn_scr->p_2_menu ).
 
       cv_close->* = abap_true.
-
-    WHEN 'DEV_INFO'.
-      cv_close->* = abap_true.
-
-      " Show online documentation in browser
-      CALL FUNCTION 'CALL_BROWSER'
-        EXPORTING
-          url    = 'https://github.com/bizhuka/aqo/wiki' "#EC NOTEXT
-        EXCEPTIONS
-          OTHERS = 6.
-      CHECK sy-subrc = 0.
 
       " Ok or cancel ?
     WHEN OTHERS.

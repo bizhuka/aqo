@@ -13,6 +13,7 @@ CLASS lcl_table_comp_alv       DEFINITION DEFERRED.
 CLASS lcl_table_alv            DEFINITION DEFERRED.
 CLASS lcl_string_memo          DEFINITION DEFERRED.
 CLASS lcl_logs_alv             DEFINITION DEFERRED.
+CLASS lcl_online_docu          DEFINITION DEFERRED.
 
 
 DATA:
@@ -27,7 +28,6 @@ TYPES:
 
 *&---------------------------------------------------------------------*
 *&---------------------------------------------------------------------*
-
 CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
    lcl_fld_value_alv lcl_table_alv lcl_table_comp_alv lcl_string_memo lcl_logs_alv.
   PUBLIC SECTION.
@@ -57,6 +57,7 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
       mv_read_only TYPE abap_bool, " Highest priority
       mv_is_dev    TYPE abap_bool,
       mo_eui_menu  TYPE REF TO zcl_eui_menu,
+      mo_odocu     TYPE REF TO lcl_online_docu,
       mt_f4_tables TYPE lvc_t_dral.
 
     CLASS-METHODS:
@@ -103,7 +104,6 @@ CLASS lcl_opt DEFINITION INHERITING FROM zcl_aqo_option ABSTRACT FINAL FRIENDS
           cv_cmd TYPE syucomm,
 
       on_f4,
-
       code_scan_f4,
 
       set_menu_visible
@@ -345,3 +345,21 @@ DEFINE add_fcat_field.
            ls_fieldcat->reptext = ls_fieldcat->coltext = &2.
   ENDIF.
 END-OF-DEFINITION.
+
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+
+CLASS lcl_online_docu DEFINITION FINAL.
+  PUBLIC SECTION.
+    DATA:
+      mo_menu TYPE REF TO zcl_eui_menu.
+
+    METHODS:
+      constructor,
+
+      _on_function_selected FOR EVENT function_selected OF cl_gui_toolbar "#EC CALLED
+        IMPORTING
+          fcode,
+
+      hide_button.
+ENDCLASS.

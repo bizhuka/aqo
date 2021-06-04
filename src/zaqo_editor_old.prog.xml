@@ -128,12 +128,6 @@
       <PFK_CODE>000003</PFK_CODE>
       <CODE>0001</CODE>
       <NO>02</NO>
-      <PFNO>14</PFNO>
-     </RSMPE_BUT>
-     <RSMPE_BUT>
-      <PFK_CODE>000003</PFK_CODE>
-      <CODE>0001</CODE>
-      <NO>03</NO>
       <PFNO>12</PFNO>
      </RSMPE_BUT>
     </BUT>
@@ -415,6 +409,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>ODO</KEY>
+     <ENTRY>Online documentation</ENTRY>
+     <LENGTH>40</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>OPT</KEY>
      <ENTRY>Parameters</ENTRY>
      <LENGTH>20</LENGTH>
@@ -643,6 +643,12 @@
       </item>
       <item>
        <ID>I</ID>
+       <KEY>ODO</KEY>
+       <ENTRY>Онлайн документация</ENTRY>
+       <LENGTH>40</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
        <KEY>OPT</KEY>
        <ENTRY>Параметры</ENTRY>
        <LENGTH>20</LENGTH>
@@ -696,132 +702,6 @@
       </item>
       <item>
        <ID>S</ID>
-       <KEY>P_2_DATE</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>20</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_2_DESC</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>18</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_2_MENU</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>17</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_2_NTXT</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>17</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_2_OPT</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>17</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_2_PACK</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>15</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_2_PREV</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>29</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_3_DESC</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>19</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_3_FILE</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>22</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_3_OPT</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>17</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_3_PACK</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>15</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_3_VERS</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>31</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_3_VIS</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>28</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_4_KEYD</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>27</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_4_KIND</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>18</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_4_UNQ</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>14</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_FNAME</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>12</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>P_FTYPE</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>21</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
        <KEY>P_OPT_ID</KEY>
        <ENTRY>.</ENTRY>
        <LENGTH>17</LENGTH>
@@ -832,13 +712,6 @@
        <KEY>P_PACK</KEY>
        <ENTRY>.</ENTRY>
        <LENGTH>15</LENGTH>
-       <SPLIT>D</SPLIT>
-      </item>
-      <item>
-       <ID>S</ID>
-       <KEY>S_4_KEY</KEY>
-       <ENTRY>.</ENTRY>
-       <LENGTH>18</LENGTH>
        <SPLIT>D</SPLIT>
       </item>
      </TEXTPOOL>

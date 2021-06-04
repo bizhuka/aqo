@@ -8,6 +8,11 @@ CLASS lcl_opt IMPLEMENTATION.
       zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!'(ms2) ).
     ENDIF.
 
+    " Mandt is open
+    mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
+    " Button IN DEV
+    CREATE OBJECT mo_odocu.
+
     DATA lv_command TYPE syucomm.
     GET PARAMETER ID: 'ZAQO_PACKAGE_ID' FIELD p_pack,
                       'ZAQO_OPTION_ID'  FIELD p_opt_id,
@@ -64,6 +69,8 @@ CLASS lcl_opt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD start_of_selection.
+    mo_odocu->hide_button( ).
+
     " Try to create
     DATA lo_err TYPE REF TO zcx_aqo_exception.
     TRY.
@@ -74,9 +81,6 @@ CLASS lcl_opt IMPLEMENTATION.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
-
-    " Mandt is open
-    mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
 
     IF mo_option->lock( ) <> abap_true.
       mv_read_only = abap_true.
@@ -288,51 +292,41 @@ CLASS lcl_opt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD on_f4.
-    DATA lt_option TYPE STANDARD TABLE OF zsaqo_option.
-    SELECT package_id option_id created_uname created_name_txt created_date   "#EC CI_NOWHERE   " No search helps for easy activation in ABAP
-           description include line menu_mode prev_value_cnt fields INTO CORRESPONDING FIELDS OF TABLE lt_option
-    FROM ztaqo_option.
-
-    FIELD-SYMBOLS <ls_option> LIKE LINE OF lt_option.
-    LOOP AT lt_option ASSIGNING <ls_option>.
-      <ls_option>-option_size = xstrlen( <ls_option>-fields ) / 1024.
-    ENDLOOP.
-
-    DATA lt_return TYPE STANDARD TABLE OF ddshretval.
-    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    " Show SH
+    DATA lt_ret  TYPE STANDARD TABLE OF ddshretval.
+    CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'
       EXPORTING
-        retfield         = 'PACKAGE_ID'
-        dynpprog         = sy-repid
-        dynpnr           = sy-dynnr
-        callback_program = sy-repid
-        callback_form    = 'F4_CALLBACK'
-        value_org        = 'S'
+        tabname    = ''             " No need returns all fields in SH exit   "#EC NOTEXT
+        fieldname  = ''             "#EC NOTEXT
+        searchhelp = 'ZHAQO_OPTION' "#EC NOTEXT
+        dynpprog   = sy-repid
+        dynpnr     = sy-dynnr
       TABLES
-        value_tab        = lt_option
-        return_tab       = lt_return
+        return_tab = lt_ret
       EXCEPTIONS
-        OTHERS           = 3.
-    CHECK sy-subrc = 0 AND lt_return[] IS NOT INITIAL.
+        OTHERS     = 5.
+    CHECK sy-subrc = 0.
 
-    " Write back to dynpro
+    " UI fields
     DATA lt_dynp TYPE STANDARD TABLE OF dynpread.
     DATA ls_dynp TYPE REF TO dynpread.
 
-    DATA lr_return TYPE REF TO ddshretval.
-    LOOP AT lt_return REFERENCE INTO lr_return WHERE fieldname = 'F0001' OR fieldname = 'F0002'.
+    " Write back
+    DATA ls_ret  TYPE REF TO ddshretval.
+    LOOP AT lt_ret REFERENCE INTO ls_ret WHERE fieldname = 'PACKAGE_ID' OR fieldname = 'OPTION_ID'.
       " Update 2 fields
       APPEND INITIAL LINE TO lt_dynp REFERENCE INTO ls_dynp.
-      ls_dynp->fieldvalue = lr_return->fieldval.
+      ls_dynp->fieldvalue = ls_ret->fieldval.
 
-      CASE lr_return->fieldname.
-        WHEN 'F0001'.                                  "#EC NOTEXT
-          p_pack   = lr_return->fieldval.
-          SET PARAMETER ID 'ZAQO_PACKAGE_ID' FIELD lr_return->fieldval.
+      CASE ls_ret->fieldname.
+        WHEN 'PACKAGE_ID'.                                  "#EC NOTEXT
+          p_pack   = ls_ret->fieldval.
+          SET PARAMETER ID 'ZAQO_PACKAGE_ID' FIELD ls_ret->fieldval.
           ls_dynp->fieldname  = 'P_PACK'.
 
-        WHEN 'F0002'.                                   "#EC NOTEXT
-          p_opt_id = lr_return->fieldval.
-          SET PARAMETER ID 'ZAQO_OPTION_ID'  FIELD lr_return->fieldval.
+        WHEN 'OPTION_ID'.                                   "#EC NOTEXT
+          p_opt_id = ls_ret->fieldval.
+          SET PARAMETER ID 'ZAQO_OPTION_ID'  FIELD ls_ret->fieldval.
           ls_dynp->fieldname  = 'P_OPT_ID'.
       ENDCASE.
     ENDLOOP.
@@ -399,64 +393,3 @@ CLASS lcl_opt IMPLEMENTATION.
     lo_container->set_visible( iv_visible ).
   ENDMETHOD.
 ENDCLASS.                    "LCL_MAIN IMPLEMENTATION
-
-*&---------------------------------------------------------------------*
-*&---------------------------------------------------------------------*
-FORM f4_callback TABLES   record_tab  STRUCTURE seahlpres
-                 CHANGING shlp        TYPE      shlp_descr
-                          callcontrol LIKE      ddshf4ctrl.
-  callcontrol-retallflds = abap_true.
-
-  FIELD-SYMBOLS <ls_descr> LIKE LINE OF shlp-fielddescr.
-  LOOP AT shlp-fielddescr ASSIGNING <ls_descr> WHERE lfieldname = 'FIELDS'.
-    DELETE: shlp-fieldprop  WHERE fieldname = <ls_descr>-fieldname,
-            shlp-fielddescr WHERE fieldname = <ls_descr>-fieldname.
-  ENDLOOP.
-
-  FIELD-SYMBOLS <ls_selopt> LIKE LINE OF shlp-selopt[].
-  DEFINE add_filter.
-    IF &1 IS NOT INITIAL.
-      APPEND INITIAL LINE TO shlp-selopt ASSIGNING <ls_selopt>.
-      <ls_selopt>-shlpfield = &2.
-      <ls_selopt>-sign      = 'I'.
-      <ls_selopt>-low       = &1.
-      IF &1 CS '*'.
-        <ls_selopt>-option = 'CP'.
-      ELSE.
-        <ls_selopt>-option = 'EQ'.
-      ENDIF.
-    ENDIF.
-  END-OF-DEFINITION.
-
-  PERFORM get_current_screen_value USING    'P_PACK' '1000'
-                                   CHANGING p_pack.
-  add_filter p_pack   'F0001'.
-  add_filter p_opt_id 'F0002'.
-ENDFORM.
-
-FORM get_current_screen_value  USING    l_screen_field  TYPE progname
-                                        l_screen_number TYPE sydynnr
-                               CHANGING l_screen_value  TYPE any.
-
-  DATA it_dynpfields TYPE STANDARD TABLE OF dynpread.
-  DATA wa_dynpfields TYPE dynpread.
-
-  wa_dynpfields-fieldname = l_screen_field.
-  APPEND wa_dynpfields TO it_dynpfields.
-
-  CALL FUNCTION 'DYNP_VALUES_READ'
-    EXPORTING
-      dyname             = sy-cprog
-      dynumb             = l_screen_number
-      translate_to_upper = 'X'
-    TABLES
-      dynpfields         = it_dynpfields
-    EXCEPTIONS
-      OTHERS             = 11.
-  CHECK sy-subrc = 0.
-
-  READ TABLE it_dynpfields INTO wa_dynpfields
-    WITH KEY fieldname = l_screen_field.
-  CHECK sy-subrc = 0.
-  l_screen_value = wa_dynpfields-fieldvalue.
-ENDFORM.

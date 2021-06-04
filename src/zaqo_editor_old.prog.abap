@@ -15,3 +15,4 @@ INCLUDE zaqo_editor_old_table_alv.
 INCLUDE zaqo_editor_old_str_memo.
 INCLUDE zaqo_editor_old_logs_alv.
 INCLUDE zaqo_editor_old_gid.
+INCLUDE zaqo_editor_old_odocu.

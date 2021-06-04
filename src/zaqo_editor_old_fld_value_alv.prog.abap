@@ -234,7 +234,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     " As popup
     lo_screen->popup( iv_col_beg  = 1
                       iv_row_beg  = 1
-                      iv_col_end  = 114
+                      iv_col_end  = 87
                       iv_row_end  = 30 ).
 
     " Check OK pressed
@@ -604,7 +604,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     " Always as popup ?
     lo_screen->popup( iv_col_beg  = 1
                       iv_row_beg  = 1
-                      iv_col_end  = 114
+                      iv_col_end  = 87
                       iv_row_end  = 30 ).
 
     " Hide
