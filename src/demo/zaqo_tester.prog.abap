@@ -35,12 +35,12 @@ TYPES:
   BEGIN OF ts_main_opt,
     meins         TYPE meins,                " Char + conversion exit
     edit_mask     TYPE text30,               " CHAR
-    pack_blocked  TYPE os_boolean,           " ABAP_BOOL     swd_blocks
+    combo         TYPE laspez,               " Listbox based on domain
+    pack_blocked  TYPE os_boolean,           " Checkbox based on domain XSDBOOLEAN or OS_BOOLEAN (in ABAP 7.00)
     msg_count     TYPE syst-tabix,           " Number
     due_date      TYPE syst-datum,           " D
     due_time      TYPE syst-uzeit,           " T
     " datetime      TYPE xsddatetime_local,    " datetime NO component in OLD UI
-    combo         TYPE laspez,
     allowed_bukrs TYPE RANGE OF bukrs,  " Range
     blocked_bukrs TYPE RANGE OF bukrs,  " Range 2
     some_numbers  TYPE RANGE OF syst-tabix,
