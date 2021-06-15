@@ -18,7 +18,7 @@ CLASS lcl_online_docu IMPLEMENTATION.
     lr_menu->icon     = icon_message_information_small.
 
     mo_menu->create_toolbar( it_menu  = lt_menu
-                                  iv_width = 190 ).
+                             iv_width = 200 ).
   ENDMETHOD.
 
   METHOD _on_function_selected.
