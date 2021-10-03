@@ -19,8 +19,12 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
 
 **********************************************************************
     " Prepare layout
+    DATA ls_layout TYPE lvc_s_layo.
     " Just few fileds are edtiable ---> ls_layout-edit = abap_false
-
+    ls_layout-smalltitle = abap_true.
+    zcl_aqo_helper=>get_se10_history( EXPORTING iv_package_id     = p_pack
+                                                iv_option_id      = p_opt_id
+                                      IMPORTING ev_last_task_info = ls_layout-grid_title ).
 **********************************************************************
     " Variant
     DATA ls_variant TYPE disvariant.
@@ -104,7 +108,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
       EXPORTING
         ir_table       = lr_table
         " grid parameters
-      " is_layout      = ls_layout
+        is_layout      = ls_layout
         is_variant     = ls_variant
         it_mod_catalog = lt_fieldcat
         it_toolbar     = lt_toolbar.
@@ -232,10 +236,9 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ENDIF.
 
     " As popup
-    lo_screen->popup( iv_col_beg  = 1
-                      iv_row_beg  = 1
-                      iv_col_end  = 87
-                      iv_row_end  = 30 ).
+    DATA lv_col_end TYPE i.
+    lo_screen->get_dimension( IMPORTING ev_col_end = lv_col_end ).
+    lo_screen->popup( iv_col_end  = lv_col_end ).
 
     " Check OK pressed
     CHECK lo_screen->show( ) = 'OK'.
@@ -602,10 +605,9 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     ENDLOOP.
 
     " Always as popup ?
-    lo_screen->popup( iv_col_beg  = 1
-                      iv_row_beg  = 1
-                      iv_col_end  = 87
-                      iv_row_end  = 30 ).
+    DATA lv_col_end TYPE i.
+    lo_screen->get_dimension( IMPORTING ev_col_end = lv_col_end ).
+    lo_screen->popup( iv_col_end  = lv_col_end ).
 
     " Hide
     lcl_opt=>set_menu_visible( abap_false ).

@@ -71,6 +71,7 @@ private section.
         view           TYPE ui_func VALUE '_VIEW',
 
         transport_root TYPE ui_func VALUE '_TR_ROOT',
+        se10_histiry   TYPE ui_func VALUE '_SE10_HISTORY',
         export         TYPE ui_func VALUE '_EXPORT',
         import         TYPE ui_func VALUE '_IMPORT',
         delete         TYPE ui_func VALUE '_DELETE',
@@ -139,6 +140,15 @@ private section.
       !IV_MENU_MODE type ZTAQO_OPTION-MENU_MODE optional
     returning
       value(RV_OK) type ABAP_BOOL .
+  methods _SE10_HISTORY
+    returning
+      value(RV_UPDATE) type ABAP_BOOL .
+  methods _ON_SE10_HOTSPOT
+    for event HOTSPOT_CLICK of CL_GUI_ALV_GRID
+    importing
+      !SENDER
+      !E_ROW_ID
+      !E_COLUMN_ID .
   methods _EXPORT
     returning
       value(RV_UPDATE) type ABAP_BOOL .
@@ -363,7 +373,9 @@ METHOD _about.
   lo_screen->customize( name = 'P_2_MENU'   input = lv_input ).
 
   " As popup
-  lo_screen->popup( iv_col_end = 87 ).
+  DATA lv_col_end TYPE i.
+  lo_screen->get_dimension( IMPORTING ev_col_end = lv_col_end ).
+  lo_screen->popup( iv_col_end = lv_col_end ).
 
   " Process action
   lv_cmd = lo_screen->show(
@@ -770,6 +782,17 @@ METHOD _menu_get_buttons.
   <ls_menu>-par_function = mc_action-transport_root.
 
   APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
+  <ls_menu>-text         = <ls_menu>-quickinfo    = 'Transport history'(trh).
+  <ls_menu>-icon         = icon_export.
+  <ls_menu>-butn_type    = cntb_btype_button.
+  <ls_menu>-function     = mc_action-se10_histiry.
+  <ls_menu>-par_function = mc_action-transport_root.
+
+  APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
+  <ls_menu>-butn_type    = cntb_btype_sep.
+  <ls_menu>-par_function = mc_action-transport_root.
+
+  APPEND INITIAL LINE TO rt_menu ASSIGNING <ls_menu>.
   <ls_menu>-text         = <ls_menu>-quickinfo    = 'Export'(exp).
   <ls_menu>-icon         = icon_export.
   <ls_menu>-butn_type    = cntb_btype_button.
@@ -876,7 +899,7 @@ METHOD _menu_get_buttons.
           <ls_menu>-hide = abap_true.
         ENDIF.
 
-      WHEN mc_action-import OR mc_action-delete. " OR mc_action-transport  OR mc_action-save_in
+      WHEN mc_action-import OR mc_action-delete OR mc_action-se10_histiry.
         IF is_state-option_exist <> abap_true.
           <ls_menu>-hide = abap_true.
         ENDIF.
@@ -943,6 +966,27 @@ METHOD _new.
 ENDMETHOD.
 
 
+METHOD _on_se10_hotspot.
+  DATA lr_table TYPE REF TO zcl_aqo_helper=>tt_se10_info.
+  lr_table ?= zcl_eui_conv=>get_grid_table( sender ).
+
+  DATA lr_line TYPE REF TO zcl_aqo_helper=>ts_se10_info.
+  READ TABLE lr_table->* REFERENCE INTO lr_line INDEX e_row_id-index.
+  CHECK sy-subrc = 0.
+
+  CASE e_column_id-fieldname.
+    WHEN 'STRKORR'.
+      CALL FUNCTION 'TR_PRESENT_REQUEST'
+        EXPORTING
+          iv_trkorr = lr_line->strkorr.
+    WHEN 'AS4USER'.
+      CALL FUNCTION 'TR_SHOW_USER'
+        EXPORTING
+          iv_username = lr_line->as4user.
+  ENDCASE.
+ENDMETHOD.
+
+
 METHOD _read_locks.
   DATA:
     lv_garg TYPE seqg3-garg,
@@ -969,6 +1013,33 @@ METHOD _read_locks.
   CHECK sy-subrc = 0.
 
   MESSAGE s034(zaqo_message) WITH <ls_lock>-guname INTO rv_locked_text.
+ENDMETHOD.
+
+
+METHOD _se10_history.
+  DATA lr_table TYPE REF TO zcl_aqo_helper=>tt_se10_info.
+  zcl_aqo_helper=>get_se10_history( EXPORTING iv_package_id = mv_package_id
+                                              iv_option_id  = mv_option_id
+                                    IMPORTING er_table      = lr_table ).
+
+  DATA lt_catalog TYPE lvc_t_fcat.
+  DATA lr_catalog TYPE REF TO lvc_s_fcat.
+  APPEND INITIAL LINE TO lt_catalog REFERENCE INTO lr_catalog.
+  lr_catalog->fieldname = 'STRKORR'.
+  lr_catalog->hotspot   = abap_true.
+
+  APPEND INITIAL LINE TO lt_catalog REFERENCE INTO lr_catalog.
+  lr_catalog->fieldname = 'AS4USER'.
+  lr_catalog->hotspot   = abap_true.
+
+  DATA lo_alv TYPE REF TO zcl_eui_alv.
+  CREATE OBJECT lo_alv
+    EXPORTING
+      ir_table       = lr_table
+      it_mod_catalog = lt_catalog.
+  lo_alv->popup( ).
+  lo_alv->show( io_handler      = me
+                iv_handlers_map = '_ON_SE10_HOTSPOT' ).
 ENDMETHOD.
 
 

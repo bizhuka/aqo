@@ -249,10 +249,9 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     ENDIF.
 
     " As popup
-    lo_screen->popup( iv_col_beg  = 1
-                      iv_row_beg  = 1
-                      iv_col_end  = 87
-                      iv_row_end  = 30 ).
+    DATA lv_col_end TYPE i.
+    lo_screen->get_dimension( IMPORTING ev_col_end = lv_col_end ).
+    lo_screen->popup( iv_col_end  = lv_col_end ).
 
     " Check OK pressed
     CHECK lo_screen->show( ) = 'OK'.

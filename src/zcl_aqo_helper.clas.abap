@@ -7,7 +7,7 @@ public section.
 *"* public components of class ZCL_AQO_HELPER
 *"* do not include other source files here!!!
   type-pools ABAP .
-  CLASS zcl_eui_type DEFINITION LOAD.
+  class ZCL_EUI_TYPE definition load .
 
   types:
     abap_attrname_tab TYPE HASHED TABLE OF abap_attrname WITH UNIQUE KEY table_line .
@@ -47,6 +47,19 @@ public section.
     tt_e071 TYPE STANDARD TABLE OF e071 WITH DEFAULT KEY .
   types:
     tt_e071k TYPE STANDARD TABLE OF e071k WITH DEFAULT KEY .
+  types:
+    BEGIN OF ts_se10_info,
+      strkorr  TYPE e070-strkorr,
+      trkorr   TYPE e071k-trkorr,
+      as4user  TYPE e070-as4user,
+      as4date  TYPE e070-as4date,
+      as4time  TYPE e070-as4time,
+      "trstatus TYPE e070-trstatus,
+      ddtext   TYPE dd07t-ddtext,
+      as4text  TYPE e07t-as4text,
+    END OF ts_se10_info .
+  types:
+    tt_se10_info TYPE STANDARD TABLE OF ts_se10_info WITH DEFAULT KEY .
 
   class-methods IS_DEV_MANDT
     returning
@@ -110,6 +123,22 @@ public section.
       !CV_OK_MESSAGE type CSEQUENCE
     raising
       ZCX_AQO_EXCEPTION .
+  class-methods GET_REQUEST_INFO
+    importing
+      !IV_TABLE_NAME type CSEQUENCE
+      !IV_KEY1 type CLIKE optional
+      !IV_KEY2 type CLIKE optional
+      !IV_KEY3 type CLIKE optional
+    exporting
+      !ES_E071 type E071
+      !ES_E071K type E071K .
+  class-methods GET_SE10_HISTORY
+    importing
+      !IV_PACKAGE_ID type CSEQUENCE
+      !IV_OPTION_ID type CSEQUENCE
+    exporting
+      !ER_TABLE type ref to TT_SE10_INFO
+      !EV_LAST_TASK_INFO type CSEQUENCE .
 protected section.
 private section.
 
@@ -158,38 +187,12 @@ ENDMETHOD.
 
 METHOD find_request.
   DATA: ls_e071  TYPE e071, ls_e071k TYPE e071k.
-  " Always the same
-  ls_e071-pgmid = ls_e071k-pgmid = 'R3TR'.
-
-  " Create key for table
-  DATA: lv_off   TYPE i, lv_index TYPE char1, lv_name TYPE string.
-  DO 3 TIMES.
-    " Create name
-    lv_index = sy-index.
-    CONCATENATE 'IV_KEY' lv_index INTO lv_name.
-
-    " Is supplied
-    FIELD-SYMBOLS <lv_key> TYPE clike.
-    ASSIGN (lv_name) TO <lv_key>.
-    CHECK sy-subrc = 0 AND <lv_key> IS NOT INITIAL.
-
-    " Create key
-    DATA lv_len TYPE i.
-    DESCRIBE FIELD <lv_key> LENGTH lv_len IN CHARACTER MODE.
-    ls_e071k-tabkey+lv_off(lv_len)  = <lv_key>.
-
-    " Move to next
-    ADD lv_len TO lv_off.
-  ENDDO.
-
-  " Struc 1
-  ls_e071-object      = 'TABU'.
-  ls_e071-obj_name    = iv_table_name.
-  ls_e071-objfunc     = 'K'.
-
-  " Struc 2
-  ls_e071k-object     = ls_e071k-mastertype = 'TABU'.
-  ls_e071k-objname    = ls_e071k-mastername = iv_table_name.
+  get_request_info( EXPORTING iv_table_name = iv_table_name
+                              iv_key1       = iv_key1
+                              iv_key2       = iv_key2
+                              iv_key3       = iv_key3
+                    IMPORTING es_e071       = ls_e071
+                              es_e071k      = ls_e071k ).
 
   " Find new task or this is OK?
   IF cv_task IS INITIAL.
@@ -312,6 +315,102 @@ METHOD get_position.
     ENDIF.
     EXIT.
   ENDDO.
+ENDMETHOD.
+
+
+METHOD get_request_info.
+  CLEAR: es_e071,
+         es_e071k.
+
+  " Always the same
+  es_e071-pgmid = es_e071k-pgmid = 'R3TR'.
+
+  " Create key for table
+  DATA: lv_off   TYPE i, lv_index TYPE char1, lv_name TYPE string.
+  DO 3 TIMES.
+    " Create name
+    lv_index = sy-index.
+    CONCATENATE 'IV_KEY' lv_index INTO lv_name.
+
+    " Is supplied
+    FIELD-SYMBOLS <lv_key> TYPE clike.
+    ASSIGN (lv_name) TO <lv_key>.
+    CHECK sy-subrc = 0 AND <lv_key> IS NOT INITIAL.
+
+    " Create key
+    DATA lv_len TYPE i.
+    DESCRIBE FIELD <lv_key> LENGTH lv_len IN CHARACTER MODE.
+    es_e071k-tabkey+lv_off(lv_len)  = <lv_key>.
+
+    " Move to next
+    ADD lv_len TO lv_off.
+  ENDDO.
+
+  " Struc 1
+  es_e071-object      = 'TABU'.
+  es_e071-obj_name    = iv_table_name.
+  es_e071-objfunc     = 'K'.
+
+  " Struc 2
+  es_e071k-object     = es_e071k-mastertype = 'TABU'.
+  es_e071k-objname    = es_e071k-mastername = iv_table_name.
+ENDMETHOD.
+
+
+METHOD get_se10_history.
+  DATA: ls_e071k TYPE e071k.
+  get_request_info(
+    EXPORTING iv_table_name = 'ZTAQO_OPTION'
+              iv_key1       = iv_package_id
+              iv_key2       = iv_option_id
+    IMPORTING es_e071k      = ls_e071k ).
+
+  " Previously mandt specific
+  DATA lv_tabkey TYPE string.
+  CONCATENATE '%' ls_e071k-tabkey INTO lv_tabkey.
+
+  FIELD-SYMBOLS <lt_history> TYPE tt_se10_info.
+  CREATE DATA er_table.
+  ASSIGN er_table->* TO <lt_history>.
+
+  SELECT DISTINCT h~strkorr t~trkorr
+                  h~as4user h~as4date h~as4time dom~ddtext " h~trstatus
+                  d~as4text INTO TABLE <lt_history>
+  FROM              e071k AS t
+    INNER JOIN      e070  AS h ON h~trkorr = t~trkorr
+    LEFT OUTER JOIN e07t  AS d ON d~trkorr = h~trkorr
+                              AND d~langu  = sy-langu
+    LEFT OUTER JOIN dd07t AS dom ON dom~domname    = 'TRSTATUS'
+                                AND dom~ddlanguage = sy-langu
+                                AND dom~as4local   = 'A'
+                                AND dom~domvalue_l = h~trstatus
+                                AND dom~as4vers    = 0000
+  WHERE t~pgmid      EQ   ls_e071k-pgmid
+    AND t~object     EQ   ls_e071k-object
+    AND t~objname    EQ   ls_e071k-objname
+    AND t~mastertype EQ   ls_e071k-mastertype
+    AND t~mastername EQ   ls_e071k-mastername
+    AND t~tabkey     LIKE lv_tabkey
+    AND h~strkorr    NE   space
+  ORDER BY as4date DESCENDING
+           as4time DESCENDING.
+
+**********************************************************************
+  " For title
+  CLEAR ev_last_task_info.
+  CHECK ev_last_task_info IS REQUESTED.
+
+  FIELD-SYMBOLS <ls_last_info> TYPE ts_se10_info.
+  READ TABLE <lt_history> INDEX 1 ASSIGNING <ls_last_info>.
+  CHECK sy-subrc = 0.
+
+  DATA lv_as4date TYPE text10.
+  WRITE <ls_last_info>-as4date TO lv_as4date.
+
+  CONCATENATE 'Last changed by'(lch) <ls_last_info>-as4user
+              'on'(on1)              lv_as4date
+              <ls_last_info>-strkorr '-' <ls_last_info>-ddtext
+              INTO ev_last_task_info SEPARATED BY space.
 ENDMETHOD.
 
 
