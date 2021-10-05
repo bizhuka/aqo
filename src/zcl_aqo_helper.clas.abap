@@ -375,12 +375,12 @@ METHOD get_se10_history.
 
   SELECT DISTINCT h~strkorr t~trkorr
                   h~as4user h~as4date h~as4time dom~ddtext " h~trstatus
-                  d~as4text INTO TABLE <lt_history>
+                  d~as4text UP TO 100 ROWS INTO TABLE <lt_history>
   FROM              e071k AS t
     INNER JOIN      e070  AS h ON h~trkorr = t~trkorr
     LEFT OUTER JOIN e07t  AS d ON d~trkorr = h~trkorr
                               AND d~langu  = sy-langu
-    LEFT OUTER JOIN dd07t AS dom ON dom~domname    = 'TRSTATUS'
+    LEFT OUTER JOIN dd07t AS dom ON dom~domname    = 'TRSTATUS' "#EC "#EC CI_BUFFJOIN
                                 AND dom~ddlanguage = sy-langu
                                 AND dom~as4local   = 'A'
                                 AND dom~domvalue_l = h~trstatus
