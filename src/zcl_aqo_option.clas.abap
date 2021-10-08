@@ -616,11 +616,17 @@ METHOD _check_abap_declaration.
     lv_is_stat = abap_undefined.
     LOOP AT lo_class->attributes REFERENCE INTO ls_attr
        WHERE visibility   = cl_abap_objectdescr=>public
-         AND is_read_only = abap_true
-         AND is_inherited = abap_false
+         AND is_read_only = abap_true " <--- Mark as READ-ONLY attributes
          AND is_constant  = abap_false
-         " AND is_class     = abap_false  Also initialize class data
-         AND is_virtual   = abap_false.
+         AND is_virtual   = abap_false
+
+         " initialize CLASS-DATA or DATA (but not both!)
+         " AND is_class     = abap_false
+
+         " super class & child class can have different options! (in that case use only STATIC attributes)
+         " Example 1 - IO_DATA = NEW ZCL_SUPER( ), 2 - IO_DATA = NEW ZCL_CHILD( )
+         " Or use IR_DATA = ... instead of IO_DATA
+         AND is_inherited = abap_false.
 
       " Check instance or static
       IF lv_is_stat <> abap_undefined AND lv_is_stat <> ls_attr->is_class.

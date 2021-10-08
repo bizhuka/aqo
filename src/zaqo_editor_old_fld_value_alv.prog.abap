@@ -21,7 +21,7 @@ CLASS lcl_fld_value_alv IMPLEMENTATION.
     " Prepare layout
     DATA ls_layout TYPE lvc_s_layo.
     " Just few fileds are edtiable ---> ls_layout-edit = abap_false
-    IF sy-dbsys cs '*HDB*'.
+    IF sy-dbsys cp '*HDB*'.
       ls_layout-smalltitle = abap_true.
       zcl_aqo_helper=>get_se10_history( EXPORTING iv_package_id     = p_pack
                                                   iv_option_id      = p_opt_id
