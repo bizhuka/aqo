@@ -10,6 +10,17 @@ public section.
   class ZCL_EUI_TYPE definition load .
 
   types:
+    BEGIN OF ts_db_key,
+       package_id    TYPE ztaqo_option-package_id,
+       option_id     TYPE ztaqo_option-option_id,
+    END OF ts_db_key .
+  types:
+    BEGIN OF ts_command.
+     INCLUDE TYPE ts_db_key as db_key.
+  types:
+       ucomm TYPE syucomm,
+    END OF ts_command .
+  types:
     abap_attrname_tab TYPE HASHED TABLE OF abap_attrname WITH UNIQUE KEY table_line .
   types:
     BEGIN OF ts_history_value,
@@ -47,19 +58,19 @@ public section.
     tt_e071 TYPE STANDARD TABLE OF e071 WITH DEFAULT KEY .
   types:
     tt_e071k TYPE STANDARD TABLE OF e071k WITH DEFAULT KEY .
-  types:
-    BEGIN OF ts_se10_info,
-      strkorr  TYPE e070-strkorr,
-      trkorr   TYPE e071k-trkorr,
-      as4user  TYPE e070-as4user,
-      as4date  TYPE e070-as4date,
-      as4time  TYPE e070-as4time,
-      "trstatus TYPE e070-trstatus,
-      ddtext   TYPE dd07t-ddtext,
-      as4text  TYPE e07t-as4text,
-    END OF ts_se10_info .
-  types:
-    tt_se10_info TYPE STANDARD TABLE OF ts_se10_info WITH DEFAULT KEY .
+
+  constants:
+    BEGIN OF mc_prog,
+      editor       TYPE syrepid VALUE 'ZAQO_EDITOR3',
+      editor_tcode TYPE sytcode VALUE 'ZAQO_EDITOR_OLD',
+      viewer_tcode TYPE sytcode VALUE 'ZAQO_VIEWER_OLD',
+    END OF mc_prog.
+  constants:
+    BEGIN OF mc_menu_mode,
+      view TYPE zdaqo_menu_mode VALUE 0,
+      edit TYPE zdaqo_menu_mode VALUE 1,
+      hide TYPE zdaqo_menu_mode VALUE 2,
+    END OF mc_menu_mode .
 
   class-methods IS_DEV_MANDT
     returning
@@ -82,6 +93,8 @@ public section.
     returning
       value(RV_OK) type ABAP_BOOL .
   class-methods GET_USAGE
+    importing
+      !IS_DB_KEY type TS_DB_KEY
     returning
       value(RT_USAGE) type TT_USAGE .
   class-methods GET_LAST_CALL_INFO
@@ -90,11 +103,6 @@ public section.
     exporting
       !EV_NAME type CSEQUENCE
       !EV_IS_CLASS type ABAP_BOOL .
-  class-methods SH_SORT_ORDER
-    importing
-      !IV_VALUE type CSEQUENCE optional
-    exporting
-      !EV_VALUE type CSEQUENCE .
   class-methods MESSAGE_WITH_FIELDS
     importing
       !IT_FIELD type ABAP_ATTRNAME_TAB
@@ -132,17 +140,25 @@ public section.
     exporting
       !ES_E071 type E071
       !ES_E071K type E071K .
-  class-methods GET_SE10_HISTORY
+  class-methods EXCHANGE_COMMAND
     importing
-      !IV_PACKAGE_ID type CSEQUENCE
-      !IV_OPTION_ID type CSEQUENCE
+      !IS_COMMAND type TS_COMMAND optional
     exporting
-      !ER_TABLE type ref to TT_SE10_INFO
-      !EV_LAST_TASK_INFO type CSEQUENCE .
+      !ES_COMMAND type TS_COMMAND .
+  class-methods ADD_MENU
+    importing
+      !IS_DB_OPT type ZTAQO_OPTION .
 protected section.
 private section.
+*"* private components of class ZCL_AQO_HELPER
+*"* do not include other source files here!!!
+
+  types:
+    TT_MENU_SH type standard table of zsaqo_option .
 
   class-data MV_CODE type SYTCODE .
+  class-data MO_MENU type ref to ZCL_EUI_MENU .
+  class-data MT_MENU_SH type TT_MENU_SH .
 
   class-methods GET_POSITION
     importing
@@ -157,6 +173,35 @@ ENDCLASS.
 
 
 CLASS ZCL_AQO_HELPER IMPLEMENTATION.
+
+
+METHOD add_menu.
+  CHECK is_db_opt-menu_mode <> mc_menu_mode-hide.
+
+  DATA ls_menu_sh LIKE LINE OF mt_menu_sh.
+  MOVE-CORRESPONDING is_db_opt TO ls_menu_sh.
+  ls_menu_sh-tabix = lines( mt_menu_sh ) + 1.
+  APPEND ls_menu_sh TO mt_menu_sh.
+
+  CHECK mo_menu IS INITIAL.
+
+  DATA lo_handler TYPE REF TO lcl_handler.
+  CREATE OBJECT:
+   lo_handler,
+
+   mo_menu
+    EXPORTING
+     io_handler = lo_handler.
+
+  DATA lt_menu TYPE zcl_eui_menu=>tt_menu.
+  DATA lr_menu TYPE REF TO zcl_eui_menu=>ts_menu.
+  APPEND INITIAL LINE TO lt_menu REFERENCE INTO lr_menu.
+  lr_menu->icon = icon_tools.
+  CONCATENATE is_db_opt-package_id ` - ` is_db_opt-option_id INTO lr_menu->quickinfo.
+
+  mo_menu->create_toolbar(
+   it_menu = lt_menu ).
+ENDMETHOD.
 
 
 METHOD drill_down.
@@ -182,6 +227,34 @@ METHOD drill_down.
   " Show as error
   CHECK sy-subrc <> 0.
   MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno DISPLAY LIKE 'E' WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDMETHOD.
+
+
+METHOD exchange_command.
+  IF is_command IS SUPPLIED.
+    SET PARAMETER ID: 'ZAQO_PACKAGE_ID' FIELD is_command-package_id,
+                      'ZAQO_OPTION_ID'  FIELD is_command-option_id,
+                      'ZAQO_COMMAND'    FIELD is_command-ucomm.
+    IF is_command-ucomm IS NOT INITIAL.
+      " send PAI command
+      CALL FUNCTION 'SAPGUI_SET_FUNCTIONCODE'
+        EXPORTING
+          functioncode = is_command-ucomm
+        EXCEPTIONS
+          OTHERS       = 0.
+    ENDIF.
+
+    RETURN.
+  ENDIF.
+
+  CHECK es_command IS REQUESTED.
+  GET PARAMETER ID: 'ZAQO_PACKAGE_ID' FIELD es_command-package_id,
+                    'ZAQO_OPTION_ID'  FIELD es_command-option_id,
+                    'ZAQO_COMMAND'    FIELD es_command-ucomm.
+
+  " Set empty command
+  DATA ls_command LIKE is_command.
+  exchange_command( ls_command ).
 ENDMETHOD.
 
 
@@ -357,66 +430,8 @@ METHOD get_request_info.
 ENDMETHOD.
 
 
-METHOD get_se10_history.
-  DATA: ls_e071k TYPE e071k.
-  get_request_info(
-    EXPORTING iv_table_name = 'ZTAQO_OPTION'
-              iv_key1       = iv_package_id
-              iv_key2       = iv_option_id
-    IMPORTING es_e071k      = ls_e071k ).
-
-  " Previously mandt specific
-  DATA lv_tabkey TYPE string.
-  CONCATENATE '%' ls_e071k-tabkey INTO lv_tabkey.
-
-  FIELD-SYMBOLS <lt_history> TYPE tt_se10_info.
-  CREATE DATA er_table.
-  ASSIGN er_table->* TO <lt_history>.
-
-  SELECT DISTINCT h~strkorr t~trkorr
-                  h~as4user h~as4date h~as4time dom~ddtext " h~trstatus
-                  d~as4text UP TO 100 ROWS INTO TABLE <lt_history>
-  FROM              e071k AS t
-    INNER JOIN      e070  AS h ON h~trkorr = t~trkorr
-    LEFT OUTER JOIN e07t  AS d ON d~trkorr = h~trkorr
-                              AND d~langu  = sy-langu
-    LEFT OUTER JOIN dd07t AS dom ON dom~domname    = 'TRSTATUS' "#EC "#EC CI_BUFFJOIN
-                                AND dom~ddlanguage = sy-langu
-                                AND dom~as4local   = 'A'
-                                AND dom~domvalue_l = h~trstatus
-                                AND dom~as4vers    = 0000
-  WHERE t~pgmid      EQ   ls_e071k-pgmid
-    AND t~object     EQ   ls_e071k-object
-    AND t~objname    EQ   ls_e071k-objname
-    AND t~mastertype EQ   ls_e071k-mastertype
-    AND t~mastername EQ   ls_e071k-mastername
-    AND t~tabkey     LIKE lv_tabkey
-    AND h~strkorr    NE   space
-  ORDER BY as4date DESCENDING
-           as4time DESCENDING.
-
-**********************************************************************
-  " For title
-  CLEAR ev_last_task_info.
-  CHECK ev_last_task_info IS REQUESTED.
-
-  FIELD-SYMBOLS <ls_last_info> TYPE ts_se10_info.
-  READ TABLE <lt_history> INDEX 1 ASSIGNING <ls_last_info>.
-  CHECK sy-subrc = 0.
-
-  DATA lv_as4date TYPE text10.
-  WRITE <ls_last_info>-as4date TO lv_as4date.
-
-  CONCATENATE 'Last changed by'(lch) <ls_last_info>-as4user
-              'on'(on1)              lv_as4date
-              <ls_last_info>-strkorr '-' <ls_last_info>-ddtext
-              INTO ev_last_task_info SEPARATED BY space.
-ENDMETHOD.
-
-
 METHOD get_usage.
   DATA:
-    ls_opt        TYPE ztaqo_option,
     ls_usage      TYPE REF TO ts_usage,
     lv_len        TYPE i,
     lv_class_name TYPE seoclskey,
@@ -426,11 +441,6 @@ METHOD get_usage.
     lt_meth       TYPE seop_methods_w_include,
     ls_meth       TYPE REF TO seop_method_w_include.
 
-  " Get from memory
-  GET PARAMETER ID:
-   'ZAQO_PACKAGE_ID' FIELD ls_opt-package_id,
-   'ZAQO_OPTION_ID'  FIELD ls_opt-option_id.
-
   " Index for Global Types - Where-Used List Workbench
   SELECT * INTO CORRESPONDING FIELDS OF TABLE rt_usage
   FROM wbcrossgt
@@ -438,18 +448,18 @@ METHOD get_usage.
     AND name  = 'ZCL_AQO_OPTION\ME:CREATE'.
 
   LOOP AT rt_usage REFERENCE INTO ls_usage.
-    IF ls_opt-package_id IS NOT INITIAL AND ls_opt-option_id IS NOT INITIAL.
+    IF is_db_key-package_id IS NOT INITIAL AND is_db_key-option_id IS NOT INITIAL.
       get_position(
        EXPORTING
          iv_include   = ls_usage->include
-         iv_package   = ls_opt-package_id
-         iv_option    = ls_opt-option_id
+         iv_package   = is_db_key-package_id
+         iv_option    = is_db_key-option_id
        IMPORTING
          ev_line      = ls_usage->line
          ev_found     = ls_usage->found ).
       IF ls_usage->found = abap_true.
-        ls_usage->package_id = ls_opt-package_id.
-        ls_usage->option_id  = ls_opt-option_id.
+        ls_usage->package_id = is_db_key-package_id.
+        ls_usage->option_id  = is_db_key-option_id.
       ENDIF.
     ENDIF.
 
@@ -507,7 +517,7 @@ METHOD is_in_editor.
     lv_tcode TYPE sytcode.
 
   " for BSP
-  IF iv_tcode IS NOT INITIAL.
+  IF iv_tcode IS NOT INITIAL. " IS SUPPLIED ?
     mv_code = iv_tcode.
     RETURN.
   ENDIF.
@@ -649,17 +659,6 @@ METHOD put_2_request.
   WHERE trkorr = cv_task.
   IF ev_request IS INITIAL.
     ev_request = cv_task.
-  ENDIF.
-ENDMETHOD.
-
-
-METHOD sh_sort_order.
-  CLEAR ev_value.
-
-  IF iv_value IS SUPPLIED.
-    SET PARAMETER ID 'ZAQO_SH_SORT_ORDER' FIELD iv_value.
-  ELSEIF ev_value IS REQUESTED.
-    GET PARAMETER ID 'ZAQO_SH_SORT_ORDER' FIELD ev_value.
   ENDIF.
 ENDMETHOD.
 ENDCLASS.

@@ -4,7 +4,7 @@
   <asx:values>
    <TSTC>
     <TCODE>ZAQO_EDITOR_OLD</TCODE>
-    <PGMNA>ZAQO_EDITOR_OLD</PGMNA>
+    <PGMNA>ZAQO_EDITOR3</PGMNA>
     <DYPNO>1000</DYPNO>
     <CINFO>gA==</CINFO>
    </TSTC>
@@ -17,7 +17,7 @@
    <TSTCT>
     <SPRSL>E</SPRSL>
     <TCODE>ZAQO_EDITOR_OLD</TCODE>
-    <TTEXT>Edit quick options (old)</TTEXT>
+    <TTEXT>Edit quick options</TTEXT>
    </TSTCT>
   </asx:values>
  </asx:abap>

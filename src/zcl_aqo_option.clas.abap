@@ -1,11 +1,12 @@
 class ZCL_AQO_OPTION definition
   public
-  create private
-
-  global friends ZCL_AQO_MENU_HANDLER .
+  create protected .
 
 public section.
+*"* public components of class ZCL_AQO_OPTION
+*"* do not include other source files here!!!
   type-pools ABAP .
+
   data MS_DB_ITEM type ZTAQO_OPTION read-only .
 
   class-methods CREATE
@@ -26,13 +27,9 @@ public section.
       value(RR_DATA) type ref to DATA
     raising
       ZCX_AQO_EXCEPTION .
-  class-methods GET_MENU
-    importing
-      !IV_PACKAGE_ID type CSEQUENCE
-      !IV_OPTION_ID type CSEQUENCE
-    returning
-      value(RO_MENU) type ref to ZCL_EUI_MENU .
 protected section.
+*"* protected components of class ZCL_AQO_OPTION
+*"* do not include other source files here!!!
 
   data MT_FIELD_VALUE type ZCL_AQO_HELPER=>TT_FIELD_VALUE .
 
@@ -49,6 +46,9 @@ protected section.
     returning
       value(RV_OK) type ABAP_BOOL .
   methods SAVE
+    importing
+      !IS_DB type ANY optional
+      !IV_CONFIRM type ABAP_BOOL default ABAP_TRUE
     returning
       value(RV_INFO) type STRING
     raising
@@ -294,47 +294,35 @@ METHOD create.
   " Call save for user
   CHECK lv_in_editor <> abap_true.
 
-  IF lt_declared_field IS NOT INITIAL OR lv_changed = abap_true.
-    " Or something like that SY-SYSID <> 'DEV'
-    IF zcl_aqo_helper=>is_dev_mandt( ) <> abap_true.
-      MESSAGE s006(zaqo_message) WITH iv_package_id iv_option_id.
-      zcx_aqo_exception=>raise_sys_error( ).
-    ENDIF.
+  IF lt_declared_field IS INITIAL AND lv_changed <> abap_true.
+    zcl_aqo_helper=>add_menu( ro_opt->ms_db_item ).
+    RETURN.
+  ENDIF.
 
-    lv_message = ro_opt->save( ).
-    IF lv_message IS NOT INITIAL.
-      MESSAGE lv_message TYPE 'S'.
-    ENDIF.
-  ELSE.
-    zcl_aqo_option=>get_menu(
-      iv_package_id = iv_package_id
-      iv_option_id  = iv_option_id ).
+  " Or something like that SY-SYSID <> 'DEV'
+  IF zcl_aqo_helper=>is_dev_mandt( ) <> abap_true.
+    MESSAGE s006(zaqo_message) WITH iv_package_id iv_option_id.
+    zcx_aqo_exception=>raise_sys_error( ).
+  ENDIF.
+
+  lv_message = ro_opt->save( ).
+  IF lv_message IS NOT INITIAL.
+    MESSAGE lv_message TYPE 'S'.
   ENDIF.
 ENDMETHOD.
 
 
 METHOD delete.
-  DATA lv_text TYPE string.
-
-  " Own dialogs iv_confirm = abap_true.
-  IF zcl_aqo_helper=>is_in_editor( iv_is_sapui5 = abap_true ) <> abap_true AND
-    " Cancelled
-   zcl_eui_screen=>confirm(
-         iv_title    = 'Delete'(del)
-         iv_question = 'Operation irreversible. Continue?'(irr)
-         IV_ICON_1   = 'ICON_DELETE' ) <> abap_true.
-    MESSAGE s130(ed) WITH 'Delete'(del) DISPLAY LIKE 'E'.
-    RETURN.
-  ENDIF.
-
   IF zcl_aqo_helper=>is_dev_mandt( ) <> abap_true.
     MESSAGE s011(zaqo_message) INTO sy-msgli.
     zcx_aqo_exception=>raise_sys_error( ).
   ENDIF.
 
   " Put to request
-  IF iv_task IS NOT INITIAL.
+  IF ms_db_item-package_id NP '$*'.
     rv_info = transport( iv_task ).
+    " TODO delete UI5 version
+    CHECK sy-msgid = 'ZAQO_MESSAGE' AND sy-msgno = 023.
   ENDIF.
 
   DELETE
@@ -343,6 +331,7 @@ METHOD delete.
      AND option_id  = ms_db_item-option_id.
 
   " Show info
+  DATA lv_text TYPE string.
   MESSAGE s010(zaqo_message) WITH ms_db_item-package_id ms_db_item-option_id INTO lv_text.
   CONCATENATE lv_text ` ` rv_info INTO rv_info.
 ENDMETHOD.
@@ -424,13 +413,6 @@ METHOD get_field_value.
 ENDMETHOD.
 
 
-METHOD get_menu.
-  ro_menu = zcl_aqo_menu_handler=>get_eui_menu(
-   iv_package_id = iv_package_id
-   iv_option_id  = iv_option_id ).
-ENDMETHOD.
-
-
 METHOD lock.
   " Locks
   IF iv_unlock = abap_true.
@@ -474,19 +456,19 @@ METHOD save.
   lv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
 
   " Own dialogs (iv_confirm = abap_true)
-  IF zcl_aqo_helper=>is_in_editor( iv_is_sapui5 = abap_true ) <> abap_true.
+  DO 1 TIMES.
+    CHECK zcl_aqo_helper=>is_in_editor( iv_is_sapui5 = abap_true ) <> abap_true
+      AND iv_confirm = abap_true.
+
     " Overrite message
     MESSAGE s019(zaqo_message) WITH ms_db_item-package_id ms_db_item-option_id INTO lv_text.
-
-    " Cancelled
-    IF zcl_eui_screen=>confirm(
+    CHECK zcl_eui_screen=>confirm(
          iv_title    = 'Save'(sav)
          iv_question = lv_text
          iv_icon_1   = 'ICON_SYSTEM_SAVE' ) <> abap_true.
-      MESSAGE s130(ed) WITH 'Save'(sav) DISPLAY LIKE 'E'.
-      zcx_aqo_exception=>raise_sys_error( ).
-    ENDIF.
-  ENDIF.
+    MESSAGE s130(ed) WITH 'Save'(sav) DISPLAY LIKE 'E'.
+    zcx_aqo_exception=>raise_sys_error( ).
+  ENDDO.
 
   " Class or program
   zcl_aqo_helper=>get_last_call_info(
@@ -524,6 +506,11 @@ METHOD save.
 
   " Always put in request in DEV
   rv_info = transport( ).
+
+  " General info
+  IF is_db IS NOT INITIAL.
+    MOVE-CORRESPONDING is_db TO ms_db_item.
+  ENDIF.
 
   " Technical info
   IF ms_db_item-created_date IS INITIAL.

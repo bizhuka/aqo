@@ -13,9 +13,9 @@ FUNCTION zfm_aqo_option_exit.
     BEGIN OF ts_item,
       option_size    TYPE zdaqo_option_size,
       call_blockname TYPE zdaqo_call_blockname.
-      INCLUDE TYPE ztaqo_option.
-    TYPES:
-    END OF ts_item.
+          INCLUDE TYPE ztaqo_option.
+  TYPES:
+  END OF ts_item.
 
   DATA:
     lt_item       TYPE STANDARD TABLE OF ts_item,
@@ -23,8 +23,7 @@ FUNCTION zfm_aqo_option_exit.
     ls_x030l      TYPE x030l,
     lv_escape     TYPE abap_bool,
     lv_where      TYPE string,
-    lt_fielddescr TYPE ddfields,
-    lv_order_by   TYPE text255.
+    lt_fielddescr TYPE ddfields.
 
 
   " Return all fields
@@ -34,7 +33,7 @@ FUNCTION zfm_aqo_option_exit.
   ENDIF.
 
   " Only for data selection
-  CHECK callcontrol-step = 'SELECT'.
+  CHECK callcontrol-step = 'SELECT' OR callcontrol-step = 'SELONE'.
 
   " Use copy
   lt_fielddescr = shlp-fielddescr.
@@ -74,15 +73,10 @@ FUNCTION zfm_aqo_option_exit.
     REPLACE ALL OCCURRENCES OF ` AND ` IN lv_where WITH ` OR `.
   ENDIF.
 
-  " Main select
-  zcl_aqo_helper=>sh_sort_order(
-   IMPORTING
-     ev_value = lv_order_by ).
-
   SELECT * INTO CORRESPONDING FIELDS OF TABLE lt_item
-  FROM (shlp-intdescr-selmethod)
+  FROM ('ZTAQO_OPTION') " (shlp-intdescr-selmethod)
   WHERE (lv_where)
-  ORDER BY (lv_order_by).
+  ORDER BY ('PACKAGE_ID OPTION_ID'). " (lv_order_by).
 
   " Size in Kb (Use another field)
   LOOP AT lt_item REFERENCE INTO ls_item.
