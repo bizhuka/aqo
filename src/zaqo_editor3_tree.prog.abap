@@ -123,7 +123,7 @@ CLASS lcl_tree IMPLEMENTATION.
 
     DATA ls_header TYPE treev_hhdr.
     ls_header-heading = 'Options'(opt).
-    ls_header-width   = 28.
+    ls_header-width   = 35.
     ls_header-t_image = icon_tree.
 
     DATA lo_eui_tree TYPE REF TO zcl_eui_tree.
@@ -139,7 +139,7 @@ CLASS lcl_tree IMPLEMENTATION.
       EXPORTING
         dynnr     = sy-dynnr
         side      = cl_gui_docking_container=>dock_at_left
-        extension = 270.
+        extension = 330.
     lo_eui_tree->add_handler( me ).
     lo_eui_tree->pbo( io_container = lo_doc_container ).
     mo_gui_tree = lo_eui_tree->get_tree( ).
@@ -304,7 +304,7 @@ CLASS lcl_tree IMPLEMENTATION.
     WHERE package_id = lr_db_key->package_id
       AND option_id  = lr_db_key->option_id.
     IF lv_package_id IS NOT INITIAL.
-      MESSAGE 'The option is already exists'(toi) TYPE 'S' DISPLAY LIKE 'E'.
+      MESSAGE 'The option already exists'(toi) TYPE 'S' DISPLAY LIKE 'E'.
       cv_close->* = abap_false.
       RETURN.
     ENDIF.
@@ -334,7 +334,7 @@ CLASS lcl_tree IMPLEMENTATION.
     ENDIF.
 
     DATA lt_db_key TYPE tt_db_key.
-    SELECT package_id option_id INTO TABLE lt_db_key
+    SELECT package_id option_id INTO TABLE lt_db_key  "#EC "#EC CI_NOWHERE
     FROM ztaqo_option
     ORDER BY PRIMARY KEY.
 
@@ -411,7 +411,7 @@ CLASS lcl_tree IMPLEMENTATION.
 
   METHOD _fill_tree_with_created_opt.
     DATA lt_db_key TYPE tt_db_key.
-    SELECT package_id option_id UP TO mo_prefs->s_opt-v_max_count ROWS INTO TABLE lt_db_key
+    SELECT package_id option_id UP TO mo_prefs->s_opt-v_max_count ROWS INTO TABLE lt_db_key  "#EC "#EC CI_NOFIELD
     FROM ztaqo_option
     WHERE created_uname = sy-uname
     ORDER BY created_date DESCENDING.

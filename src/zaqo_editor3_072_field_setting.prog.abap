@@ -140,6 +140,9 @@ CLASS lcl_field_setting IMPLEMENTATION.
               lv_editable   TYPE abap_bool.
         GET REFERENCE OF lr_fld_value->field_desc INTO lr_field_desc.
         lv_editable = go_editor->is_editable( lr_fld_value->is_editable ).
+        IF go_editor->mv_is_dev <> abap_true.
+          lv_editable = abap_false.
+        ENDIF.
 
         DATA lo_table_comp_alv TYPE REF TO lcl_table_comp_alv.
         CREATE OBJECT lo_table_comp_alv

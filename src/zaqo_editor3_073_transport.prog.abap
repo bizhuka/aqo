@@ -11,6 +11,7 @@ CLASS lcl_transport DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_eve
      _fill_table       REDEFINITION,
      _get_layout       REDEFINITION,
      _get_catalog      REDEFINITION,
+     _get_sort         REDEFINITION,
      _get_toolbar      REDEFINITION,
      _on_hotspot_click REDEFINITION,
      _on_user_command  REDEFINITION,
@@ -62,7 +63,7 @@ CLASS lcl_transport IMPLEMENTATION.
   METHOD _get_layout.
     rs_layout = super->_get_layout( ).
     rs_layout-sel_mode   = 'A'.
-    rs_layout-grid_title = 'Trasnsport history'(tra).
+    rs_layout-grid_title = 'Transport history'(tra).
   ENDMETHOD.
 
   METHOD _fill_table.
@@ -74,13 +75,6 @@ CLASS lcl_transport IMPLEMENTATION.
                 iv_key1       = ms_db_key-package_id
                 iv_key2       = ms_db_key-option_id
       IMPORTING es_e071k      = ls_e071k ).
-
-    " Previously mandt specific
-    DATA: lv_tabkey       TYPE e071k-tabkey,
-          lv_tabkey_mandt TYPE e071k-tabkey.
-    lv_tabkey = ls_e071k-tabkey.
-    " Previously wih mandt
-    CONCATENATE sy-mandt lv_tabkey INTO lv_tabkey_mandt.
 
     SELECT DISTINCT h~strkorr t~trkorr
                     h~as4user h~as4date h~as4time dom~ddtext " h~trstatus
@@ -99,8 +93,7 @@ CLASS lcl_transport IMPLEMENTATION.
       AND t~objname    EQ   ls_e071k-objname
       AND t~mastertype EQ   ls_e071k-mastertype
       AND t~mastername EQ   ls_e071k-mastername
-      AND ( t~tabkey   EQ   lv_tabkey
-         OR t~tabkey   EQ   lv_tabkey_mandt )
+      AND t~tabkey     EQ   ls_e071k-tabkey " OR t~tabkey LIKE '%' " Previously mandt specific
       AND h~strkorr    NE   space
     ORDER BY h~as4date DESCENDING
              h~as4time DESCENDING.
@@ -118,7 +111,18 @@ CLASS lcl_transport IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_catalog REFERENCE INTO lr_catalog.
     lr_catalog->fieldname = 'DDTEXT'.
-    lr_catalog->outputlen = 10.
+    lr_catalog->outputlen = 14.
+  ENDMETHOD.
+
+  METHOD _get_sort.
+    FIELD-SYMBOLS <ls_sort> LIKE LINE OF rt_sort.
+    APPEND INITIAL LINE TO rt_sort ASSIGNING <ls_sort>.
+    <ls_sort>-fieldname = 'AS4DATE'.
+    <ls_sort>-down      = abap_true.
+
+    APPEND INITIAL LINE TO rt_sort ASSIGNING <ls_sort>.
+    <ls_sort>-fieldname = 'AS4TIME'.
+    <ls_sort>-down      = abap_true.
   ENDMETHOD.
 
   METHOD _on_hotspot_click.

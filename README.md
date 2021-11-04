@@ -1,5 +1,9 @@
 Now full documentation available here https://bizhuka.github.io/aqo
 
+### Описание интерфейса v3
+<video width="640" height="360" controls="true" allowfullscreen="true">
+	<source src="https://media.githubusercontent.com/media/bizhuka/lfs/main/aqo1.mp4" type="video/mp4">
+</video>
 
 ### ABAP quick options
 User and programmer friendly options\

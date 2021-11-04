@@ -81,8 +81,7 @@ CLASS lcl_tab IMPLEMENTATION.
 
     mo_alv->set_status( _get_status( ) ).
 
-    mo_alv->popup( iv_row_end = 28
-                   iv_col_end = 140 ).
+    mo_alv->popup( iv_row_end = 28 ).
 
     mo_alv->show( ).
   ENDMETHOD.

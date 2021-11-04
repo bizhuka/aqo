@@ -53,20 +53,15 @@
      <TEXTPOOL>
       <item>
        <ID>I</ID>
-       <KEY>OPT</KEY>
-       <ENTRY>Main options</ENTRY>
-       <LENGTH>22</LENGTH>
-      </item>
-      <item>
-       <ID>I</ID>
        <KEY>T01</KEY>
        <ENTRY>Настройки не найдены!</ENTRY>
        <LENGTH>68</LENGTH>
       </item>
       <item>
-       <ID>R</ID>
-       <ENTRY>Тестовая программа для проверки ведения настроек</ENTRY>
-       <LENGTH>48</LENGTH>
+       <ID>S</ID>
+       <KEY>P_CL_OPT</KEY>
+       <ENTRY>Инициализация класса настроек</ENTRY>
+       <LENGTH>38</LENGTH>
       </item>
      </TEXTPOOL>
     </item>

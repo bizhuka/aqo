@@ -18,6 +18,19 @@
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>
+   <I18N_LANGS>
+    <LANGU>R</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>R</DDLANGUAGE>
+     <DDTEXT>Создано</DDTEXT>
+     <REPTEXT>Создано</REPTEXT>
+     <SCRTEXT_S>Создано</SCRTEXT_S>
+     <SCRTEXT_M>Создано</SCRTEXT_M>
+     <SCRTEXT_L>Создано</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

@@ -162,12 +162,12 @@
        <CONT_NAME>TABS</CONT_NAME>
        <TYPE>PUSH</TYPE>
        <NAME>TABS_TAB2</NAME>
-       <TEXT>Field_settings</TEXT>
+       <TEXT>Field_settings___</TEXT>
        <ICON_NAME>ICON_TOOLS</ICON_NAME>
        <WITH_ICON>X</WITH_ICON>
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>
-       <LENGTH>019</LENGTH>
+       <LENGTH>022</LENGTH>
        <VISLENGTH>017</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <PUSH_FCODE>TABS_0072</PUSH_FCODE>
@@ -198,12 +198,12 @@
        <CONT_NAME>TABS</CONT_NAME>
        <TYPE>PUSH</TYPE>
        <NAME>TABS_TAB4</NAME>
-       <TEXT>Usage_in_code</TEXT>
+       <TEXT>Usage_in_code_______</TEXT>
        <ICON_NAME>ICON_REFERENCE_LIST</ICON_NAME>
        <WITH_ICON>X</WITH_ICON>
        <LINE>001</LINE>
        <COLUMN>004</COLUMN>
-       <LENGTH>018</LENGTH>
+       <LENGTH>025</LENGTH>
        <VISLENGTH>016</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <PUSH_FCODE>TABS_0074</PUSH_FCODE>
@@ -234,12 +234,12 @@
        <CONT_NAME>TABS</CONT_NAME>
        <TYPE>PUSH</TYPE>
        <NAME>TABS_TAB6</NAME>
-       <TEXT>General_info</TEXT>
+       <TEXT>General_info_____</TEXT>
        <ICON_NAME>ICON_INFORMATION</ICON_NAME>
        <WITH_ICON>X</WITH_ICON>
        <LINE>001</LINE>
        <COLUMN>006</COLUMN>
-       <LENGTH>017</LENGTH>
+       <LENGTH>022</LENGTH>
        <VISLENGTH>015</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <PUSH_FCODE>TABS_0076</PUSH_FCODE>
@@ -758,6 +758,7 @@
        <VISLENGTH>047</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <GROUP1>MOD</GROUP1>
+       <PUSH_FCODE>FOR_PBO</PUSH_FCODE>
        <FORMAT>NUMC</FORMAT>
        <FROM_DICT>X</FROM_DICT>
        <MODIFIC>X</MODIFIC>
@@ -1078,7 +1079,7 @@
      <ID>I</ID>
      <KEY>AD1</KEY>
      <ENTRY>Change declaration and run again is much easier!</ENTRY>
-     <LENGTH>48</LENGTH>
+     <LENGTH>50</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -1090,85 +1091,85 @@
      <ID>I</ID>
      <KEY>AD3</KEY>
      <ENTRY>Exit for regenerating &quot;Option data&quot; screen</ENTRY>
-     <LENGTH>44</LENGTH>
+     <LENGTH>54</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>ADF</KEY>
      <ENTRY>Add file</ENTRY>
-     <LENGTH>8</LENGTH>
+     <LENGTH>13</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>ANF</KEY>
      <ENTRY>Add new field</ENTRY>
-     <LENGTH>13</LENGTH>
+     <LENGTH>19</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>CAT</KEY>
      <ENTRY>DDIC or Catalog</ENTRY>
-     <LENGTH>15</LENGTH>
+     <LENGTH>17</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>CHK</KEY>
      <ENTRY>Change key</ENTRY>
-     <LENGTH>10</LENGTH>
+     <LENGTH>13</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>CNF</KEY>
      <ENTRY>Confirmation</ENTRY>
-     <LENGTH>12</LENGTH>
+     <LENGTH>14</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>DEF</KEY>
      <ENTRY>Delete file</ENTRY>
-     <LENGTH>11</LENGTH>
+     <LENGTH>13</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>DEL</KEY>
      <ENTRY>Delete</ENTRY>
-     <LENGTH>6</LENGTH>
+     <LENGTH>8</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>DFI</KEY>
      <ENTRY>Deleting file is irreversible. Continue?</ENTRY>
-     <LENGTH>40</LENGTH>
+     <LENGTH>42</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>DIS</KEY>
      <ENTRY>Discards all changes</ENTRY>
-     <LENGTH>30</LENGTH>
+     <LENGTH>32</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>DLF</KEY>
      <ENTRY>Delete field</ENTRY>
-     <LENGTH>12</LENGTH>
+     <LENGTH>13</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>DLO</KEY>
      <ENTRY>Delete option</ENTRY>
-     <LENGTH>13</LENGTH>
+     <LENGTH>18</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>EDD</KEY>
      <ENTRY>Edit data</ENTRY>
-     <LENGTH>9</LENGTH>
+     <LENGTH>20</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>EDT</KEY>
      <ENTRY>Edit</ENTRY>
-     <LENGTH>4</LENGTH>
+     <LENGTH>13</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -1180,43 +1181,43 @@
      <ID>I</ID>
      <KEY>EOP</KEY>
      <ENTRY>Edit mode</ENTRY>
-     <LENGTH>9</LENGTH>
+     <LENGTH>20</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>EXO</KEY>
      <ENTRY>Export option to file</ENTRY>
-     <LENGTH>21</LENGTH>
+     <LENGTH>27</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>FCO</KEY>
      <ENTRY>Field catalog of</ENTRY>
-     <LENGTH>16</LENGTH>
+     <LENGTH>17</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>FCP</KEY>
      <ENTRY>First creation place (Could have been changed)</ENTRY>
-     <LENGTH>46</LENGTH>
+     <LENGTH>48</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>FLD</KEY>
      <ENTRY>Filed</ENTRY>
-     <LENGTH>5</LENGTH>
+     <LENGTH>16</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>FRS</KEY>
      <ENTRY>Free Search</ENTRY>
-     <LENGTH>11</LENGTH>
+     <LENGTH>24</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>IMO</KEY>
      <ENTRY>Import option from file</ENTRY>
-     <LENGTH>23</LENGTH>
+     <LENGTH>33</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -1228,43 +1229,43 @@
      <ID>I</ID>
      <KEY>LOG</KEY>
      <ENTRY>View logs</ENTRY>
-     <LENGTH>9</LENGTH>
+     <LENGTH>53</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>M07</KEY>
-     <ENTRY>Previous values count have to be from 1 to 7</ENTRY>
-     <LENGTH>44</LENGTH>
+     <ENTRY>Previous values count has to be from 1 to 7</ENTRY>
+     <LENGTH>54</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>M10</KEY>
      <ENTRY>Set maximum from 1 to 10</ENTRY>
-     <LENGTH>24</LENGTH>
+     <LENGTH>38</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>MNC</KEY>
      <ENTRY>Maximum node count in tree</ENTRY>
-     <LENGTH>26</LENGTH>
+     <LENGTH>42</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>MS1</KEY>
      <ENTRY>Please use ZAQO* transactions instead!</ENTRY>
-     <LENGTH>38</LENGTH>
+     <LENGTH>59</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>NCL</KEY>
-     <ENTRY>No previous call was found. Use code scannig</ENTRY>
-     <LENGTH>44</LENGTH>
+     <ENTRY>No previous call was found. Use code scanning</ENTRY>
+     <LENGTH>58</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>NEO</KEY>
      <ENTRY>New option</ENTRY>
-     <LENGTH>10</LENGTH>
+     <LENGTH>16</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -1276,121 +1277,121 @@
      <ID>I</ID>
      <KEY>OPT</KEY>
      <ENTRY>Options</ENTRY>
-     <LENGTH>7</LENGTH>
+     <LENGTH>32</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>POA</KEY>
      <ENTRY>Please check OAOR mode</ENTRY>
-     <LENGTH>22</LENGTH>
+     <LENGTH>32</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>QED</KEY>
      <ENTRY>Quick edit</ENTRY>
-     <LENGTH>10</LENGTH>
+     <LENGTH>24</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>REC</KEY>
      <ENTRY>Recently created</ENTRY>
-     <LENGTH>16</LENGTH>
+     <LENGTH>20</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>REO</KEY>
      <ENTRY>Recently opened</ENTRY>
-     <LENGTH>15</LENGTH>
+     <LENGTH>20</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>SCA</KEY>
      <ENTRY>Scan ABAP code</ENTRY>
-     <LENGTH>14</LENGTH>
+     <LENGTH>31</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>SDB</KEY>
      <ENTRY>Save data before exit?</ENTRY>
-     <LENGTH>22</LENGTH>
+     <LENGTH>32</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>SFD</KEY>
      <ENTRY>Select files for deletion</ENTRY>
-     <LENGTH>25</LENGTH>
+     <LENGTH>37</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>SOH</KEY>
      <ENTRY>Show online help on startup</ENTRY>
-     <LENGTH>27</LENGTH>
+     <LENGTH>37</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>SOV</KEY>
      <ENTRY>Save option values</ENTRY>
-     <LENGTH>18</LENGTH>
+     <LENGTH>29</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>STS</KEY>
      <ENTRY>Structure Search</ENTRY>
-     <LENGTH>16</LENGTH>
+     <LENGTH>17</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>TOI</KEY>
-     <ENTRY>The option is already exists</ENTRY>
-     <LENGTH>28</LENGTH>
+     <ENTRY>The option already exists</ENTRY>
+     <LENGTH>32</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>TRA</KEY>
-     <ENTRY>Trasnsport history</ENTRY>
+     <ENTRY>Transport history</ENTRY>
      <LENGTH>18</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>UPD</KEY>
      <ENTRY>Data updated</ENTRY>
-     <LENGTH>12</LENGTH>
+     <LENGTH>16</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>UPF</KEY>
      <ENTRY>User preferences</ENTRY>
-     <LENGTH>16</LENGTH>
+     <LENGTH>26</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>VEW</KEY>
      <ENTRY>View</ENTRY>
-     <LENGTH>4</LENGTH>
+     <LENGTH>10</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>VID</KEY>
      <ENTRY>View data</ENTRY>
-     <LENGTH>9</LENGTH>
+     <LENGTH>15</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>VLO</KEY>
      <ENTRY>View logs of</ENTRY>
-     <LENGTH>12</LENGTH>
+     <LENGTH>19</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>VOF</KEY>
      <ENTRY>values of</ENTRY>
-     <LENGTH>9</LENGTH>
+     <LENGTH>10</LENGTH>
     </item>
     <item>
      <ID>I</ID>
      <KEY>VOP</KEY>
      <ENTRY>View mode</ENTRY>
-     <LENGTH>9</LENGTH>
+     <LENGTH>15</LENGTH>
     </item>
     <item>
      <ID>R</ID>
@@ -1398,6 +1399,336 @@
      <LENGTH>14</LENGTH>
     </item>
    </TPOOL>
+   <I18N_TPOOL>
+    <item>
+     <LANGUAGE>R</LANGUAGE>
+     <TEXTPOOL>
+      <item>
+       <ID>I</ID>
+       <KEY>AD1</KEY>
+       <ENTRY>Изменить описание в коде и выполнить(F8) код проще</ENTRY>
+       <LENGTH>50</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>AD2</KEY>
+       <ENTRY>Создать настройку в ABAP коде намного проще!</ENTRY>
+       <LENGTH>48</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>AD3</KEY>
+       <ENTRY>Необходимо закрытие программы для генерирования экрана</ENTRY>
+       <LENGTH>54</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>ADF</KEY>
+       <ENTRY>Добавить файл</ENTRY>
+       <LENGTH>13</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>ANF</KEY>
+       <ENTRY>Добавить новое поле</ENTRY>
+       <LENGTH>19</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CAT</KEY>
+       <ENTRY>DDIC или каталог</ENTRY>
+       <LENGTH>17</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CHK</KEY>
+       <ENTRY>Изменить ключ</ENTRY>
+       <LENGTH>13</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CNF</KEY>
+       <ENTRY>Подтверждение</ENTRY>
+       <LENGTH>14</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DEF</KEY>
+       <ENTRY>Удалить файл</ENTRY>
+       <LENGTH>13</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DEL</KEY>
+       <ENTRY>Удалить</ENTRY>
+       <LENGTH>8</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DFI</KEY>
+       <ENTRY>Удаление файла необратимо. Продолжить?</ENTRY>
+       <LENGTH>42</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DIS</KEY>
+       <ENTRY>Отменить все</ENTRY>
+       <LENGTH>32</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DLF</KEY>
+       <ENTRY>Удалить поле</ENTRY>
+       <LENGTH>13</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DLO</KEY>
+       <ENTRY>Удалить настройку</ENTRY>
+       <LENGTH>18</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EDD</KEY>
+       <ENTRY>Редактировать данные</ENTRY>
+       <LENGTH>20</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EDT</KEY>
+       <ENTRY>Редактировать</ENTRY>
+       <LENGTH>13</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EDU</KEY>
+       <ENTRY>Ошибка при обновлении!</ENTRY>
+       <LENGTH>22</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EOP</KEY>
+       <ENTRY>Режим редактирования</ENTRY>
+       <LENGTH>20</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EXO</KEY>
+       <ENTRY>Экспорт настройки в файл</ENTRY>
+       <LENGTH>27</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>FCO</KEY>
+       <ENTRY>Каталог полей</ENTRY>
+       <LENGTH>17</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>FCP</KEY>
+       <ENTRY>Первичное место создания (могло быть изменено!)</ENTRY>
+       <LENGTH>48</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>FLD</KEY>
+       <ENTRY>Поле</ENTRY>
+       <LENGTH>16</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>FRS</KEY>
+       <ENTRY>Свободный поиск</ENTRY>
+       <LENGTH>24</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>IMO</KEY>
+       <ENTRY>Импортировать настройку из файла</ENTRY>
+       <LENGTH>33</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>IRR</KEY>
+       <ENTRY>Операция необратимая. Продолжить?</ENTRY>
+       <LENGTH>33</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>LOG</KEY>
+       <ENTRY>Просмотр журналов</ENTRY>
+       <LENGTH>53</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>M07</KEY>
+       <ENTRY>Количество предыдущих значений должно быть от 1 до 7</ENTRY>
+       <LENGTH>54</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>M10</KEY>
+       <ENTRY>Установите максимум от 1 до 10</ENTRY>
+       <LENGTH>38</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>MNC</KEY>
+       <ENTRY>Максимальное количество узлов в дереве</ENTRY>
+       <LENGTH>42</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>MS1</KEY>
+       <ENTRY>Пожалуйста, используйте транзакции ZAQO*</ENTRY>
+       <LENGTH>59</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NCL</KEY>
+       <ENTRY>Предыдущий вызов не найден. Используте сканирование кода</ENTRY>
+       <LENGTH>58</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NEO</KEY>
+       <ENTRY>Новая настройка</ENTRY>
+       <LENGTH>16</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>OAO</KEY>
+       <ENTRY>Приложения OAOR</ENTRY>
+       <LENGTH>16</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>OPT</KEY>
+       <ENTRY>Настройки</ENTRY>
+       <LENGTH>32</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>POA</KEY>
+       <ENTRY>Пожалуйста, проверьте режим OAOR</ENTRY>
+       <LENGTH>32</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>QED</KEY>
+       <ENTRY>Быстрое редактирование</ENTRY>
+       <LENGTH>24</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>REC</KEY>
+       <ENTRY>Недавно созданные</ENTRY>
+       <LENGTH>20</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>REO</KEY>
+       <ENTRY>Недавно открытые</ENTRY>
+       <LENGTH>20</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SCA</KEY>
+       <ENTRY>Сканировать ABAP код</ENTRY>
+       <LENGTH>31</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SDB</KEY>
+       <ENTRY>Сохранить данные перед выходом?</ENTRY>
+       <LENGTH>32</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SFD</KEY>
+       <ENTRY>Выберите файлы для удаления</ENTRY>
+       <LENGTH>37</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SOH</KEY>
+       <ENTRY>Показать справку при запуске</ENTRY>
+       <LENGTH>37</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SOV</KEY>
+       <ENTRY>Сохранить значения параметров</ENTRY>
+       <LENGTH>29</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>STS</KEY>
+       <ENTRY>Поиск в структуре</ENTRY>
+       <LENGTH>17</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>TOI</KEY>
+       <ENTRY>Настройка уже существует</ENTRY>
+       <LENGTH>32</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>TRA</KEY>
+       <ENTRY>История переносов</ENTRY>
+       <LENGTH>18</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>UPD</KEY>
+       <ENTRY>Данные обновлены</ENTRY>
+       <LENGTH>16</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>UPF</KEY>
+       <ENTRY>Настройки интерфейса</ENTRY>
+       <LENGTH>26</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VEW</KEY>
+       <ENTRY>Вид</ENTRY>
+       <LENGTH>10</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VID</KEY>
+       <ENTRY>Просмотр данных</ENTRY>
+       <LENGTH>15</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VLO</KEY>
+       <ENTRY>Просмотреть журналы</ENTRY>
+       <LENGTH>19</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VOF</KEY>
+       <ENTRY>значения</ENTRY>
+       <LENGTH>10</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VOP</KEY>
+       <ENTRY>Режим просмотра</ENTRY>
+       <LENGTH>15</LENGTH>
+      </item>
+      <item>
+       <ID>R</ID>
+       <ENTRY>Редактор настроек</ENTRY>
+       <LENGTH>70</LENGTH>
+      </item>
+     </TEXTPOOL>
+    </item>
+   </I18N_TPOOL>
   </asx:values>
  </asx:abap>
 </abapGit>

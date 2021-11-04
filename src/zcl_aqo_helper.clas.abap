@@ -435,7 +435,6 @@ METHOD get_usage.
     ls_usage      TYPE REF TO ts_usage,
     lv_len        TYPE i,
     lv_class_name TYPE seoclskey,
-    lv_rem        TYPE string,
     lo_clif       TYPE REF TO if_oo_clif_incl_naming,
     lo_cldesc     TYPE REF TO if_oo_class_incl_naming,
     lt_meth       TYPE seop_methods_w_include,
@@ -467,6 +466,8 @@ METHOD get_usage.
     lv_len = strlen( ls_usage->include ).
     CHECK lv_len = 35.
     lv_class_name = ls_usage->include(30).
+
+    DATA lv_rem TYPE string."#EC NEEDED
     SPLIT lv_class_name AT '=' INTO lv_class_name lv_rem.
 
     " Try to get methods

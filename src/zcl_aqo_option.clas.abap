@@ -210,7 +210,6 @@ METHOD create.
     lr_data          TYPE REF TO data,
     lr_table         TYPE REF TO data,
     lo_type          TYPE REF TO cl_abap_datadescr,
-    lv_ok            TYPE abap_bool,
     ls_field_desc    TYPE zcl_eui_type=>ts_field_desc,
     ls_history_value TYPE REF TO zcl_aqo_helper=>ts_history_value,
     lv_last_index    TYPE i,
@@ -257,6 +256,7 @@ METHOD create.
     lv_last_index = lines( <ls_field_value>-value ).
     READ TABLE <ls_field_value>-value REFERENCE INTO ls_history_value INDEX lv_last_index.
 
+    DATA lv_ok TYPE abap_bool. "#EC NEEDED in zcl_eui_conv=>from_json( ) check is requeted
     IF sy-subrc <> 0.
       lv_ok = abap_false.
     ELSE.
@@ -538,7 +538,7 @@ METHOD save.
 
   " Add previous messages text
   IF lv_in_editor = abap_true AND lv_is_dev <> abap_true.
-    CONCATENATE `The option was saved. Please copy or export it to DEV system! ` rv_info INTO rv_info.
+    CONCATENATE 'The option was saved. Please copy or export it to DEV system!'(ms1) rv_info INTO rv_info SEPARATED BY space.
   ELSE.
     CONCATENATE ms_db_item-package_id ` - ` ms_db_item-option_id INTO lv_text.
     MESSAGE s516(ed) WITH lv_text INTO lv_text.
@@ -550,7 +550,7 @@ ENDMETHOD.
 METHOD transport.
   " No need to transport
   IF ms_db_item-package_id CP '$*'.
-    rv_info = `No need to transport temporary options`.
+    rv_info = 'No need to transport temporary options'(ms2).
     RETURN.
   ENDIF.
 
@@ -699,7 +699,7 @@ METHOD _check_abap_declaration.
   IF lv_in_editor <> abap_true AND lt_editor_field IS NOT INITIAL.
     " Dont't have fields in abap source code
     " ---> lt_editor_field[]
-    IF 1 = 2.
+    IF 1 = 2.  "#EC BOOL_OK   Search message s027
       MESSAGE s027(zaqo_message) WITH '' '' '' ''.
     ENDIF.
 

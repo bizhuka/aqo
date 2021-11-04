@@ -33,7 +33,7 @@ FUNCTION zfm_aqo_option_exit.
   ENDIF.
 
   " Only for data selection
-  CHECK callcontrol-step = 'SELECT' OR callcontrol-step = 'SELONE'.
+  CHECK callcontrol-step = 'SELECT'. "OR callcontrol-step = 'SELONE'.
 
   " Use copy
   lt_fielddescr = shlp-fielddescr.

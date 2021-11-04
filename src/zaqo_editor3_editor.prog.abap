@@ -2,9 +2,14 @@
 *&---------------------------------------------------------------------*
 
 CLASS lcl_editor IMPLEMENTATION.
-  METHOD initialization.
-    " se38 or se80
-    CHECK sy-tcode CP 'SE*'.
+  METHOD constructor. " INITIALIZATION event
+    super->constructor( ).
+
+    " Mandt is open to change
+    mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
+
+    " Do not launch via se38 or se80
+    CHECK zcl_aqo_helper=>is_in_editor( ) <> abap_true.
     zcx_aqo_exception=>raise_dump( iv_message = 'Please use ZAQO* transactions instead!'(ms1) ).
   ENDMETHOD.
 
@@ -221,9 +226,6 @@ CLASS lcl_editor IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _set_flags.
-    " Mandt is open to change
-    mv_is_dev = zcl_aqo_helper=>is_dev_mandt( ).
-
     mv_read_only = abap_false.
     IF mo_option->lock( ) <> abap_true.
       mv_read_only = abap_true.
@@ -619,15 +621,7 @@ CLASS lcl_editor IMPLEMENTATION.
        iv_sub_fdesc = ls_fld_value->sub_fdesc ).
     ENDLOOP.
 
-    IF iv_menu_mode = abap_true.
-      DATA lv_col_end TYPE i.
-      ro_screen->get_dimension( IMPORTING ev_col_end = lv_col_end ).
-      ro_screen->popup( iv_col_end  = lv_col_end ).
-      ro_screen->show( io_handler      = me
-                       iv_handlers_map = '_ON_PBO_MENU_SCREEN' ).
-      RETURN.
-    ENDIF.
-
+    CHECK iv_menu_mode <> abap_true.
     ro_screen->pbo( ).
     CALL FUNCTION 'ZFM_EUI_NEXT_SCREEN'
       EXPORTING
@@ -637,6 +631,11 @@ CLASS lcl_editor IMPLEMENTATION.
 
   METHOD _on_pbo_menu_screen.
     sender->ms_status-title = _get_title( iv_add_opt_info = abap_true ).
+  ENDMETHOD.
+
+  METHOD _on_pai_menu_screen.
+    CHECK iv_command = 'OK' AND mv_read_only <> abap_true.
+    do_save( ).
   ENDMETHOD.
 
   METHOD _is_saved.

@@ -90,7 +90,7 @@ CLASS lcl_usage_in_code IMPLEMENTATION.
     ls_db_item = go_editor->mo_option->ms_db_item.
 
     IF ls_db_item-mainprogram IS INITIAL.
-      MESSAGE 'No previous call was found. Use code scannig'(ncl) TYPE 'S' DISPLAY LIKE 'E'.
+      MESSAGE 'No previous call was found. Use code scanning'(ncl) TYPE 'S' DISPLAY LIKE 'E'.
       RETURN.
     ENDIF.
 

@@ -36,7 +36,7 @@ CLASS lcl_general_info IMPLEMENTATION.
 
   METHOD pai.
     IF zsaqo3_general_info-prev_value_cnt > 7 OR zsaqo3_general_info-prev_value_cnt < 1.
-      MESSAGE 'Previous values count have to be from 1 to 7'(m07) TYPE 'E'.
+      MESSAGE 'Previous values count has to be from 1 to 7'(m07) TYPE 'E'.
       RETURN.
     ENDIF.
   ENDMETHOD.

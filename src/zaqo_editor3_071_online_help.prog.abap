@@ -41,7 +41,7 @@ CLASS lcl_online_help IMPLEMENTATION.
 
     DATA lv_url TYPE text255 VALUE 'https://bizhuka.github.io/aqo'. "#EC NOTEXT
     IF sy-langu = 'R'.
-      CONCATENATE lv_url '/ru' INTO lv_url.
+      lv_url = 'https://bizhuka.github.io/ru/aqo/'.
     ENDIF.
     mo_html_viewer->show_url(
       EXPORTING  url    = lv_url
