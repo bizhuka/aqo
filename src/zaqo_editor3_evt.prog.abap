@@ -50,8 +50,8 @@ FORM start_editor USING is_db_opt TYPE zsaqo_option. "#EC CALLED  External call 
   zcl_aqo_helper=>is_in_editor( iv_tcode = lv_tcode ).
 
   CREATE OBJECT go_editor.
-  go_editor->do_open( is_db_key    = ls_db_key
-                      iv_menu_mode = abap_true ).
+  go_editor->do_open( is_db_key      = ls_db_key
+                      iv_true_editor = abap_false ).
 
   DATA lo_screen TYPE REF TO zcl_eui_screen.
   lo_screen = go_editor->mo_screen.

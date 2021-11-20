@@ -5,24 +5,24 @@ CLASS lcl_field_setting DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui
   PUBLIC SECTION.
     METHODS:
 
-     pbo REDEFINITION.
+      pbo REDEFINITION.
 
   PROTECTED SECTION.
     METHODS:
-     _fill_table       REDEFINITION,
-     _get_layout       REDEFINITION,
-     _get_catalog      REDEFINITION,
-     _get_toolbar      REDEFINITION,
-     _on_hotspot_click REDEFINITION,
-     _on_user_command  REDEFINITION,
-     _on_app_event     REDEFINITION,
-     _on_data_changed  FOR EVENT data_changed OF cl_gui_alv_grid "#EC CALLED
+      _fill_table       REDEFINITION,
+      _get_layout       REDEFINITION,
+      _get_catalog      REDEFINITION,
+      _get_toolbar      REDEFINITION,
+      _on_hotspot_click REDEFINITION,
+      _on_user_command  REDEFINITION,
+      _on_app_event     REDEFINITION,
+      _on_data_changed  FOR EVENT data_changed OF cl_gui_alv_grid "#EC CALLED
         IMPORTING
           er_data_changed,
 
-     _check_data
-      CHANGING
-        cv_ok TYPE abap_bool.
+      _check_data
+        CHANGING
+          cv_ok TYPE abap_bool.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -33,13 +33,13 @@ CLASS lcl_field_setting DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui
 
 *    TYPES:
     METHODS:
-     _add_new_field
-       IMPORTING
-        io_grid TYPE REF TO cl_gui_alv_grid,
+      _add_new_field
+        IMPORTING
+          io_grid TYPE REF TO cl_gui_alv_grid,
 
-     _edit_1_value
-       IMPORTING
-         ir_fld_value TYPE REF TO lcl_editor=>ts_fld_value.
+      _edit_1_value
+        IMPORTING
+          ir_fld_value TYPE REF TO lcl_editor=>ts_fld_value.
 ENDCLASS.
 
 CLASS lcl_field_setting IMPLEMENTATION.
@@ -149,7 +149,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
           EXPORTING
             ir_field_desc = lr_field_desc
             iv_editable   = lv_editable.
-        lo_table_comp_alv->show( ).
+        CHECK lo_table_comp_alv->show( ) = 'OK'.
+        go_editor->sync_screen_ui( iv_message1 = '' ).
 
       WHEN 'VALUE_BUTTON'.
         _edit_1_value( lr_fld_value ).
@@ -167,6 +168,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _edit_1_value.
+    DATA lv_write_back TYPE abap_bool VALUE abap_false.
+
     CASE ir_fld_value->ui_type.
 
       WHEN zcl_eui_type=>mc_ui_type-range.
@@ -175,7 +178,7 @@ CLASS lcl_field_setting IMPLEMENTATION.
         IF go_editor->is_editable( ir_fld_value->is_editable ) <> abap_true.
           lv_read_only = abap_true.
         ENDIF.
-        zcl_eui_screen=>show_range(
+        lv_write_back = zcl_eui_screen=>show_range(
           is_field_desc = ir_fld_value->field_desc
           ir_cur_value  = ir_fld_value->cur_value
           iv_read_only  = lv_read_only ).
@@ -185,7 +188,7 @@ CLASS lcl_field_setting IMPLEMENTATION.
         CREATE OBJECT lo_table_alv
           EXPORTING
             ir_fld_value = ir_fld_value.
-        lo_table_alv->show( ).
+        CHECK lo_table_alv->show( ) = 'OK'.
 
       WHEN zcl_eui_type=>mc_ui_type-string.
         DATA lr_text     TYPE REF TO string.
@@ -200,7 +203,7 @@ CLASS lcl_field_setting IMPLEMENTATION.
             ir_text     = lr_text
             iv_editable = lv_editable.
         lo_memo->popup( ).
-        lo_memo->show( ).
+        CHECK lo_memo->show( ) = 'OK'.
 
         " Parameters
       WHEN OTHERS.
@@ -209,8 +212,19 @@ CLASS lcl_field_setting IMPLEMENTATION.
         zcl_eui_screen=>edit_in_popup(
          EXPORTING iv_label      = ir_fld_value->label
                   " iv_rollname   = ir_fld_value->rollname
-         CHANGING  cv_value     = <lv_value> ).
+         CHANGING  cv_value     = <lv_value>
+                   cv_ok        = lv_write_back ).
+
+        IF lv_write_back = abap_true.
+          go_editor->set_top_screen( ).
+        ENDIF.
     ENDCASE.
+
+    go_editor->sync_screen_ui( iv_message1 = '' ).
+
+    " For ranges and parameters only
+    CHECK lv_write_back = abap_true.
+    go_editor->mo_screen->set_init_params( ).
   ENDMETHOD.
 
   METHOD _get_toolbar.
@@ -236,7 +250,7 @@ CLASS lcl_field_setting IMPLEMENTATION.
   METHOD _on_user_command.
     CASE e_ucomm.
       WHEN cl_gui_alv_grid=>mc_fc_loc_delete_row. " mc_button-delete_field.
-        go_editor->sync_screen_ui( iv_message = '' ).
+        go_editor->sync_screen_ui( iv_message1 = 'Exit for regenerating "Option data" screen'(ad3) ).
 
       WHEN mc_button-add_new_field.
         _add_new_field( sender ).
@@ -275,21 +289,22 @@ CLASS lcl_field_setting IMPLEMENTATION.
 
     io_grid->refresh_table_display( ).
     MESSAGE s032(zaqo_message) WITH lv_fname INTO sy-msgli.
-    go_editor->sync_screen_ui( iv_message = sy-msgli
-                               iv_exit    = abap_true ).
+    go_editor->sync_screen_ui( iv_message1 = sy-msgli
+                               iv_message2 = 'Exit for regenerating "Option data" screen'(ad3)
+                               iv_cmd      = mc_pai_cmd-exit ).
   ENDMETHOD.
 
   METHOD _on_data_changed.
     " Call checks manually. For sync with 'Edit data' tab only
     CHECK er_data_changed IS NOT INITIAL.
 
-    DATA lv_message TYPE abap_bool VALUE abap_undefined.
+    DATA lv_message1 TYPE string.
     READ TABLE er_data_changed->mt_mod_cells TRANSPORTING NO FIELDS
      WITH KEY fieldname = 'ROLLNAME'.
     IF sy-subrc = 0.
-      CLEAR lv_message. " <-- Yes show message
+      lv_message1 = 'Exit for regenerating "Option data" screen'(ad3).
     ENDIF.
-    go_editor->sync_screen_ui( lv_message ).
+    go_editor->sync_screen_ui( iv_message1 = lv_message1 ).
   ENDMETHOD.
 
   METHOD _on_app_event.
@@ -349,7 +364,7 @@ ENDCLASS.
 *&---------------------------------------------------------------------*
 
 MODULE pbo_072 OUTPUT.
-  DATA go_field_setting TYPE REF TO lcl_field_setting. "#EC DECL_MODUL
+  DATA go_field_setting TYPE REF TO lcl_field_setting.  "#EC DECL_MODUL
   IF go_field_setting IS INITIAL.
     CREATE OBJECT go_field_setting.
   ENDIF.

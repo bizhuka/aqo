@@ -65,7 +65,7 @@ CLASS lcl_editor DEFINITION FINAL
     TYPES:
       BEGIN OF ts_fld_value,
         icon         TYPE icon_d.
-        INCLUDE    TYPE zcl_aqo_helper=>ts_field_value.
+        INCLUDE      TYPE zcl_aqo_helper=>ts_field_value AS _field_value.
       TYPES:
         cur_value    TYPE REF TO data,
         catalog      TYPE icon_d,
@@ -99,13 +99,15 @@ CLASS lcl_editor DEFINITION FINAL
 
       sync_screen_ui
         IMPORTING
-          iv_message TYPE csequence
-          iv_exit    TYPE abap_bool OPTIONAL,
+          iv_message1 TYPE csequence
+          iv_message2 TYPE csequence OPTIONAL
+          iv_cmd      TYPE syucomm   DEFAULT '-',
 
       do_open
         IMPORTING
-          is_db_key    TYPE ts_db_key
-          iv_menu_mode TYPE abap_bool OPTIONAL,
+          is_db_key      TYPE ts_db_key
+          iv_true_editor TYPE abap_bool DEFAULT abap_true,
+     set_top_screen,
 
       do_delete
         IMPORTING
@@ -147,7 +149,7 @@ CLASS lcl_editor DEFINITION FINAL
 
   PRIVATE SECTION.
     DATA:
-      mv_initial_hash TYPE char16.
+      mv_initial_hash TYPE string. "char16.
 
     METHODS:
       _set_tab1_icon,
@@ -170,8 +172,6 @@ CLASS lcl_editor DEFINITION FINAL
       _find_f4_tables,
 
       _make_screen
-        IMPORTING
-                  iv_menu_mode     TYPE abap_bool
         RETURNING VALUE(ro_screen) TYPE REF TO zcl_eui_screen,
       _on_pbo_menu_screen FOR EVENT pbo_event OF zif_eui_manager
         IMPORTING
@@ -184,7 +184,7 @@ CLASS lcl_editor DEFINITION FINAL
         RETURNING VALUE(rv_ok) TYPE abap_bool,
 
       _calculate_hash
-        RETURNING VALUE(rv_hash) TYPE char16.
+        RETURNING VALUE(rv_hash) LIKE mv_initial_hash. "char16.
 ENDCLASS.
 
 *&---------------------------------------------------------------------*

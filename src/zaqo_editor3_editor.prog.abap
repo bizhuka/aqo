@@ -18,33 +18,29 @@ CLASS lcl_editor IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD sync_screen_ui.
-    DATA: lv_ucomm TYPE syucomm VALUE '-'.
+    DATA lt_message TYPE stringtab.
+    APPEND iv_message1 TO lt_message.
+    APPEND iv_message2 TO lt_message.
+    DELETE lt_message WHERE table_line IS INITIAL.
 
-    DO 1 TIMES.
-      CHECK iv_message <> abap_undefined.
-
-      DATA lv_message TYPE string.
-      lv_message = 'Exit for regenerating "Option data" screen'(ad3).
-
+    IF lt_message IS NOT INITIAL.
       " Messages as popup
-      IF iv_exit = abap_true.
+      IF iv_cmd = mc_pai_cmd-exit.
         DATA lo_logger TYPE REF TO zcl_eui_logger.
         CREATE OBJECT lo_logger.
-        lo_logger->add_text( iv_text = iv_message ).
-        lo_logger->add_text( iv_text = lv_message iv_msgty = 'W' ).
+
+        DATA lv_message TYPE string.
+        LOOP AT lt_message INTO lv_message.
+          lo_logger->add_text( iv_text = lv_message ).
+        ENDLOOP.
         lo_logger->show( iv_profile = zcl_eui_logger=>mc_profile-popup ).
-        lv_ucomm = mc_pai_cmd-exit.
-        EXIT.
+      ELSE.
+        CONCATENATE LINES OF lt_message INTO lv_message SEPARATED BY ` - `.
+        MESSAGE lv_message TYPE 'S'.
       ENDIF.
+    ENDIF.
 
-      " Informative messages
-      IF iv_message IS NOT INITIAL.
-        CONCATENATE iv_message lv_message INTO lv_message SEPARATED BY ` - `.
-      ENDIF.
-      MESSAGE lv_message TYPE 'S'.
-    ENDDO.
-
-    cl_gui_cfw=>set_new_ok_code( lv_ucomm ).
+    cl_gui_cfw=>set_new_ok_code( iv_cmd ).
   ENDMETHOD.
 
   METHOD pbo.
@@ -156,7 +152,7 @@ CLASS lcl_editor IMPLEMENTATION.
         OR mc_pai_cmd-new_option. " TODO detect creation mode?
 
         CHECK _is_saved( ) = abap_true.
-        do_open( is_db_key = ls_command-db_key ).
+        do_open( ls_command-db_key ).
 
         IF lv_ok_code = mc_pai_cmd-new_option.
           g_tabs-pressed_tab = mc_pai_cmd-tab_field_settings.
@@ -210,19 +206,32 @@ CLASS lcl_editor IMPLEMENTATION.
 
     _set_flags( ).
     zsaqo3_general_info = _get_general_info( ).
+
+    " Fill mt_fld_value & F4
     _fill_fields( ).
     _find_f4_tables( ).
 
     " Active tab is 'Edit data'
     g_tabs-pressed_tab = mc_pai_cmd-tab_edit_data.
-    mo_screen = _make_screen( iv_menu_mode = iv_menu_mode ).
-    CHECK mo_screen IS NOT INITIAL.
+    mo_screen = _make_screen( ).
 
+    CHECK mo_screen IS NOT INITIAL.
+    IF iv_true_editor = abap_true.
+      mo_screen->pbo( ).
+      set_top_screen( ).
+    ENDIF.
     mv_initial_hash = _calculate_hash( ).
 
     CHECK mo_tree IS NOT INITIAL.
     mo_prefs->add_opened( is_db_key ).
     mo_tree->add_opened( is_db_key ).
+  ENDMETHOD.
+
+  METHOD set_top_screen.
+    CALL FUNCTION 'ZFM_EUI_NEXT_SCREEN'
+      EXPORTING
+        io_scr_manager = mo_screen
+        iv_is_top      = abap_true.
   ENDMETHOD.
 
   METHOD _set_flags.
@@ -499,6 +508,8 @@ CLASS lcl_editor IMPLEMENTATION.
 
       LOOP AT mt_fld_value REFERENCE INTO ls_fld_value.
         ASSIGN COMPONENT ls_fld_value->name OF STRUCTURE <ls_context> TO <lv_src>.
+        CHECK sy-subrc = 0.
+
         ASSIGN ls_fld_value->cur_value->* TO <lv_dest>.
         <lv_dest> = <lv_src>.
       ENDLOOP.
@@ -576,6 +587,9 @@ CLASS lcl_editor IMPLEMENTATION.
       ASSIGN COMPONENT ls_fld_value->name OF STRUCTURE <ls_dest> TO <lv_dest>.
       ASSIGN ls_fld_value->cur_value->* TO <lv_src>.
       <lv_dest> = <lv_src>.
+
+      " Use memory from SCREEN
+      GET REFERENCE OF <lv_dest> INTO ls_fld_value->cur_value.
     ENDLOOP.
 
     DATA: lv_unq_prog TYPE programm, lo_crc64 TYPE REF TO zcl_eui_crc64, lv_pack TYPE c LENGTH 9.
@@ -620,13 +634,6 @@ CLASS lcl_editor IMPLEMENTATION.
        iv_label     = ls_fld_value->label
        iv_sub_fdesc = ls_fld_value->sub_fdesc ).
     ENDLOOP.
-
-    CHECK iv_menu_mode <> abap_true.
-    ro_screen->pbo( ).
-    CALL FUNCTION 'ZFM_EUI_NEXT_SCREEN'
-      EXPORTING
-        io_scr_manager = ro_screen
-        iv_is_top      = abap_true.
   ENDMETHOD.
 
   METHOD _on_pbo_menu_screen.
@@ -682,7 +689,6 @@ CLASS lcl_editor IMPLEMENTATION.
     lo_crc64->add_to_hash( <ls_context> ).
     lo_crc64->add_to_hash( zsaqo3_general_info ).
     lo_crc64->add_to_hash( mt_fld_value ).
-
     rv_hash = lo_crc64->get_hash( ).
   ENDMETHOD.
 

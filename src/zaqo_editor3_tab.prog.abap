@@ -6,71 +6,72 @@ CLASS lcl_tab DEFINITION ABSTRACT.
   PUBLIC SECTION.
     METHODS:
       " For ALV tables based on TS_FLD_VALUE
-      show,
+      show
+        RETURNING VALUE(rv_close_cmd) TYPE syucomm,
 
       " For general ALV in tabs
       pbo.
 
   PROTECTED SECTION.
     DATA:
-      ms_db_key    TYPE ts_db_key,
-      mr_table     TYPE REF TO data,
-      mo_alv       TYPE REF TO zcl_eui_alv.
+      ms_db_key TYPE ts_db_key,
+      mr_table  TYPE REF TO data,
+      mo_alv    TYPE REF TO zcl_eui_alv.
 
     METHODS:
-     _fill_table,
+      _fill_table,
 
-     _create_alv
-      IMPORTING
-        iv_for_field TYPE abap_bool,
+      _create_alv
+        IMPORTING
+          iv_for_field TYPE abap_bool,
 
-     _get_layout
-      RETURNING value(rs_layout) TYPE lvc_s_layo,
+      _get_layout
+        RETURNING VALUE(rs_layout) TYPE lvc_s_layo,
 
-     _get_catalog
-      RETURNING value(rt_catalog) TYPE lvc_t_fcat,
+      _get_catalog
+        RETURNING VALUE(rt_catalog) TYPE lvc_t_fcat,
 
-     _get_toolbar
-      RETURNING value(rt_toolbar) TYPE ttb_button,
+      _get_toolbar
+        RETURNING VALUE(rt_toolbar) TYPE ttb_button,
 
-     _get_filter
-      RETURNING value(rt_filter) TYPE lvc_t_filt,
+      _get_filter
+        RETURNING VALUE(rt_filter) TYPE lvc_t_filt,
 
-     _get_sort
-      RETURNING value(rt_sort) TYPE lvc_t_sort,
+      _get_sort
+        RETURNING VALUE(rt_sort) TYPE lvc_t_sort,
 
-     _get_status
-      RETURNING value(rs_status) TYPE zif_eui_manager=>ts_status,
+      _get_status
+        RETURNING VALUE(rs_status) TYPE zif_eui_manager=>ts_status,
 
-     _on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid       "#EC CALLED
-      IMPORTING
-        e_object
-        e_interactive,
+      _on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid      "#EC CALLED
+        IMPORTING
+          e_object
+          e_interactive,
 
-     _on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid "#EC CALLED
-      IMPORTING
-        e_row_id
-        e_column_id,
+      _on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid "#EC CALLED
+        IMPORTING
+          e_row_id
+          e_column_id,
 
-     _on_user_command FOR EVENT user_command OF cl_gui_alv_grid "#EC CALLED
-      IMPORTING
-        sender
-        e_ucomm,
+      _on_user_command FOR EVENT user_command OF cl_gui_alv_grid "#EC CALLED
+        IMPORTING
+          sender
+          e_ucomm,
 
-     _create_container
-       RETURNING value(ro_container) TYPE REF TO cl_gui_custom_container,
+      _create_container
+        RETURNING VALUE(ro_container) TYPE REF TO cl_gui_custom_container,
 
-     _on_app_event FOR EVENT app_event OF lcl_editor
-      IMPORTING
-       iv_origin
-       cv_ok,
+      _on_app_event FOR EVENT app_event OF lcl_editor
+        IMPORTING
+          iv_origin
+          cv_ok,
 
       need_refresh
-       RETURNING value(rv_refresh) TYPE abap_bool,
+        RETURNING VALUE(rv_refresh) TYPE abap_bool,
 
-     _refresh_now,
+      _refresh_now,
 
-     _refresh_after.
+      _refresh_after.
 ENDCLASS.
 
 CLASS lcl_tab IMPLEMENTATION.
@@ -83,7 +84,7 @@ CLASS lcl_tab IMPLEMENTATION.
 
     mo_alv->popup( iv_row_end = 28 ).
 
-    mo_alv->show( ).
+    rv_close_cmd = mo_alv->show( ).
   ENDMETHOD.
 
   METHOD pbo.

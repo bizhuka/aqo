@@ -178,6 +178,12 @@ CLASS ZCL_AQO_HELPER IMPLEMENTATION.
 METHOD add_menu.
   CHECK is_db_opt-menu_mode <> mc_menu_mode-hide.
 
+  " 1 time only
+  READ TABLE mt_menu_sh TRANSPORTING NO FIELDS
+   WITH KEY package_id = is_db_opt-package_id
+            option_id  = is_db_opt-option_id.
+  CHECK sy-subrc <> 0.
+
   DATA ls_menu_sh LIKE LINE OF mt_menu_sh.
   MOVE-CORRESPONDING is_db_opt TO ls_menu_sh.
   ls_menu_sh-tabix = lines( mt_menu_sh ) + 1.

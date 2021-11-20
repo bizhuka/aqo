@@ -19,6 +19,7 @@ CLASS lcl_table_alv DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_eve
       _get_layout       REDEFINITION,
       _get_status       REDEFINITION,
       _get_catalog      REDEFINITION,
+      _on_toolbar       REDEFINITION,
 
       _get_f4_catalog
         EXPORTING
@@ -100,5 +101,8 @@ CLASS lcl_table_alv IMPLEMENTATION.
       lr_catalog->fieldname  = lr_sub_fld->name.
       lr_catalog->f4availabl = abap_true.
     ENDLOOP.
+  ENDMETHOD.
+
+  METHOD _on_toolbar.
   ENDMETHOD.
 ENDCLASS.
