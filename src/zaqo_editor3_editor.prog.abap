@@ -18,29 +18,11 @@ CLASS lcl_editor IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD sync_screen_ui.
-    DATA lt_message TYPE stringtab.
-    APPEND iv_message1 TO lt_message.
-    APPEND iv_message2 TO lt_message.
-    DELETE lt_message WHERE table_line IS INITIAL.
-
-    IF lt_message IS NOT INITIAL.
-      " Messages as popup
-      IF iv_cmd = mc_pai_cmd-exit.
-        DATA lo_logger TYPE REF TO zcl_eui_logger.
-        CREATE OBJECT lo_logger.
-
-        DATA lv_message TYPE string.
-        LOOP AT lt_message INTO lv_message.
-          lo_logger->add_text( iv_text = lv_message ).
-        ENDLOOP.
-        lo_logger->show( iv_profile = zcl_eui_logger=>mc_profile-popup ).
-      ELSE.
-        CONCATENATE LINES OF lt_message INTO lv_message SEPARATED BY ` - `.
-        MESSAGE lv_message TYPE 'S'.
-      ENDIF.
+    IF iv_message IS NOT INITIAL.
+      MESSAGE iv_message TYPE 'S'.
     ENDIF.
 
-    cl_gui_cfw=>set_new_ok_code( iv_cmd ).
+    cl_gui_cfw=>set_new_ok_code( '-' ).
   ENDMETHOD.
 
   METHOD pbo.
@@ -62,9 +44,17 @@ CLASS lcl_editor IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _set_tab1_icon.
+    IF mv_is_dev = abap_true.
+      LOOP AT SCREEN.
+        CHECK screen-name EQ 'TABS_TAB1'.
+        screen-active = '0'.
+        MODIFY SCREEN.
+        RETURN.
+      ENDLOOP.
+    ENDIF.
+
     DATA lv_icon TYPE text20.
     DATA lv_text TYPE text100.
-
     IF mv_read_only <> abap_true.
       lv_icon = 'ICON_CHANGE'.
       lv_text = 'Edit data'(edd).
@@ -85,7 +75,7 @@ CLASS lcl_editor IMPLEMENTATION.
 
   METHOD _set_status.
     DATA lt_exclude TYPE STANDARD TABLE OF syucomm.
-    IF mo_option IS INITIAL OR mv_read_only = abap_true OR mo_screen IS INITIAL OR mv_initial_hash = _calculate_hash( ).
+    IF mo_option IS INITIAL OR mv_read_only = abap_true OR mv_initial_hash = _calculate_hash( ).
       APPEND mc_pai_cmd-save TO lt_exclude.
     ENDIF.
     SET PF-STATUS 'MAIN_STATUS' EXCLUDING lt_exclude.
@@ -93,7 +83,7 @@ CLASS lcl_editor IMPLEMENTATION.
 
   METHOD _set_titlebar.
     DATA lv_title TYPE string.
-    lv_title = _get_title( ).
+    lv_title = get_title( ).
     SET TITLEBAR 'TITLE_100' OF PROGRAM 'SAPLZFG_EUI_SCREEN' WITH lv_title.
   ENDMETHOD.
 
@@ -110,7 +100,7 @@ CLASS lcl_editor IMPLEMENTATION.
     mo_tree->fill( ).
   ENDMETHOD.
 
-  METHOD _get_title.
+  METHOD get_title.
     CHECK mo_option IS NOT INITIAL.
 
     IF mv_read_only <> abap_true.
@@ -211,12 +201,15 @@ CLASS lcl_editor IMPLEMENTATION.
     _fill_fields( ).
     _find_f4_tables( ).
 
-    " Active tab is 'Edit data'
-    g_tabs-pressed_tab = mc_pai_cmd-tab_edit_data.
-    mo_screen = _make_screen( ).
+    " Which tab is active ?
+    IF mv_is_dev = abap_true.
+      g_tabs-pressed_tab = mc_pai_cmd-tab_field_settings.
+    ELSE.
+      g_tabs-pressed_tab = mc_pai_cmd-tab_edit_data.
+    ENDIF.
+    make_screen( iv_check_dev = iv_true_editor ).
 
-    CHECK mo_screen IS NOT INITIAL.
-    IF iv_true_editor = abap_true.
+    IF mo_screen IS NOT INITIAL AND iv_true_editor = abap_true.
       mo_screen->pbo( ).
       set_top_screen( ).
     ENDIF.
@@ -225,6 +218,32 @@ CLASS lcl_editor IMPLEMENTATION.
     CHECK mo_tree IS NOT INITIAL.
     mo_prefs->add_opened( is_db_key ).
     mo_tree->add_opened( is_db_key ).
+  ENDMETHOD.
+
+  METHOD show_all.
+    CHECK mo_screen IS NOT INITIAL.
+
+    DATA lv_col_end TYPE i.
+    mo_screen->get_dimension( IMPORTING ev_col_end = lv_col_end ).
+    mo_screen->popup( iv_col_end  = lv_col_end ).
+
+    DATA lv_hanlers TYPE string VALUE '_ON_PBO_MENU_SCREEN'.
+    IF iv_ok_as_save = abap_true.
+      CONCATENATE lv_hanlers '_ON_PAI_MENU_SCREEN' INTO lv_hanlers SEPARATED BY ';'.
+    ENDIF.
+
+    mo_screen->show( io_handler      = go_editor
+                     iv_handlers_map = lv_hanlers ).
+    CLEAR mo_screen.
+  ENDMETHOD.
+
+  METHOD _on_pbo_menu_screen.
+    sender->ms_status-title = get_title( iv_add_opt_info = abap_true ).
+  ENDMETHOD.
+
+  METHOD _on_pai_menu_screen.
+    CHECK iv_command = 'OK' AND mv_read_only <> abap_true.
+    do_save( ).
   ENDMETHOD.
 
   METHOD set_top_screen.
@@ -552,7 +571,7 @@ CLASS lcl_editor IMPLEMENTATION.
     do_open( ls_db_key ).
   ENDMETHOD.
 
-  METHOD _make_screen.
+  METHOD make_screen.
     DATA lr_dyn_screen       TYPE REF TO data.
     DATA lt_sub_field        TYPE zcl_eui_type=>tt_field_desc.
     DATA ls_sub_field        TYPE zcl_eui_type=>ts_field_desc.
@@ -564,8 +583,14 @@ CLASS lcl_editor IMPLEMENTATION.
     FIELD-SYMBOLS <lv_dest>  TYPE any.
     FIELD-SYMBOLS <lv_src>   TYPE any.
 
-    " Create structure for screen
+    CLEAR mo_screen.
+
     CHECK mt_fld_value[] IS NOT INITIAL.
+    IF iv_check_dev = abap_true.
+      CHECK mv_is_dev <> abap_true.
+    ENDIF.
+
+    " Create structure for screen
     LOOP AT mt_fld_value REFERENCE INTO ls_fld_value.
       MOVE-CORRESPONDING ls_fld_value->* TO ls_sub_field.
       INSERT ls_sub_field INTO TABLE lt_sub_field.
@@ -608,7 +633,7 @@ CLASS lcl_editor IMPLEMENTATION.
           lv_editable = abap_true.
         ENDIF.
 
-        CREATE OBJECT ro_screen
+        CREATE OBJECT mo_screen
           EXPORTING
             iv_dynnr    = zcl_eui_screen=>mc_dynnr-dynamic
             iv_cprog    = lv_unq_prog
@@ -618,7 +643,7 @@ CLASS lcl_editor IMPLEMENTATION.
         MESSAGE lo_err TYPE 'S' DISPLAY LIKE 'E'.
         RETURN.
     ENDTRY.
-    "ro_screen->ms_status-title = 'Option data'.
+    "mo_screen->ms_status-title = 'Option data'.
 
     " Editable or not
     LOOP AT mt_fld_value REFERENCE INTO ls_fld_value.
@@ -628,7 +653,7 @@ CLASS lcl_editor IMPLEMENTATION.
       ENDIF.
 
       " TODO required ?
-      ro_screen->customize(
+      mo_screen->customize(
        name         = ls_fld_value->name
        input        = lv_input
        iv_label     = ls_fld_value->label
@@ -636,19 +661,9 @@ CLASS lcl_editor IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
-  METHOD _on_pbo_menu_screen.
-    sender->ms_status-title = _get_title( iv_add_opt_info = abap_true ).
-  ENDMETHOD.
-
-  METHOD _on_pai_menu_screen.
-    CHECK iv_command = 'OK' AND mv_read_only <> abap_true.
-    do_save( ).
-  ENDMETHOD.
-
   METHOD _is_saved.
     rv_ok = abap_true.
-    CHECK mo_option        IS NOT INITIAL
-      AND mo_screen        IS NOT INITIAL
+    CHECK mo_option       IS NOT INITIAL
       AND mv_initial_hash IS NOT INITIAL.
 
     CHECK mv_initial_hash <> _calculate_hash( ).
@@ -676,19 +691,18 @@ CLASS lcl_editor IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _calculate_hash.
-    CHECK mo_screen IS NOT INITIAL.
-
-    DATA lr_context TYPE REF TO data.
-    lr_context = mo_screen->get_context( ).
-
-    FIELD-SYMBOLS <ls_context> TYPE any.
-    ASSIGN lr_context->* TO <ls_context>.
-
     DATA lo_crc64 TYPE REF TO zcl_eui_crc64.
     CREATE OBJECT lo_crc64.
-    lo_crc64->add_to_hash( <ls_context> ).
     lo_crc64->add_to_hash( zsaqo3_general_info ).
     lo_crc64->add_to_hash( mt_fld_value ).
+
+    IF mv_is_dev <> abap_true AND mo_screen IS NOT INITIAL.
+      DATA lr_context TYPE REF TO data.
+      lr_context = mo_screen->get_context( ).
+
+      lo_crc64->add_to_hash( lr_context ).
+    ENDIF.
+
     rv_hash = lo_crc64->get_hash( ).
   ENDMETHOD.
 

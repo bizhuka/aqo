@@ -52,15 +52,5 @@ FORM start_editor USING is_db_opt TYPE zsaqo_option. "#EC CALLED  External call 
   CREATE OBJECT go_editor.
   go_editor->do_open( is_db_key      = ls_db_key
                       iv_true_editor = abap_false ).
-
-  DATA lo_screen TYPE REF TO zcl_eui_screen.
-  lo_screen = go_editor->mo_screen.
-  CHECK lo_screen IS NOT INITIAL.
-
-  DATA lv_col_end TYPE i.
-  lo_screen->get_dimension( IMPORTING ev_col_end = lv_col_end ).
-  lo_screen->popup( iv_col_end  = lv_col_end ).
-
-  lo_screen->show( io_handler      = go_editor
-                   iv_handlers_map = '_ON_PBO_MENU_SCREEN;_ON_PAI_MENU_SCREEN' ).
+  go_editor->show_all( iv_ok_as_save = abap_true ).
 ENDFORM.

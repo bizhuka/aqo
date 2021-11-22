@@ -29,10 +29,15 @@ CLASS lcl_field_setting DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui
       BEGIN OF mc_button,
         "delete_field  TYPE syucomm VALUE 'DELETE_FIELD',
         add_new_field TYPE syucomm VALUE 'ADD_NEW_FIELD',
+        show_all      TYPE syucomm VALUE 'SHOW_ALL',
       END OF mc_button.
 
 *    TYPES:
     METHODS:
+      _check_has_history
+        CHANGING
+          cs_catalog TYPE lvc_s_fcat,
+
       _add_new_field
         IMPORTING
           io_grid TYPE REF TO cl_gui_alv_grid,
@@ -50,7 +55,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
 
   METHOD _get_layout.
     rs_layout = super->_get_layout( ).
-    "rs_layout-grid_title = _get_title( ).
+    rs_layout-sel_mode = 'A'.
+    rs_layout-grid_title = go_editor->get_title( ).
   ENDMETHOD.
 
   METHOD _fill_table.
@@ -58,20 +64,39 @@ CLASS lcl_field_setting IMPLEMENTATION.
     lo_grid = mo_alv->get_grid( ).
     CHECK lo_grid IS NOT INITIAL.
 
+    lo_grid->set_frontend_layout( _get_layout( ) ).
+
     DATA lt_catalog TYPE lvc_t_fcat.
     lo_grid->get_frontend_fieldcatalog( IMPORTING et_fieldcatalog = lt_catalog ).
 
     DATA: lt_field TYPE STANDARD TABLE OF fieldname,
           lv_field TYPE fieldname.
-    SPLIT 'LABEL;IS_EDITABLE;ROLLNAME' AT ';' INTO TABLE lt_field.
+    SPLIT 'HISTORY_LOGS;LABEL;IS_EDITABLE;ROLLNAME' AT ';' INTO TABLE lt_field.
     LOOP AT lt_field INTO lv_field.
       FIELD-SYMBOLS <ls_catalog> LIKE LINE OF lt_catalog.
       READ TABLE lt_catalog ASSIGNING <ls_catalog>
        WITH KEY fieldname = lv_field.
       CHECK sy-subrc = 0.
+
+      IF <ls_catalog>-fieldname = 'HISTORY_LOGS'.
+        _check_has_history( CHANGING cs_catalog = <ls_catalog> ).
+        CONTINUE.
+      ENDIF.
+
       <ls_catalog>-edit = go_editor->is_editable( ).
     ENDLOOP.
     lo_grid->set_frontend_fieldcatalog( lt_catalog ).
+  ENDMETHOD.
+
+  METHOD _check_has_history.
+    cs_catalog-no_out = cs_catalog-tech = abap_true.
+
+    FIELD-SYMBOLS <ls_fld_value> LIKE LINE OF go_editor->mt_fld_value.
+    LOOP AT go_editor->mt_fld_value ASSIGNING <ls_fld_value>.
+      CHECK lines( <ls_fld_value>-value ) > 1.
+      cs_catalog-no_out = cs_catalog-tech = abap_false.
+      EXIT.
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD _get_catalog.
@@ -79,39 +104,48 @@ CLASS lcl_field_setting IMPLEMENTATION.
     DATA lr_catalog  TYPE REF TO lvc_s_fcat.
     lv_editable = go_editor->is_editable( ).
 
-    " All fields are hidden
+    add_fcat_field 'ICON' '---'.
+    lr_catalog->outputlen = 3.
+
+    add_fcat_field 'NAME' ''.
+    lr_catalog->outputlen = 15.
+
+    add_fcat_field 'UI_TYPE' 'Kind'(knd).
+    lr_catalog->outputlen = 8.
+
     add_fcat_field 'LABEL' ''.
     lr_catalog->edit     = lv_editable.
     lr_catalog->col_pos  = 11.
+    lr_catalog->outputlen = 24.
 
     add_fcat_field 'IS_EDITABLE' ''.
     lr_catalog->edit     = lv_editable.
-    lr_catalog->col_pos  = 12.
+    lr_catalog->col_pos  = 11.
+    lr_catalog->outputlen = 12.
 
     add_fcat_field 'ROLLNAME' ''.
     lr_catalog->edit     = lv_editable.
     lr_catalog->col_pos  = 13.
-
-    add_fcat_field 'ICON' '---'.
+    lr_catalog->outputlen = 25.
 
     " Now show for all types
     add_fcat_field 'VALUE_BUTTON' 'Quick edit'(qed).
-    lr_catalog->hotspot   = abap_true.
+    lr_catalog->hotspot = abap_true.
+    lr_catalog->outputlen = 14.
+    IF go_editor->mv_is_dev <> abap_true.
+      lr_catalog->tech = abap_true.
+    ENDIF.
 
     " If have 'TABLE'
     add_fcat_field 'CATALOG' 'DDIC or Catalog'(cat).
     lr_catalog->hotspot   = abap_true.
+    lr_catalog->outputlen = 14.
 
     " If have history
     add_fcat_field 'HISTORY_LOGS'  'View logs'(log).
     lr_catalog->hotspot   = abap_true.
-    lr_catalog->tech = abap_true.
-    FIELD-SYMBOLS <ls_fld_value> LIKE LINE OF go_editor->mt_fld_value.
-    LOOP AT go_editor->mt_fld_value ASSIGNING <ls_fld_value>.
-      CHECK lines( <ls_fld_value>-value ) > 1.
-      lr_catalog->tech = abap_false.
-      EXIT.
-    ENDLOOP.
+    lr_catalog->outputlen = 16.
+    _check_has_history( CHANGING cs_catalog = lr_catalog->* ).
 
     " tech fields
     add_fcat_field '+' ''. " Begin of group
@@ -150,7 +184,7 @@ CLASS lcl_field_setting IMPLEMENTATION.
             ir_field_desc = lr_field_desc
             iv_editable   = lv_editable.
         CHECK lo_table_comp_alv->show( ) = 'OK'.
-        go_editor->sync_screen_ui( iv_message1 = '' ).
+        go_editor->sync_screen_ui( iv_message = '' ).
 
       WHEN 'VALUE_BUTTON'.
         _edit_1_value( lr_fld_value ).
@@ -168,17 +202,18 @@ CLASS lcl_field_setting IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _edit_1_value.
-    DATA lv_write_back TYPE abap_bool VALUE abap_false.
+    DATA lv_editable TYPE abap_bool.
+    lv_editable = go_editor->is_editable( ir_fld_value->is_editable ).
 
     CASE ir_fld_value->ui_type.
 
       WHEN zcl_eui_type=>mc_ui_type-range.
         " Select option
         DATA lv_read_only TYPE abap_bool.
-        IF go_editor->is_editable( ir_fld_value->is_editable ) <> abap_true.
+        IF lv_editable <> abap_true.
           lv_read_only = abap_true.
         ENDIF.
-        lv_write_back = zcl_eui_screen=>show_range(
+        zcl_eui_screen=>show_range(
           is_field_desc = ir_fld_value->field_desc
           ir_cur_value  = ir_fld_value->cur_value
           iv_read_only  = lv_read_only ).
@@ -188,22 +223,19 @@ CLASS lcl_field_setting IMPLEMENTATION.
         CREATE OBJECT lo_table_alv
           EXPORTING
             ir_fld_value = ir_fld_value.
-        CHECK lo_table_alv->show( ) = 'OK'.
+        lo_table_alv->show( ).
 
       WHEN zcl_eui_type=>mc_ui_type-string.
         DATA lr_text     TYPE REF TO string.
-        DATA lv_editable TYPE abap_bool.
         DATA lo_memo     TYPE REF TO zcl_eui_memo.
 
         lr_text ?= ir_fld_value->cur_value.
-        lv_editable = go_editor->is_editable( ir_fld_value->is_editable ).
-
         CREATE OBJECT lo_memo
           EXPORTING
             ir_text     = lr_text
             iv_editable = lv_editable.
         lo_memo->popup( ).
-        CHECK lo_memo->show( ) = 'OK'.
+        lo_memo->show( ).
 
         " Parameters
       WHEN OTHERS.
@@ -211,24 +243,19 @@ CLASS lcl_field_setting IMPLEMENTATION.
         ASSIGN ir_fld_value->cur_value->* TO <lv_value>.
         zcl_eui_screen=>edit_in_popup(
          EXPORTING iv_label      = ir_fld_value->label
-                  " iv_rollname   = ir_fld_value->rollname
-         CHANGING  cv_value     = <lv_value>
-                   cv_ok        = lv_write_back ).
-
-        IF lv_write_back = abap_true.
-          go_editor->set_top_screen( ).
-        ENDIF.
+                   iv_editable   = lv_editable
+         CHANGING  "cv_ok        = lv_write_back
+                   cv_value     = <lv_value> ).
     ENDCASE.
-
-    go_editor->sync_screen_ui( iv_message1 = '' ).
-
-    " For ranges and parameters only
-    CHECK lv_write_back = abap_true.
-    go_editor->mo_screen->set_init_params( ).
   ENDMETHOD.
 
   METHOD _get_toolbar.
     FIELD-SYMBOLS <ls_button> LIKE LINE OF rt_toolbar.
+
+    APPEND INITIAL LINE TO rt_toolbar ASSIGNING <ls_button>.
+    <ls_button>-function  = mc_button-add_new_field.
+    <ls_button>-icon      = icon_insert_row.
+    <ls_button>-text      = 'Add new field'(anf).
 
     APPEND INITIAL LINE TO rt_toolbar ASSIGNING <ls_button>.
     " Use standard ALV button intead of mc_button-delete_field.
@@ -236,24 +263,38 @@ CLASS lcl_field_setting IMPLEMENTATION.
     <ls_button>-icon      = icon_delete_row.
     <ls_button>-text      = 'Delete field'(dlf).
 
-    APPEND INITIAL LINE TO rt_toolbar ASSIGNING <ls_button>.
-    <ls_button>-function  = mc_button-add_new_field.
-    <ls_button>-icon      = icon_insert_row.
-    <ls_button>-text      = 'Add new field'(anf).
+    IF go_editor->is_editable( ) <> abap_true.
+      LOOP AT rt_toolbar ASSIGNING <ls_button>.
+        <ls_button>-disabled = abap_true.
+      ENDLOOP.
+    ENDIF.
 
-    CHECK go_editor->is_editable( ) <> abap_true.
-    LOOP AT rt_toolbar ASSIGNING <ls_button>.
-      <ls_button>-disabled = abap_true.
-    ENDLOOP.
+    CHECK go_editor->mv_is_dev = abap_true.
+    INSERT INITIAL LINE INTO rt_toolbar INDEX 1 ASSIGNING <ls_button>.
+    <ls_button>-butn_type = cntb_btype_sep.
+
+    INSERT INITIAL LINE INTO rt_toolbar INDEX 1 ASSIGNING <ls_button>.
+    <ls_button>-function  = mc_button-show_all.
+    IF go_editor->is_editable(  ) = abap_true.
+      <ls_button>-icon = icon_change.
+      <ls_button>-text = 'Edit all'(eda).
+    ELSE.
+      <ls_button>-icon = 'ICON_DISPLAY'.
+      <ls_button>-text = 'View all'(via).
+    ENDIF.
   ENDMETHOD.
 
   METHOD _on_user_command.
     CASE e_ucomm.
       WHEN cl_gui_alv_grid=>mc_fc_loc_delete_row. " mc_button-delete_field.
-        go_editor->sync_screen_ui( iv_message1 = 'Exit for regenerating "Option data" screen'(ad3) ).
+        go_editor->sync_screen_ui( iv_message = '' ).
 
       WHEN mc_button-add_new_field.
         _add_new_field( sender ).
+
+      WHEN mc_button-show_all.
+        go_editor->make_screen( iv_check_dev = abap_false ).
+        go_editor->show_all( iv_ok_as_save = abap_false ).
     ENDCASE.
   ENDMETHOD.
 
@@ -274,7 +315,7 @@ CLASS lcl_field_setting IMPLEMENTATION.
     READ TABLE go_editor->mt_fld_value TRANSPORTING NO FIELDS
      WITH KEY name = lv_fname.
     IF sy-subrc = 0.
-      MESSAGE s002(zaqo_message) WITH lv_fname DISPLAY LIKE 'E'.
+      MESSAGE s022(zaqo_message) WITH lv_fname DISPLAY LIKE 'E'.
       RETURN.
     ENDIF.
 
@@ -289,22 +330,13 @@ CLASS lcl_field_setting IMPLEMENTATION.
 
     io_grid->refresh_table_display( ).
     MESSAGE s032(zaqo_message) WITH lv_fname INTO sy-msgli.
-    go_editor->sync_screen_ui( iv_message1 = sy-msgli
-                               iv_message2 = 'Exit for regenerating "Option data" screen'(ad3)
-                               iv_cmd      = mc_pai_cmd-exit ).
+    go_editor->sync_screen_ui( iv_message = sy-msgli ).
   ENDMETHOD.
 
   METHOD _on_data_changed.
     " Call checks manually. For sync with 'Edit data' tab only
     CHECK er_data_changed IS NOT INITIAL.
-
-    DATA lv_message1 TYPE string.
-    READ TABLE er_data_changed->mt_mod_cells TRANSPORTING NO FIELDS
-     WITH KEY fieldname = 'ROLLNAME'.
-    IF sy-subrc = 0.
-      lv_message1 = 'Exit for regenerating "Option data" screen'(ad3).
-    ENDIF.
-    go_editor->sync_screen_ui( iv_message1 = lv_message1 ).
+    go_editor->sync_screen_ui( iv_message = '' ).
   ENDMETHOD.
 
   METHOD _on_app_event.

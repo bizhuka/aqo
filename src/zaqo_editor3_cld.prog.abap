@@ -4,6 +4,7 @@
 TYPE-POOLS:
  abap,
  icon,
+ cntb,
  cntl.
 
 CONTROLS:
@@ -99,15 +100,22 @@ CLASS lcl_editor DEFINITION FINAL
 
       sync_screen_ui
         IMPORTING
-          iv_message1 TYPE csequence
-          iv_message2 TYPE csequence OPTIONAL
-          iv_cmd      TYPE syucomm   DEFAULT '-',
+          iv_message TYPE csequence,
 
       do_open
         IMPORTING
           is_db_key      TYPE ts_db_key
           iv_true_editor TYPE abap_bool DEFAULT abap_true,
-     set_top_screen,
+
+      show_all
+        IMPORTING
+          iv_ok_as_save TYPE abap_bool,
+
+      set_top_screen,
+
+      make_screen
+        IMPORTING
+          iv_check_dev TYPE abap_bool,
 
       do_delete
         IMPORTING
@@ -140,7 +148,12 @@ CLASS lcl_editor DEFINITION FINAL
           is_field_desc TYPE zcl_eui_type=>ts_field_desc
         EXPORTING
           ev_icon       TYPE icon_d
-          ev_catalog    TYPE icon_d.
+          ev_catalog    TYPE icon_d,
+
+      get_title
+        IMPORTING
+                  iv_add_opt_info TYPE abap_bool OPTIONAL
+        RETURNING VALUE(rv_title) TYPE string.
 
     EVENTS:
       app_event
@@ -149,18 +162,13 @@ CLASS lcl_editor DEFINITION FINAL
 
   PRIVATE SECTION.
     DATA:
-      mv_initial_hash TYPE string. "char16.
+      mv_initial_hash TYPE char16.
 
     METHODS:
       _set_tab1_icon,
       _set_status,
       _set_titlebar,
       _make_tree,
-
-      _get_title
-        IMPORTING
-                  iv_add_opt_info TYPE abap_bool OPTIONAL
-        RETURNING VALUE(rv_title) TYPE string,
 
       _set_flags,
 
@@ -171,8 +179,6 @@ CLASS lcl_editor DEFINITION FINAL
 
       _find_f4_tables,
 
-      _make_screen
-        RETURNING VALUE(ro_screen) TYPE REF TO zcl_eui_screen,
       _on_pbo_menu_screen FOR EVENT pbo_event OF zif_eui_manager
         IMPORTING
           sender,
@@ -184,7 +190,7 @@ CLASS lcl_editor DEFINITION FINAL
         RETURNING VALUE(rv_ok) TYPE abap_bool,
 
       _calculate_hash
-        RETURNING VALUE(rv_hash) LIKE mv_initial_hash. "char16.
+        RETURNING VALUE(rv_hash) LIKE mv_initial_hash.
 ENDCLASS.
 
 *&---------------------------------------------------------------------*

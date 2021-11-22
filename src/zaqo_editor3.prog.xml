@@ -1089,12 +1089,6 @@
     </item>
     <item>
      <ID>I</ID>
-     <KEY>AD3</KEY>
-     <ENTRY>Exit for regenerating &quot;Option data&quot; screen</ENTRY>
-     <LENGTH>54</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
      <KEY>ADF</KEY>
      <ENTRY>Add file</ENTRY>
      <LENGTH>13</LENGTH>
@@ -1157,6 +1151,12 @@
      <ID>I</ID>
      <KEY>DLO</KEY>
      <ENTRY>Delete option</ENTRY>
+     <LENGTH>18</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>EDA</KEY>
+     <ENTRY>Edit all</ENTRY>
      <LENGTH>18</LENGTH>
     </item>
     <item>
@@ -1224,6 +1224,12 @@
      <KEY>IRR</KEY>
      <ENTRY>Operation irreversible. Continue?</ENTRY>
      <LENGTH>33</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>KND</KEY>
+     <ENTRY>Kind</ENTRY>
+     <LENGTH>14</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -1371,6 +1377,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>VIA</KEY>
+     <ENTRY>View all</ENTRY>
+     <LENGTH>18</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>VID</KEY>
      <ENTRY>View data</ENTRY>
      <LENGTH>15</LENGTH>
@@ -1414,12 +1426,6 @@
        <KEY>AD2</KEY>
        <ENTRY>Создать настройку в ABAP коде намного проще!</ENTRY>
        <LENGTH>48</LENGTH>
-      </item>
-      <item>
-       <ID>I</ID>
-       <KEY>AD3</KEY>
-       <ENTRY>Необходимо закрытие программы для генерирования экрана</ENTRY>
-       <LENGTH>54</LENGTH>
       </item>
       <item>
        <ID>I</ID>
@@ -1485,6 +1491,12 @@
        <ID>I</ID>
        <KEY>DLO</KEY>
        <ENTRY>Удалить настройку</ENTRY>
+       <LENGTH>18</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EDA</KEY>
+       <ENTRY>Редактировать все</ENTRY>
        <LENGTH>18</LENGTH>
       </item>
       <item>
@@ -1555,6 +1567,12 @@
       </item>
       <item>
        <ID>I</ID>
+       <KEY>KND</KEY>
+       <ENTRY>Тип</ENTRY>
+       <LENGTH>14</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
        <KEY>LOG</KEY>
        <ENTRY>Просмотр журналов</ENTRY>
        <LENGTH>53</LENGTH>
@@ -1616,7 +1634,7 @@
       <item>
        <ID>I</ID>
        <KEY>QED</KEY>
-       <ENTRY>Быстрое редактирование</ENTRY>
+       <ENTRY>Быстрая правка</ENTRY>
        <LENGTH>24</LENGTH>
       </item>
       <item>
@@ -1696,6 +1714,12 @@
        <KEY>VEW</KEY>
        <ENTRY>Вид</ENTRY>
        <LENGTH>10</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VIA</KEY>
+       <ENTRY>Посмотреть все</ENTRY>
+       <LENGTH>18</LENGTH>
       </item>
       <item>
        <ID>I</ID>

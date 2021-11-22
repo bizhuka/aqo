@@ -184,7 +184,7 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
         READ TABLE mt_sub_fld_desc TRANSPORTING NO FIELDS
          WITH KEY name = lv_fname.
         IF sy-subrc = 0.
-          MESSAGE s002(zaqo_message) WITH lv_fname DISPLAY LIKE 'E'.
+          MESSAGE s022(zaqo_message) WITH lv_fname DISPLAY LIKE 'E'.
           RETURN.
         ENDIF.
 
