@@ -136,12 +136,16 @@ CLASS lcl_editor IMPLEMENTATION.
 
     DATA ls_command TYPE ts_command.
     zcl_aqo_helper=>exchange_command( IMPORTING es_command = ls_command ).
+    IF lv_ok_code IS INITIAL.
+      lv_ok_code = ls_command-ucomm.
+    ENDIF.
 
     CASE lv_ok_code.
       WHEN mc_pai_cmd-open_option
         OR mc_pai_cmd-new_option. " TODO detect creation mode?
 
-        CHECK _is_saved( ) = abap_true.
+        CHECK ls_command-db_key IS NOT INITIAL
+          AND _is_saved( ) = abap_true.
         do_open( ls_command-db_key ).
 
         IF lv_ok_code = mc_pai_cmd-new_option.

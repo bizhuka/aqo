@@ -4,10 +4,10 @@
 CLASS lcl_online_help DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_event_caller.
   PUBLIC SECTION.
     METHODS:
-     pbo REDEFINITION.
+      pbo REDEFINITION.
     DATA:
-     mo_html_viewer TYPE REF TO cl_gui_html_viewer,
-     mv_first_time  TYPE abap_bool VALUE abap_true.
+      mo_html_viewer TYPE REF TO cl_gui_html_viewer,
+      mv_first_time  TYPE abap_bool VALUE abap_true.
 ENDCLASS.
 
 CLASS lcl_online_help IMPLEMENTATION.
@@ -22,7 +22,7 @@ CLASS lcl_online_help IMPLEMENTATION.
       zcl_aqo_helper=>exchange_command( IMPORTING es_command = ls_start_command ).
       IF ls_start_command IS NOT INITIAL.
         " Put back
-        zcl_aqo_helper=>exchange_command( ls_start_command ).
+        zcl_aqo_helper=>exchange_command( is_command = ls_start_command ).
         RETURN.
       ENDIF.
     ENDDO.
@@ -36,7 +36,7 @@ CLASS lcl_online_help IMPLEMENTATION.
       EXPORTING
         parent = _create_container( )
       EXCEPTIONS
-        others = 1.
+        OTHERS = 1.
     CHECK sy-subrc = 0.
 
     DATA lv_url TYPE text255 VALUE 'https://bizhuka.github.io/aqo'. "#EC NOTEXT
@@ -53,7 +53,7 @@ ENDCLASS.
 *&---------------------------------------------------------------------*
 
 MODULE pbo_071 OUTPUT.
-  DATA go_online_help TYPE REF TO lcl_online_help. "#EC DECL_MODUL
+  DATA go_online_help TYPE REF TO lcl_online_help.      "#EC DECL_MODUL
   IF go_online_help IS INITIAL.
     CREATE OBJECT go_online_help.
   ENDIF.

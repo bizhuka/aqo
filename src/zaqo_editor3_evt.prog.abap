@@ -33,7 +33,7 @@ FORM pai_exit.
   CLEAR ok_code.
   DATA ls_command TYPE ts_command.
   ls_command-ucomm = mc_pai_cmd-exit.
-  zcl_aqo_helper=>exchange_command( ls_command ).
+  zcl_aqo_helper=>exchange_command( is_command = ls_command ).
 ENDFORM.
 
 FORM start_editor USING is_db_opt TYPE zsaqo_option. "#EC CALLED  External call in GOS menu

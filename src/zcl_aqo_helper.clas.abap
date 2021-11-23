@@ -64,7 +64,7 @@ public section.
       editor       TYPE syrepid VALUE 'ZAQO_EDITOR3',
       editor_tcode TYPE sytcode VALUE 'ZAQO_EDITOR_OLD',
       viewer_tcode TYPE sytcode VALUE 'ZAQO_VIEWER_OLD',
-    END OF mc_prog.
+    END OF mc_prog .
   constants:
     BEGIN OF mc_menu_mode,
       view TYPE zdaqo_menu_mode VALUE 0,
@@ -260,7 +260,7 @@ METHOD exchange_command.
 
   " Set empty command
   DATA ls_command LIKE is_command.
-  exchange_command( ls_command ).
+  exchange_command( is_command = ls_command ).
 ENDMETHOD.
 
 
