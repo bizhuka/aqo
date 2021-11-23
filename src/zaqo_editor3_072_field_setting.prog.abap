@@ -202,7 +202,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _edit_1_value.
-    DATA lv_editable TYPE abap_bool.
+    DATA: lv_editable TYPE abap_bool,
+          lv_ok       TYPE abap_bool.
     lv_editable = go_editor->is_editable( ir_fld_value->is_editable ).
 
     CASE ir_fld_value->ui_type.
@@ -213,7 +214,7 @@ CLASS lcl_field_setting IMPLEMENTATION.
         IF lv_editable <> abap_true.
           lv_read_only = abap_true.
         ENDIF.
-        zcl_eui_screen=>show_range(
+        lv_ok = zcl_eui_screen=>show_range(
           is_field_desc = ir_fld_value->field_desc
           ir_cur_value  = ir_fld_value->cur_value
           iv_read_only  = lv_read_only ).
@@ -223,7 +224,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
         CREATE OBJECT lo_table_alv
           EXPORTING
             ir_fld_value = ir_fld_value.
-        lo_table_alv->show( ).
+        CHECK lo_table_alv->show( ) = 'OK'.
+        lv_ok = abap_true.
 
       WHEN zcl_eui_type=>mc_ui_type-string.
         DATA lr_text     TYPE REF TO string.
@@ -235,7 +237,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
             ir_text     = lr_text
             iv_editable = lv_editable.
         lo_memo->popup( ).
-        lo_memo->show( ).
+        CHECK lo_memo->show( ) = 'OK'.
+        lv_ok = abap_true.
 
         " Parameters
       WHEN OTHERS.
@@ -244,9 +247,12 @@ CLASS lcl_field_setting IMPLEMENTATION.
         zcl_eui_screen=>edit_in_popup(
          EXPORTING iv_label      = ir_fld_value->label
                    iv_editable   = lv_editable
-         CHANGING  "cv_ok        = lv_write_back
-                   cv_value     = <lv_value> ).
+         CHANGING  cv_ok         = lv_ok
+                   cv_value      = <lv_value> ).
     ENDCASE.
+
+    CHECK lv_ok = abap_true.
+    go_editor->sync_screen_ui( iv_message = '' ).
   ENDMETHOD.
 
   METHOD _get_toolbar.
