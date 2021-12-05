@@ -300,7 +300,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
 
       WHEN mc_button-show_all.
         go_editor->make_screen( iv_check_dev = abap_false ).
-        go_editor->show_all( iv_ok_as_save = abap_false ).
+        CHECK go_editor->show_all( iv_ok_as_save = abap_false ) = 'OK'.
+        go_editor->sync_screen_ui( iv_message = '' ).
     ENDCASE.
   ENDMETHOD.
 

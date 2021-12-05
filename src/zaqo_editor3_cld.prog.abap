@@ -109,7 +109,8 @@ CLASS lcl_editor DEFINITION FINAL
 
       show_all
         IMPORTING
-          iv_ok_as_save TYPE abap_bool,
+                  iv_ok_as_save       TYPE abap_bool
+        RETURNING VALUE(rv_close_cmd) TYPE syucomm,
 
       set_top_screen,
 

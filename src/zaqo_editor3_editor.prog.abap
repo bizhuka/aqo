@@ -236,8 +236,9 @@ CLASS lcl_editor IMPLEMENTATION.
       CONCATENATE lv_hanlers '_ON_PAI_MENU_SCREEN' INTO lv_hanlers SEPARATED BY ';'.
     ENDIF.
 
-    mo_screen->show( io_handler      = go_editor
-                     iv_handlers_map = lv_hanlers ).
+    rv_close_cmd = mo_screen->show(
+       io_handler      = go_editor
+       iv_handlers_map = lv_hanlers ).
     CLEAR mo_screen.
   ENDMETHOD.
 
