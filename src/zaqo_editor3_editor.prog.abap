@@ -662,7 +662,8 @@ CLASS lcl_editor IMPLEMENTATION.
        name         = ls_fld_value->name
        input        = lv_input
        iv_label     = ls_fld_value->label
-       iv_sub_fdesc = ls_fld_value->sub_fdesc ).
+       iv_sub_fdesc = ls_fld_value->sub_fdesc
+       iv_rollname  = ls_fld_value->rollname ).
     ENDLOOP.
   ENDMETHOD.
 
