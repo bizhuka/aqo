@@ -657,13 +657,14 @@ CLASS lcl_editor IMPLEMENTATION.
         lv_input = '1'.
       ENDIF.
 
-      " TODO required ?
       mo_screen->customize(
        name         = ls_fld_value->name
        input        = lv_input
+       "required    = TODO ?
        iv_label     = ls_fld_value->label
        iv_sub_fdesc = ls_fld_value->sub_fdesc
-       iv_rollname  = ls_fld_value->rollname ).
+       iv_rollname  = ls_fld_value->rollname
+       iv_command   = 'FOR_PBO' ).
     ENDLOOP.
   ENDMETHOD.
 
@@ -698,9 +699,7 @@ CLASS lcl_editor IMPLEMENTATION.
 
   METHOD _calculate_hash.
     DATA lo_crc64 TYPE REF TO zcl_eui_crc64.
-    CREATE OBJECT lo_crc64.
-    lo_crc64->add_to_hash( zsaqo3_general_info ).
-    lo_crc64->add_to_hash( mt_fld_value ).
+    CREATE OBJECT lo_crc64. " EXPORTING iv_log = xsdbool( sy-uname = '' ).
 
     IF mv_is_dev <> abap_true AND mo_screen IS NOT INITIAL.
       DATA lr_context TYPE REF TO data.
@@ -708,6 +707,8 @@ CLASS lcl_editor IMPLEMENTATION.
 
       lo_crc64->add_to_hash( lr_context ).
     ENDIF.
+    lo_crc64->add_to_hash( zsaqo3_general_info ).
+    lo_crc64->add_to_hash( mt_fld_value ).
 
     rv_hash = lo_crc64->get_hash( ).
   ENDMETHOD.
