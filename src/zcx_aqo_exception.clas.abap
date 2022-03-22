@@ -1,6 +1,6 @@
 class ZCX_AQO_EXCEPTION definition
   public
-  inheriting from CX_STATIC_CHECK
+  inheriting from CX_NO_CHECK
   final
   create public .
 
@@ -36,9 +36,7 @@ public section.
   class-methods RAISE_SYS_ERROR
     importing
       !IV_MESSAGE type CSEQUENCE optional
-      value(IO_ERROR) type ref to CX_ROOT optional
-    raising
-      ZCX_AQO_EXCEPTION .
+      value(IO_ERROR) type ref to CX_ROOT optional .
   class-methods RAISE_DUMP
     importing
       !IV_MESSAGE type CSEQUENCE optional

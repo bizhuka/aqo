@@ -4,111 +4,112 @@
 CLASS lcl_tree DEFINITION FINAL FRIENDS zcl_eui_event_caller.
   PUBLIC SECTION.
     DATA:
-     BEGIN OF ms_node,
-       rec_opened   TYPE lvc_nkey,
-       rec_created  TYPE lvc_nkey,
-       struc_search TYPE lvc_nkey,
-       free_search  TYPE lvc_nkey,
-       new_option   TYPE lvc_nkey VALUE '~~~', " Can be hidden
-       user_prefs   TYPE lvc_nkey,
-     END OF ms_node.
+      BEGIN OF ms_node,
+        rec_opened   TYPE lvc_nkey,
+        rec_created  TYPE lvc_nkey,
+        struc_search TYPE lvc_nkey,
+        free_search  TYPE lvc_nkey,
+        new_option   TYPE lvc_nkey VALUE '~~~', " Can be hidden
+        user_prefs   TYPE lvc_nkey,
+      END OF ms_node.
 
     METHODS:
       constructor
-       IMPORTING
-         io_prefs TYPE REF TO lcl_user_prefs,
+        IMPORTING
+          io_prefs TYPE REF TO lcl_user_prefs,
 
       make_gui,
 
       fill,
 
       delete_from
-       IMPORTING
-        iv_parent_node TYPE lvc_nkey
-        is_db_key      TYPE ts_db_key OPTIONAL
-        iv_from        TYPE i         OPTIONAL
-        iv_refresh     TYPE abap_bool OPTIONAL,
+        IMPORTING
+          iv_parent_node TYPE lvc_nkey
+          is_db_key      TYPE ts_db_key OPTIONAL
+          iv_from        TYPE i         OPTIONAL
+          iv_refresh     TYPE abap_bool OPTIONAL,
 
       f4_free_search,
 
       add_opened
-       IMPORTING
-         is_db_key TYPE ts_db_key.
+        IMPORTING
+          is_db_key TYPE ts_db_key
+          iv_insert TYPE abap_bool DEFAULT abap_true.
 
   PRIVATE SECTION.
     TYPES:
-     BEGIN OF ts_tree_data,
-       option_id  TYPE ztaqo_option-option_id,
-     END OF ts_tree_data,
-     tt_tree_data TYPE STANDARD TABLE OF ts_tree_data WITH DEFAULT KEY,
+      BEGIN OF ts_tree_data,
+        option_id TYPE ztaqo_option-option_id,
+      END OF ts_tree_data,
+      tt_tree_data TYPE STANDARD TABLE OF ts_tree_data WITH DEFAULT KEY,
 
-     BEGIN OF ts_node_package,
-       devclass    TYPE tdevc-devclass,
-       parent_node TYPE lvc_nkey,
-     END OF ts_node_package,
-     tt_node_package TYPE SORTED TABLE OF ts_node_package WITH UNIQUE KEY devclass.
+      BEGIN OF ts_node_package,
+        devclass    TYPE tdevc-devclass,
+        parent_node TYPE lvc_nkey,
+      END OF ts_node_package,
+      tt_node_package TYPE SORTED TABLE OF ts_node_package WITH UNIQUE KEY devclass.
 
     DATA:
-     mo_prefs      TYPE REF TO lcl_user_prefs,
-     mt_tree_data  TYPE REF TO tt_tree_data,
-     mo_gui_tree   TYPE REF TO cl_gui_alv_tree.
+      mo_prefs     TYPE REF TO lcl_user_prefs,
+      mt_tree_data TYPE REF TO tt_tree_data,
+      mo_gui_tree  TYPE REF TO cl_gui_alv_tree.
 
     METHODS:
-     _fill_tree_with_created_opt,
+      _fill_tree_with_created_opt,
 
-     _on_link_click FOR EVENT link_click OF cl_gui_alv_tree
-       IMPORTING
-         node_key,
+      _on_link_click FOR EVENT link_click OF cl_gui_alv_tree
+        IMPORTING
+          node_key,
 
-     _show_f4
-      RETURNING value(rs_db_key) TYPE ts_db_key,
+      _show_f4
+        RETURNING VALUE(rs_db_key) TYPE ts_db_key,
 
-     _new_option
-      RETURNING value(rs_db_key) TYPE ts_db_key,
-     _on_pai_new_option FOR EVENT pai_event OF zif_eui_manager
-      IMPORTING
-        sender
-        iv_command
-        cv_close,
+      _new_option
+        RETURNING VALUE(rs_db_key) TYPE ts_db_key,
+      _on_pai_new_option FOR EVENT pai_event OF zif_eui_manager
+        IMPORTING
+          sender
+          iv_command
+          cv_close,
 
-     _fill_struc_search,
-     _insert_parent_package
-      IMPORTING
-        iv_package TYPE tdevc-devclass
-      EXPORTING
-        ev_node    TYPE lvc_nkey
-      CHANGING
-        ct_package TYPE tt_node_package,
+      _fill_struc_search,
+      _insert_parent_package
+        IMPORTING
+          iv_package TYPE tdevc-devclass
+        EXPORTING
+          ev_node    TYPE lvc_nkey
+        CHANGING
+          ct_package TYPE tt_node_package,
 
-     _expand_invert_node
-      IMPORTING
-        iv_node   TYPE lvc_nkey
-        iv_level  TYPE i         DEFAULT 1,
+      _expand_invert_node
+        IMPORTING
+          iv_node  TYPE lvc_nkey
+          iv_level TYPE i         DEFAULT 1,
 
-     _add_node
-      IMPORTING
-        i_node_text         TYPE csequence
-        iv_option_id        TYPE ztaqo_option-option_id  OPTIONAL
-        i_relat_node        TYPE lvc_nkey                OPTIONAL
-        i_relationship      TYPE i                       DEFAULT cl_gui_column_tree=>relat_last_child
-        is_layout           TYPE lvc_s_layn              OPTIONAL
-        iv_item_icon        TYPE icon_d                  OPTIONAL
-        iv_item_class       TYPE i                       OPTIONAL
-      RETURNING value(rv_node) TYPE lvc_nkey,
+      _add_node
+        IMPORTING
+                  i_node_text    TYPE csequence
+                  iv_option_id   TYPE ztaqo_option-option_id  OPTIONAL
+                  i_relat_node   TYPE lvc_nkey                OPTIONAL
+                  i_relationship TYPE i                       DEFAULT cl_gui_column_tree=>relat_last_child
+                  is_layout      TYPE lvc_s_layn              OPTIONAL
+                  iv_item_icon   TYPE icon_d                  OPTIONAL
+                  iv_item_class  TYPE i                       OPTIONAL
+        RETURNING VALUE(rv_node) TYPE lvc_nkey,
 
-    _add_parent_node
-      IMPORTING
-        i_node_text         TYPE csequence
-        iv_item_icon        TYPE icon_d                  OPTIONAL
-        iv_layout_icon      TYPE icon_d                  OPTIONAL
-        i_relat_node        TYPE lvc_nkey                OPTIONAL
-      RETURNING value(rv_node) TYPE lvc_nkey,
+      _add_parent_node
+        IMPORTING
+                  i_node_text    TYPE csequence
+                  iv_item_icon   TYPE icon_d                  OPTIONAL
+                  iv_layout_icon TYPE icon_d                  OPTIONAL
+                  i_relat_node   TYPE lvc_nkey                OPTIONAL
+        RETURNING VALUE(rv_node) TYPE lvc_nkey,
 
-    _add_option_node
-       IMPORTING
-        is_db_key   TYPE ts_db_key
-        iv_parent      TYPE lvc_nkey
-        i_relationship TYPE i DEFAULT cl_gui_column_tree=>relat_last_child.
+      _add_option_node
+        IMPORTING
+          is_db_key      TYPE ts_db_key
+          iv_parent      TYPE lvc_nkey
+          i_relationship TYPE i DEFAULT cl_gui_column_tree=>relat_last_child.
 ENDCLASS.
 
 CLASS lcl_tree IMPLEMENTATION.
@@ -123,7 +124,7 @@ CLASS lcl_tree IMPLEMENTATION.
 
     DATA ls_header TYPE treev_hhdr.
     ls_header-heading = 'Options'(opt).
-    ls_header-width   = 35.
+    ls_header-width   = 35.                              "#EC NUMBER_OK
     ls_header-t_image = icon_tree.
 
     DATA lo_eui_tree TYPE REF TO zcl_eui_tree.
@@ -139,7 +140,7 @@ CLASS lcl_tree IMPLEMENTATION.
       EXPORTING
         dynnr     = sy-dynnr
         side      = cl_gui_docking_container=>dock_at_left
-        extension = 330.
+        extension = 330. "#EC NUMBER_OK
     lo_eui_tree->add_handler( me ).
     lo_eui_tree->pbo( io_container = lo_doc_container ).
     mo_gui_tree = lo_eui_tree->get_tree( ).
@@ -281,7 +282,7 @@ CLASS lcl_tree IMPLEMENTATION.
     ls_status-title = 'Creating an option via ABAP code is much easier!'(ad2).
     lo_screen->set_status( ls_status ).
 
-    lo_screen->popup( iv_col_end = 70 ).
+    lo_screen->popup( iv_col_end = 70 ).                 "#EC NUMBER_OK
     CHECK lo_screen->show(
       io_handler      = me
       iv_handlers_map = '_ON_PAI_NEW_OPTION' ) = 'OK'.
@@ -298,22 +299,20 @@ CLASS lcl_tree IMPLEMENTATION.
     lr_db_key ?= lo_screen->get_context( ).
 
     " Is the option exists?
-    DATA lv_package_id TYPE ztaqo_option-package_id.
-    SELECT SINGLE package_id INTO lv_package_id
-    FROM ztaqo_option
-    WHERE package_id = lr_db_key->package_id
-      AND option_id  = lr_db_key->option_id.
-    IF lv_package_id IS NOT INITIAL.
+    DATA ls_key TYPE ts_db_key.
+    zcl_aqo_helper=>get_by_key( EXPORTING is_db_key  = lr_db_key->*
+                                CHANGING  cs_db_item = ls_key ).
+    IF ls_key IS NOT INITIAL.
       MESSAGE 'The option already exists'(toi) TYPE 'S' DISPLAY LIKE 'E'.
       cv_close->* = abap_false.
       RETURN.
     ENDIF.
 
     " Is the package exists?
-    SELECT SINGLE devclass INTO lv_package_id
+    SELECT SINGLE devclass INTO ls_key-package_id
     FROM tdevc
     WHERE devclass = lr_db_key->package_id.
-    IF lv_package_id IS INITIAL.
+    IF sy-subrc <> 0.
       MESSAGE s020(zaqo_message) WITH lr_db_key->package_id DISPLAY LIKE 'E'.
       cv_close->* = abap_false.
       RETURN.
@@ -333,12 +332,10 @@ CLASS lcl_tree IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA lt_db_key TYPE tt_db_key.
-    SELECT package_id option_id INTO TABLE lt_db_key  "#EC "#EC CI_NOWHERE
-    FROM ztaqo_option
-    ORDER BY PRIMARY KEY.
+    DATA lt_db_key TYPE zcl_aqo_helper=>tt_db_key.
+    lt_db_key = zcl_aqo_helper=>get_db_keys( ).
 
-    DATA: lr_db_key    TYPE REF TO ts_db_key,
+    DATA: lr_db_key       TYPE REF TO ts_db_key,
           lt_node_package TYPE tt_node_package.
     LOOP AT lt_db_key REFERENCE INTO lr_db_key.
       DATA lv_parent TYPE lvc_nkey.
@@ -364,8 +361,8 @@ CLASS lcl_tree IMPLEMENTATION.
     IF lv_rem IS INITIAL.
       CLEAR lv_parent_name.
 
-      DATA: lv_len  TYPE i,
-            lv_char TYPE char1,
+      DATA: lv_len   TYPE i,
+            lv_char  TYPE char1,
             lv_index TYPE i.
       lv_len = strlen( iv_package ).
       DO lv_len TIMES.
@@ -410,16 +407,18 @@ CLASS lcl_tree IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _fill_tree_with_created_opt.
-    DATA lt_db_key TYPE tt_db_key.
-    SELECT package_id option_id UP TO mo_prefs->s_opt-v_max_count ROWS INTO TABLE lt_db_key  "#EC "#EC CI_NOFIELD
-    FROM ztaqo_option
-    WHERE created_uname = sy-uname
-    ORDER BY created_date DESCENDING.
+    DATA lt_db_key TYPE zcl_aqo_helper=>tt_db_key.
+    lt_db_key = zcl_aqo_helper=>get_db_keys(
+      iv_where    = 'CREATED_UNAME = IV_PARAM1'
+      iv_param1   = sy-uname
+      iv_count    = mo_prefs->s_opt-v_max_count
+      iv_order_by = 'CREATED_DATE DESCENDING' ).
 
     " Is developer who creates options?
     CHECK lt_db_key[] IS NOT INITIAL.
-    ms_node-rec_created = _add_parent_node( i_node_text  = 'Recently created'(rec)
-                                     iv_item_icon = icon_date ).
+    ms_node-rec_created = _add_parent_node(
+      i_node_text  = 'Recently created'(rec)
+      iv_item_icon = icon_date ).
 
     DATA lr_db_key TYPE REF TO ts_db_key.
     LOOP AT lt_db_key REFERENCE INTO lr_db_key.
@@ -455,7 +454,8 @@ CLASS lcl_tree IMPLEMENTATION.
                                       IMPORTING  e_outtab_line = ls_tree_data
                                                  e_node_text   = lv_package_id
                                       EXCEPTIONS OTHERS        = 1 ).
-        CHECK is_db_key-package_id = lv_package_id
+        CHECK sy-subrc = 0
+          AND is_db_key-package_id = lv_package_id
           AND is_db_key-option_id  = ls_tree_data-option_id.
       ENDIF.
 
@@ -471,9 +471,11 @@ CLASS lcl_tree IMPLEMENTATION.
     " Delete same option
     delete_from( iv_parent_node = ms_node-rec_opened
                  is_db_key      = is_db_key ).
-    _add_option_node( is_db_key      = is_db_key
-                      iv_parent      = ms_node-rec_opened
-                      i_relationship = cl_gui_column_tree=>relat_first_child ).
+    IF iv_insert = abap_true.
+      _add_option_node( is_db_key      = is_db_key
+                        iv_parent      = ms_node-rec_opened
+                        i_relationship = cl_gui_column_tree=>relat_first_child ).
+    ENDIF.
     " Delete oversized
     delete_from( iv_parent_node = ms_node-rec_opened
                  iv_from        = mo_prefs->s_opt-v_max_count + 1

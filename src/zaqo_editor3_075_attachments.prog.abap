@@ -4,17 +4,17 @@
 CLASS lcl_attachment DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_event_caller.
   PUBLIC SECTION.
     METHODS:
-     pbo REDEFINITION.
+      pbo REDEFINITION.
 
   PROTECTED SECTION.
     METHODS:
-     _fill_table       REDEFINITION,
-     _get_layout       REDEFINITION,
-     _get_catalog      REDEFINITION,
-     _get_filter       REDEFINITION,
-     _get_toolbar      REDEFINITION,
-     _on_hotspot_click REDEFINITION,
-     _on_user_command  REDEFINITION.
+      _fill_table       REDEFINITION,
+      _get_layout       REDEFINITION,
+      _get_catalog      REDEFINITION,
+      _get_filter       REDEFINITION,
+      _get_toolbar      REDEFINITION,
+      _on_hotspot_click REDEFINITION,
+      _on_user_command  REDEFINITION.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -34,34 +34,30 @@ CLASS lcl_attachment DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_ev
       END OF mc.
 
     TYPES:
-     ts_oaor_file TYPE zsaqo_oaor_file,
-     tt_oaor_file TYPE STANDARD TABLE OF ts_oaor_file WITH DEFAULT KEY.
+      ts_oaor_file TYPE zsaqo_oaor_file,
+      tt_oaor_file TYPE STANDARD TABLE OF ts_oaor_file WITH DEFAULT KEY.
 
     DATA:
       mt_oaor_file TYPE tt_oaor_file.
 
     METHODS:
       _get_files
-          IMPORTING
-            iv_filename  TYPE csequence OPTIONAL
-            iv_last_only TYPE abap_bool
-          EXPORTING
-            es_oaor_last TYPE ts_oaor_file
-            et_oaor_file TYPE tt_oaor_file,
+        IMPORTING
+          iv_filename  TYPE csequence OPTIONAL
+          iv_last_only TYPE abap_bool
+        EXPORTING
+          es_oaor_last TYPE ts_oaor_file
+          et_oaor_file TYPE tt_oaor_file,
 
-      _on_import
-        RAISING
-            zcx_aqo_exception,
+      _on_import,
 
       _on_delete
         IMPORTING
-          io_grid TYPE REF TO cl_gui_alv_grid
-        RAISING
-            zcx_aqo_exception,
+          io_grid TYPE REF TO cl_gui_alv_grid,
 
       _delete_previous
         IMPORTING
-          iv_filename  TYPE csequence,
+          iv_filename TYPE csequence,
 
       _import_get_version
         EXPORTING
@@ -75,6 +71,10 @@ CLASS lcl_attachment DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_ev
           ev_task       TYPE e070-trkorr
           ev_ok_message TYPE csequence,
 
+      _show_bds_locl_popup
+        CHANGING
+          cs_bds_locl TYPE bds_locl,
+
       _diloag_screen
         IMPORTING
           iv_doc_ver_no  TYPE ts_oaor_file-doc_ver_no
@@ -87,25 +87,23 @@ CLASS lcl_attachment DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_ev
           cv_description TYPE ts_oaor_file-description,
 
       _change_file_name
-          IMPORTING
-            iv_file_name TYPE csequence
-          CHANGING
-            cs_file      TYPE bapifiles
-          RAISING
-            zcx_eui_exception,
+        IMPORTING
+          iv_file_name TYPE csequence
+        CHANGING
+          cs_file      TYPE bapifiles
+        RAISING
+          zcx_eui_exception,
 
       _find_request
-          IMPORTING
-            is_oaor_file TYPE ts_oaor_file
-          CHANGING
-            cv_task TYPE e070-trkorr
-            cv_ok_message TYPE csequence
-          RAISING
-            zcx_aqo_exception,
+        IMPORTING
+          is_oaor_file  TYPE ts_oaor_file
+        CHANGING
+          cv_task       TYPE e070-trkorr
+          cv_ok_message TYPE csequence,
 
       _delete_file
-          IMPORTING
-            is_oaor_file TYPE ts_oaor_file.
+        IMPORTING
+          is_oaor_file TYPE ts_oaor_file.
 ENDCLASS.
 
 CLASS lcl_attachment IMPLEMENTATION.
@@ -561,8 +559,8 @@ CLASS lcl_attachment IMPLEMENTATION.
         iv_icon_1   = 'ICON_DELETE_TEMPLATE' ) = abap_true.
 
     " Request for deleting file
-    DATA: lv_task      TYPE e070-trkorr,
-          lv_message   TYPE string.
+    DATA: lv_task    TYPE e070-trkorr,
+          lv_message TYPE string.
     _check_exists(
      IMPORTING
        ev_task       = lv_task
@@ -674,12 +672,50 @@ CLASS lcl_attachment IMPLEMENTATION.
     ls_bds_locl-ph_class  = 'BDS_POC2'.
     ls_bds_locl-re_class  = 'BDS_REC2'.
     ls_bds_locl-tabname   = 'BDS_CONN05'.
-    ls_bds_locl-log_level = 0.                              " Or 2 ?
     ls_bds_locl-crea_user = sy-uname.
     CONCATENATE sy-datum sy-uzeit INTO ls_bds_locl-crea_time.
 
+    _show_bds_locl_popup( CHANGING cs_bds_locl = ls_bds_locl ).
+    IF ls_bds_locl IS INITIAL.
+      CLEAR ev_task.
+      ev_ok_message = 'BDS Assignment saving is canceled'(bac).
+      RETURN.
+    ENDIF.
+
     " Update DB
     INSERT bds_locl FROM ls_bds_locl.
+  ENDMETHOD.
+
+  METHOD _show_bds_locl_popup.
+    DATA lo_screen TYPE REF TO zcl_eui_screen.
+    TRY.
+        DATA lr_context TYPE REF TO data.
+        GET REFERENCE OF cs_bds_locl INTO lr_context.
+
+        CREATE OBJECT lo_screen
+          EXPORTING
+            ir_context = lr_context
+            iv_cprog   = 'ZAQO_EDIT3_BDS_POPUP'
+            iv_dynnr   = zcl_eui_screen=>mc_dynnr-dynamic.
+
+        DATA lo_error TYPE REF TO zcx_eui_exception.
+      CATCH zcx_eui_exception INTO lo_error.
+        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
+    ENDTRY.
+
+    lo_screen->customize( name = 'CLASSNAME' input = '0' ).
+    lo_screen->customize( name = 'CLASSTYPE' input = '0' ).
+    lo_screen->customize( name = 'CREA_USER' input = '0' ).
+    lo_screen->customize( name = 'CREA_TIME' input = '0' ).
+
+    DATA lv_col_end TYPE i.
+    lo_screen->get_dimension( IMPORTING ev_col_end = lv_col_end ).
+    lo_screen->popup( iv_col_end = lv_col_end ).
+
+    IF lo_screen->show( ) <> 'OK'.
+      CLEAR cs_bds_locl.
+    ENDIF.
   ENDMETHOD.
 
   METHOD _import_get_version.
@@ -722,7 +758,7 @@ CLASS lcl_attachment IMPLEMENTATION.
        OTHERS      = 1 ).
     CHECK sy-subrc = 0 AND lt_file_table[] IS NOT INITIAL.
 
-                                                            " Get 1-st
+    " Get 1-st
     READ TABLE lt_file_table REFERENCE INTO ls_file_table INDEX 1.
     CHECK sy-subrc = 0.
 
@@ -951,7 +987,7 @@ CLASS lcl_attachment IMPLEMENTATION.
     lv_key = ms_db_key-option_id.
 
     " Prepare signature
-    MOVE-CORRESPONDING is_oaor_file TO ls_bds_signature. "#EC ENHOK
+    MOVE-CORRESPONDING is_oaor_file TO ls_bds_signature.    "#EC ENHOK
     APPEND ls_bds_signature TO lt_bds_signature.
 
     cl_bds_document_set=>delete(
@@ -1044,7 +1080,7 @@ ENDCLASS.
 *&---------------------------------------------------------------------*
 
 MODULE pbo_075 OUTPUT.
-  DATA go_attachment TYPE REF TO lcl_attachment. "#EC DECL_MODUL
+  DATA go_attachment TYPE REF TO lcl_attachment.        "#EC DECL_MODUL
   IF go_attachment IS INITIAL.
     CREATE OBJECT go_attachment.
   ENDIF.

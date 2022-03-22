@@ -187,6 +187,10 @@ CLASS lcl_editor IMPLEMENTATION.
            zsaqo3_general_info,
            mv_initial_hash.
 
+    IF iv_true_editor = abap_true AND iv_check_decl = abap_true.
+      _check_declaration( is_db_key ).
+    ENDIF.
+
     DATA lo_err TYPE REF TO zcx_aqo_exception.
     TRY.
         " TODO create new option
@@ -199,7 +203,16 @@ CLASS lcl_editor IMPLEMENTATION.
     ENDTRY.
 
     _set_flags( ).
-    zsaqo3_general_info = _get_general_info( ).
+    zcl_aqo_helper=>get_by_key( EXPORTING is_db_key  = is_db_key
+                                CHANGING  cs_db_item = zsaqo3_general_info ).
+
+    " Or something like that SY-SYSID <> 'DEV' IF zcl_aqo_helper=>is_dev_mandt( ) <> abap_true.
+    DATA lv_exist TYPE abap_bool.
+    IF zsaqo3_general_info IS NOT INITIAL.
+      lv_exist = abap_true.
+    ELSE.
+      MESSAGE s006(zaqo_message) WITH is_db_key-package_id is_db_key-option_id DISPLAY LIKE 'E'. " TODO Move to =>create( )
+    ENDIF.
 
     " Fill mt_fld_value & F4
     _fill_fields( ).
@@ -219,9 +232,12 @@ CLASS lcl_editor IMPLEMENTATION.
     ENDIF.
     mv_initial_hash = _calculate_hash( ).
 
-    CHECK mo_tree IS NOT INITIAL.
-    mo_prefs->add_opened( is_db_key ).
-    mo_tree->add_opened( is_db_key ).
+    IF mo_tree IS NOT INITIAL.
+      mo_prefs->add_opened( is_db_key = is_db_key
+                            iv_insert = lv_exist ).
+      mo_tree->add_opened( is_db_key = is_db_key
+                           iv_insert = lv_exist ).
+    ENDIF.
   ENDMETHOD.
 
   METHOD show_all.
@@ -315,17 +331,7 @@ CLASS lcl_editor IMPLEMENTATION.
     mo_prefs->add_opened( is_db_key = is_db_key
                           iv_insert = abap_false ).
     do_open( is_db_key ).
-  ENDMETHOD.
-
-  METHOD _get_general_info.
-    SELECT SINGLE * INTO CORRESPONDING FIELDS OF rs_info
-    FROM ztaqo_option
-    WHERE package_id = mo_option->ms_db_item-package_id
-      AND option_id  = mo_option->ms_db_item-option_id.
-
-    CHECK sy-subrc <> 0.
-    " Or something like that SY-SYSID <> 'DEV' IF zcl_aqo_helper=>is_dev_mandt( ) <> abap_true.
-    MESSAGE s006(zaqo_message) WITH mo_option->ms_db_item-package_id mo_option->ms_db_item-option_id DISPLAY LIKE 'E'. " TODO Move to =>create( )
+    cl_gui_cfw=>set_new_ok_code( '-' ).
   ENDMETHOD.
 
   METHOD _fill_fields.
@@ -367,7 +373,7 @@ CLASS lcl_editor IMPLEMENTATION.
 
       DATA lr_ft_table TYPE REF TO lvc_s_dral.
       APPEND INITIAL LINE TO mt_f4_tables REFERENCE INTO lr_ft_table.
-      lr_ft_table->handle    = 154.
+      lr_ft_table->handle    = 154.                      "#EC NUMBER_OK
       lr_ft_table->int_value = ls_field_value->name.
       CONCATENATE ls_field_value->name ` - ` ls_field_value->label INTO lr_ft_table->value.
     ENDLOOP.
@@ -573,7 +579,8 @@ CLASS lcl_editor IMPLEMENTATION.
     " Re generate screen
     DATA ls_db_key TYPE ts_db_key.
     MOVE-CORRESPONDING zsaqo3_general_info TO ls_db_key.
-    do_open( ls_db_key ).
+    do_open( is_db_key     = ls_db_key
+             iv_check_decl = abap_false ).
   ENDMETHOD.
 
   METHOD make_screen.
@@ -711,6 +718,106 @@ CLASS lcl_editor IMPLEMENTATION.
     lo_crc64->add_to_hash( mt_fld_value ).
 
     rv_hash = lo_crc64->get_hash( ).
+  ENDMETHOD.
+
+  METHOD do_export.
+    DATA lv_file_name  TYPE string.
+    DATA lo_error      TYPE REF TO zcx_eui_exception.
+
+    CONCATENATE mo_option->ms_db_item-package_id `-` mo_option->ms_db_item-option_id `-(` sy-mandt `)` sy-datum `-` sy-uzeit `.aqob` "#EC NOTEXT
+     INTO lv_file_name.
+
+    " Save to file
+    DATA lo_file TYPE REF TO zcl_eui_file.
+    CREATE OBJECT lo_file
+      EXPORTING
+        iv_xstring = mo_option->ms_db_item-fields.
+    TRY.
+        lo_file->download(
+         iv_full_path    = lv_file_name
+         iv_save_dialog  = abap_true
+         iv_window_title = 'Save option values'(sov) ).
+      CATCH zcx_eui_exception INTO lo_error.
+        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD do_import.
+    DATA lo_file  TYPE REF TO zcl_eui_file.
+    DATA lo_error TYPE REF TO zcx_eui_exception.
+
+    CREATE OBJECT lo_file.
+    TRY.
+        lo_file->import_from_file(
+           iv_default_extension = 'aqob' ).                 "#EC NOTEXT
+        _is_file_name_ok( lo_file ).
+      CATCH zcx_eui_exception INTO lo_error.
+        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
+        RETURN.
+    ENDTRY.
+
+    TYPES:
+      BEGIN OF ts_update,
+        fields LIKE mo_option->ms_db_item-fields,
+      END OF ts_update.
+
+    DATA ls_update TYPE ts_update.
+    ls_update-fields = lo_file->mv_xstring.
+
+    IF mo_option->update( ls_update ) <> abap_true.
+      MESSAGE 'Error during updating!'(edu) TYPE 'S' DISPLAY LIKE 'E'.
+      RETURN.
+    ENDIF.
+    MESSAGE 'Data updated'(upd) TYPE 'S'.
+
+    do_open( is_db_key ).
+    RAISE EVENT app_event EXPORTING iv_origin = mc_event-open.
+  ENDMETHOD.
+
+  METHOD _is_file_name_ok.
+    DATA lv_full_path TYPE string.
+    lv_full_path = io_file->get_full_path( ).
+
+    DATA lv_name TYPE string.
+    DATA lv_ext  TYPE string.
+    zcl_eui_file=>split_file_path( EXPORTING iv_fullpath  = lv_full_path
+                                   IMPORTING ev_filename  = lv_name
+                                             ev_extension = lv_ext ).
+    IF lv_ext <> 'aqob'.                                    "#EC NOTEXT
+      zcx_eui_exception=>raise_sys_error( iv_message = 'Wrong file extension'(wfe) ).
+    ENDIF.
+
+    DATA ls_db_key TYPE ts_db_key.
+    DATA lv_rem    TYPE string.                             "#EC NEEDED
+    SPLIT lv_name AT '-' INTO ls_db_key-package_id ls_db_key-option_id lv_rem.
+    IF mo_option->ms_db_item-package_id <> ls_db_key-package_id OR mo_option->ms_db_item-option_id <> ls_db_key-option_id.
+      zcx_eui_exception=>raise_sys_error( iv_message = 'Wrong option file'(wof) ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD _check_declaration.
+    CHECK mo_prefs->s_opt-v_skip_decl <> abap_true
+      AND zcl_aqo_helper=>is_dev_mandt( ) = abap_true.
+
+    DATA ls_last_call TYPE abap_callstack_line.
+    zcl_aqo_helper=>get_by_key( EXPORTING is_db_key  = is_db_key
+                                CHANGING  cs_db_item = ls_last_call ).
+    CHECK ls_last_call-blockname = 'CONSTRUCTOR'
+       OR ls_last_call-blockname = 'CLASS_CONSTRUCTOR'.
+
+    DATA lv_class    TYPE string.
+    DATA lv_is_class TYPE abap_bool.
+    zcl_aqo_helper=>get_last_call_info(
+     EXPORTING is_last_call = ls_last_call
+     IMPORTING ev_name      = lv_class
+               ev_is_class  = lv_is_class ).
+    CHECK lv_is_class = abap_true.
+
+    TRY.
+        DATA lo_opt TYPE REF TO object.
+        CREATE OBJECT lo_opt TYPE (lv_class).
+      CATCH cx_root.
+    ENDTRY.
   ENDMETHOD.
 
 ENDCLASS.

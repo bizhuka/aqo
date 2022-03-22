@@ -105,33 +105,33 @@ CLASS lcl_field_setting IMPLEMENTATION.
     lv_editable = go_editor->is_editable( ).
 
     add_fcat_field 'ICON' '---'.
-    lr_catalog->outputlen = 3.
+    lr_catalog->outputlen = 3.                           "#EC NUMBER_OK
 
     add_fcat_field 'NAME' ''.
-    lr_catalog->outputlen = 15.
+    lr_catalog->outputlen = 15.                          "#EC NUMBER_OK
 
     add_fcat_field 'UI_TYPE' 'Kind'(knd).
-    lr_catalog->outputlen = 8.
+    lr_catalog->outputlen = 8.                           "#EC NUMBER_OK
 
     add_fcat_field 'LABEL' ''.
     lr_catalog->edit     = lv_editable.
-    lr_catalog->col_pos  = 11.
-    lr_catalog->outputlen = 24.
+    lr_catalog->col_pos  = 11.                           "#EC NUMBER_OK
+    lr_catalog->outputlen = 24.                          "#EC NUMBER_OK
 
     add_fcat_field 'IS_EDITABLE' ''.
     lr_catalog->edit     = lv_editable.
-    lr_catalog->col_pos  = 11.
-    lr_catalog->outputlen = 12.
+    lr_catalog->col_pos  = 11.                           "#EC NUMBER_OK
+    lr_catalog->outputlen = 12.                          "#EC NUMBER_OK
 
     add_fcat_field 'ROLLNAME' ''.
     lr_catalog->edit     = lv_editable.
-    lr_catalog->col_pos  = 13.
-    lr_catalog->outputlen = 25.
+    lr_catalog->col_pos  = 13.                           "#EC NUMBER_OK
+    lr_catalog->outputlen = 25.                          "#EC NUMBER_OK
 
     " Now show for all types
     add_fcat_field 'VALUE_BUTTON' 'Quick edit'(qed).
     lr_catalog->hotspot = abap_true.
-    lr_catalog->outputlen = 14.
+    lr_catalog->outputlen = 14.                          "#EC NUMBER_OK
     IF go_editor->mv_is_dev <> abap_true.
       lr_catalog->tech = abap_true.
     ENDIF.
@@ -139,12 +139,12 @@ CLASS lcl_field_setting IMPLEMENTATION.
     " If have 'TABLE'
     add_fcat_field 'CATALOG' 'DDIC or Catalog'(cat).
     lr_catalog->hotspot   = abap_true.
-    lr_catalog->outputlen = 14.
+    lr_catalog->outputlen = 14.                          "#EC NUMBER_OK
 
     " If have history
     add_fcat_field 'HISTORY_LOGS'  'View logs'(log).
     lr_catalog->hotspot   = abap_true.
-    lr_catalog->outputlen = 16.
+    lr_catalog->outputlen = 16.                          "#EC NUMBER_OK
     _check_has_history( CHANGING cs_catalog = lr_catalog->* ).
 
     " tech fields

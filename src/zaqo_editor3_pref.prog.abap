@@ -4,33 +4,36 @@
 CLASS lcl_user_prefs DEFINITION FINAL FRIENDS zcl_eui_event_caller.
   PUBLIC SECTION.
     TYPES:
-     BEGIN OF ts_opt,
-      v_max_count TYPE num2,
-      v_show_help TYPE xsdboolean,
-     END OF ts_opt.
+      BEGIN OF ts_opt,
+        v_max_count TYPE num2,
+        v_show_help TYPE xsdboolean,
+        v_skip_decl TYPE xsdboolean,
+      END OF ts_opt.
     DATA:
-      t_opened    TYPE tt_db_key READ-ONLY,
-      s_opt       TYPE ts_opt    READ-ONLY.
+      t_opened TYPE zcl_aqo_helper=>tt_db_key READ-ONLY,
+      s_opt    TYPE ts_opt    READ-ONLY.
 
     METHODS:
-     constructor,
+      constructor,
 
-     show_screen,
+      show_screen,
 
-     add_opened
-      IMPORTING
-        is_db_key TYPE ts_db_key
-        iv_insert TYPE abap_bool DEFAULT abap_true.
+      add_opened
+        IMPORTING
+          is_db_key TYPE ts_db_key
+          iv_insert TYPE abap_bool DEFAULT abap_true.
 
   PRIVATE SECTION.
     METHODS:
-     _save_all,
+      _check_opened,
 
-     _on_pref_pai FOR EVENT pai_event OF zif_eui_manager
-      IMPORTING
-        sender
-        iv_command
-        cv_close.
+      _save_all,
+
+      _on_pref_pai FOR EVENT pai_event OF zif_eui_manager
+        IMPORTING
+          sender
+          iv_command
+          cv_close.
 ENDCLASS.
 
 CLASS lcl_user_prefs IMPLEMENTATION.
@@ -50,10 +53,37 @@ CLASS lcl_user_prefs IMPLEMENTATION.
                me->s_opt.
     ENDTRY.
 
+    _check_opened( ).
+
     " Some error in prefs?
     CHECK s_opt-v_max_count IS INITIAL.
     s_opt-v_max_count = 7.
     s_opt-v_show_help = abap_true.
+  ENDMETHOD.
+
+  METHOD _check_opened.
+    CHECK t_opened[] IS NOT INITIAL.
+
+    DATA lt_exist TYPE zcl_aqo_helper=>tt_db_key.
+    SELECT package_id option_id INTO TABLE lt_exist
+    FROM ztaqo_option
+    FOR ALL ENTRIES IN t_opened
+    WHERE package_id = t_opened-package_id
+      AND option_id  = t_opened-option_id
+    ORDER BY PRIMARY KEY.
+
+    FIELD-SYMBOLS <ls_opened> LIKE LINE OF t_opened.
+    LOOP AT t_opened[] ASSIGNING <ls_opened>.
+      DATA lv_tabix TYPE sytabix.
+      lv_tabix = sy-tabix.
+
+      READ TABLE lt_exist TRANSPORTING NO FIELDS BINARY SEARCH
+       WITH KEY package_id = <ls_opened>-package_id
+                option_id  = <ls_opened>-option_id.
+      CHECK sy-subrc <> 0.
+
+      DELETE t_opened[] INDEX lv_tabix.
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD add_opened.
@@ -105,8 +135,9 @@ CLASS lcl_user_prefs IMPLEMENTATION.
     ENDTRY.
     lo_screen->customize( name = 'V_MAX_COUNT' iv_label = 'Maximum node count in tree'(mnc)  required = '1' ).
     lo_screen->customize( name = 'V_SHOW_HELP' iv_label = 'Show online help on startup'(soh) ).
+    lo_screen->customize( name = 'V_SKIP_DECL' iv_label = 'Do not check class declarations'(skd) ).
 
-    lo_screen->popup( iv_col_end = 40 ).
+    lo_screen->popup( iv_col_end = 40 ).                 "#EC NUMBER_OK
     CHECK lo_screen->show(
       io_handler      = me
       iv_handlers_map = '_ON_PREF_PAI' ) = 'OK'.

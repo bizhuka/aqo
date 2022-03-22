@@ -82,7 +82,7 @@ CLASS lcl_tab IMPLEMENTATION.
 
     mo_alv->set_status( _get_status( ) ).
 
-    mo_alv->popup( iv_row_end = 28 ).
+    mo_alv->popup( iv_row_end = 28 ).                    "#EC NUMBER_OK
 
     rv_close_cmd = mo_alv->show( ).
   ENDMETHOD.

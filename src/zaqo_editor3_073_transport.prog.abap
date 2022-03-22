@@ -4,46 +4,42 @@
 CLASS lcl_transport DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_event_caller.
   PUBLIC SECTION.
     METHODS:
-     pbo REDEFINITION.
+      pbo REDEFINITION.
 
   PROTECTED SECTION.
     METHODS:
-     _fill_table       REDEFINITION,
-     _get_layout       REDEFINITION,
-     _get_catalog      REDEFINITION,
-     _get_sort         REDEFINITION,
-     _get_toolbar      REDEFINITION,
-     _on_hotspot_click REDEFINITION,
-     _on_user_command  REDEFINITION,
-     _on_app_event     REDEFINITION.
+      _fill_table       REDEFINITION,
+      _get_layout       REDEFINITION,
+      _get_catalog      REDEFINITION,
+      _get_sort         REDEFINITION,
+      _get_toolbar      REDEFINITION,
+      _on_hotspot_click REDEFINITION,
+      _on_user_command  REDEFINITION,
+      _on_app_event     REDEFINITION.
 
   PRIVATE SECTION.
     CONSTANTS:
       BEGIN OF mc_button,
-        export         TYPE syucomm VALUE '_EXPORT',
-        import         TYPE syucomm VALUE '_IMPORT',
-        delete         TYPE syucomm VALUE '_DELETE',
+        export TYPE syucomm VALUE '_EXPORT',
+        import TYPE syucomm VALUE '_IMPORT',
+        delete TYPE syucomm VALUE '_DELETE',
       END OF mc_button.
 
     TYPES:
       BEGIN OF ts_se10_info,
-        strkorr  TYPE e070-strkorr,
-        trkorr   TYPE e071k-trkorr,
-        as4user  TYPE e070-as4user,
-        as4date  TYPE e070-as4date,
-        as4time  TYPE e070-as4time,
+        strkorr TYPE e070-strkorr,
+        trkorr  TYPE e071k-trkorr,
+        as4user TYPE e070-as4user,
+        as4date TYPE e070-as4date,
+        as4time TYPE e070-as4time,
         "trstatus TYPE e070-trstatus,
-        ddtext   TYPE dd07t-ddtext,
-        as4text  TYPE e07t-as4text,
+        ddtext  TYPE dd07t-ddtext,
+        as4text TYPE e07t-as4text,
       END OF ts_se10_info,
       tt_se10_info TYPE STANDARD TABLE OF ts_se10_info WITH DEFAULT KEY.
 
     DATA:
       mt_se10_info TYPE tt_se10_info.
-
-    METHODS:
-     _do_export,
-     _do_import.
 ENDCLASS.
 
 CLASS lcl_transport IMPLEMENTATION.
@@ -111,7 +107,7 @@ CLASS lcl_transport IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_catalog REFERENCE INTO lr_catalog.
     lr_catalog->fieldname = 'DDTEXT'.
-    lr_catalog->outputlen = 14.
+    lr_catalog->outputlen = 14.                          "#EC NUMBER_OK
   ENDMETHOD.
 
   METHOD _get_sort.
@@ -173,63 +169,14 @@ CLASS lcl_transport IMPLEMENTATION.
   METHOD _on_user_command.
     CASE e_ucomm.
       WHEN mc_button-export.
-        _do_export( ).
+        go_editor->do_export( ).
 
       WHEN mc_button-import.
-        _do_import( ).
+        go_editor->do_import( ms_db_key ).
 
       WHEN mc_button-delete.
         go_editor->do_delete( ms_db_key ).
     ENDCASE.
-  ENDMETHOD.
-
-  METHOD _do_export.
-    DATA lv_file_name  TYPE string.
-    DATA lo_error      TYPE REF TO zcx_eui_exception.
-
-    CONCATENATE ms_db_key-package_id `-` ms_db_key-option_id `-(` sy-mandt `)` sy-datum `-` sy-uzeit `.aqob` "#EC NOTEXT
-     INTO lv_file_name.
-
-    " Save to file
-    DATA lo_file TYPE REF TO zcl_eui_file.
-    CREATE OBJECT lo_file
-      EXPORTING
-        iv_xstring = go_editor->mo_option->ms_db_item-fields.
-    TRY.
-        lo_file->download(
-         iv_full_path    = lv_file_name
-         iv_save_dialog  = abap_true
-         iv_window_title = 'Save option values'(sov) ).
-      CATCH zcx_eui_exception INTO lo_error.
-        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
-    ENDTRY.
-  ENDMETHOD.
-
-  METHOD _do_import.
-    DATA lo_file  TYPE REF TO zcl_eui_file.
-    DATA lo_error TYPE REF TO zcx_eui_exception.
-
-    CREATE OBJECT lo_file.
-    TRY.
-        lo_file->import_from_file(
-           iv_default_extension = 'aqob' ).                 "#EC NOTEXT
-      CATCH zcx_eui_exception INTO lo_error.
-        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
-        RETURN.
-    ENDTRY.
-
-    UPDATE ztaqo_option
-     SET  fields = lo_file->mv_xstring
-    WHERE package_id = ms_db_key-package_id
-      AND option_id  = ms_db_key-option_id.
-
-    IF sy-subrc <> 0.
-      MESSAGE 'Error during updating!'(edu) TYPE 'S' DISPLAY LIKE 'E'.
-      RETURN.
-    ENDIF.
-    MESSAGE 'Data updated'(upd) TYPE 'S'.
-
-    go_editor->do_open( ms_db_key ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -237,7 +184,7 @@ ENDCLASS.
 *&---------------------------------------------------------------------*
 
 MODULE pbo_073 OUTPUT.
-  DATA go_transport TYPE REF TO lcl_transport. "#EC DECL_MODUL
+  DATA go_transport TYPE REF TO lcl_transport.          "#EC DECL_MODUL
   IF go_transport IS INITIAL.
     CREATE OBJECT go_transport.
   ENDIF.

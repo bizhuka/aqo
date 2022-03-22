@@ -26,6 +26,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>CDD</KEY>
+     <ENTRY>Cannot detect default package</ENTRY>
+     <LENGTH>58</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>CNF</KEY>
      <ENTRY>Confirmation</ENTRY>
      <LENGTH>15</LENGTH>
@@ -38,9 +44,21 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>CRV</KEY>
+     <ENTRY>Cannot read the value</ENTRY>
+     <LENGTH>42</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>DAT</KEY>
      <ENTRY>Delete attachment</ENTRY>
      <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>DCH</KEY>
+     <ENTRY># Declaradion is changed</ENTRY>
+     <LENGTH>48</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -53,6 +71,24 @@
      <KEY>DEL</KEY>
      <ENTRY>Delete</ENTRY>
      <LENGTH>9</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>DIN</KEY>
+     <ENTRY>+ Inserted</ENTRY>
+     <LENGTH>20</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>DIO</KEY>
+     <ENTRY>Declared in editor only:</ENTRY>
+     <LENGTH>48</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>DLD</KEY>
+     <ENTRY>- Deleted</ENTRY>
+     <LENGTH>19</LENGTH>
     </item>
     <item>
      <ID>I</ID>

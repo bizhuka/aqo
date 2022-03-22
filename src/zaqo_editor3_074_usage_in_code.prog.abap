@@ -4,16 +4,16 @@
 CLASS lcl_usage_in_code DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui_event_caller.
   PUBLIC SECTION.
     METHODS:
-     pbo REDEFINITION.
+      pbo REDEFINITION.
 
   PROTECTED SECTION.
     METHODS:
-     _fill_table       REDEFINITION,
-     _get_layout       REDEFINITION,
-     _get_catalog      REDEFINITION,
-     _get_toolbar      REDEFINITION,
-     _on_hotspot_click REDEFINITION,
-     _on_user_command  REDEFINITION.
+      _fill_table       REDEFINITION,
+      _get_layout       REDEFINITION,
+      _get_catalog      REDEFINITION,
+      _get_toolbar      REDEFINITION,
+      _on_hotspot_click REDEFINITION,
+      _on_user_command  REDEFINITION.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -73,7 +73,7 @@ CLASS lcl_usage_in_code IMPLEMENTATION.
     APPEND INITIAL LINE TO rt_catalog REFERENCE INTO lr_catalog.
     lr_catalog->fieldname = 'VALUE'.
     lr_catalog->hotspot   = abap_true.
-    lr_catalog->outputlen = 50.
+    lr_catalog->outputlen = 50.                          "#EC NUMBER_OK
   ENDMETHOD.
 
   METHOD _get_toolbar.
@@ -160,7 +160,7 @@ ENDCLASS.
 *&---------------------------------------------------------------------*
 
 MODULE pbo_074 OUTPUT.
-  DATA go_usage_in_code TYPE REF TO lcl_usage_in_code. "#EC DECL_MODUL
+  DATA go_usage_in_code TYPE REF TO lcl_usage_in_code.  "#EC DECL_MODUL
   IF go_usage_in_code IS INITIAL.
     CREATE OBJECT go_usage_in_code.
   ENDIF.

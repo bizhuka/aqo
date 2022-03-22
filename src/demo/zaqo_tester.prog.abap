@@ -24,7 +24,6 @@ TYPES:
     bukrs    TYPE RANGE OF bukrs,
     " and string
     memo     TYPE string,
-
     " !!! Uncomment for testing purpose
     " natio    TYPE t005t-natio,
   END OF ts_alt_land,
@@ -74,7 +73,6 @@ CLASS lcl_main IMPLEMENTATION.
     DATA:
       lv_ref         TYPE REF TO data,
       lt_empty_field TYPE stringtab,
-      lo_error       TYPE REF TO zcx_aqo_exception,
       lv_message     TYPE string.
 
     " Initials values in editor
@@ -87,23 +85,15 @@ CLASS lcl_main IMPLEMENTATION.
     GET REFERENCE OF ms_opt INTO lv_ref.           " ! Ref to data
 
     " Read new values
-    TRY.
-        zcl_aqo_option=>create(
-          iv_package_id = '$TMP'               " Package  "#EC NOTEXT
-          iv_option_id  = 'Main options'(op1)  " Any text < 30 symbols
-          ir_data       = lv_ref               " REF #( ms_opt )
-          " iv_repair     = abap_true
-        ).
-      CATCH zcx_aqo_exception INTO lo_error.
-        MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
-        RETURN.
-    ENDTRY.
+    zcl_aqo_option=>create(
+      ir_data       = lv_ref " REF #( ms_opt )
+    ).
 
     " Also initilize class option
-    if p_cl_opt = abap_true.
-      DATA lo_opt TYPE REF TO ZCL_AQO_TESTER.
+    IF p_cl_opt = abap_true.
+      DATA lo_opt TYPE REF TO zcl_aqo_tester.
       CREATE OBJECT lo_opt.
-    endif.
+    ENDIF.
 
     " After editing and saving data launch it again
     " Put BREAK-POINT on the message
@@ -164,7 +154,7 @@ CLASS lcl_main IMPLEMENTATION.
           APPEND INITIAL LINE TO <ls_alt_land>-bukrs ASSIGNING <ls_bukrs>.
           <ls_bukrs>-sign   = 'I'.
           <ls_bukrs>-option = 'EQ'.
-          <ls_bukrs>-low    = sy-index * 1000.
+          <ls_bukrs>-low    = sy-index * 1000.           "#EC NUMBER_OK
         ENDDO.
       ENDIF.
 
@@ -182,7 +172,7 @@ CLASS lcl_main IMPLEMENTATION.
 
     cs_opt-meins = 'KG'.
 
-    cs_opt-due_date     = sy-datum + 30.
+    cs_opt-due_date     = sy-datum + 30.                 "#EC NUMBER_OK
 
     cs_opt-due_time     = sy-uzeit.
 
@@ -193,14 +183,14 @@ CLASS lcl_main IMPLEMENTATION.
 
     cs_opt-edit_mask    = '*MA"SK'.
 
-    cs_opt-msg_count    = -2147483647.
+    cs_opt-msg_count    = -2147483647.                   "#EC NUMBER_OK
 
     cs_opt-pack_blocked = abap_true.
 
-    add_num_range 'I' 'BT' 1  10.
-    add_num_range 'I' 'BT' 21 30.
-    add_num_range 'I' 'BT' 41 50.
-    add_num_range 'I' 'GE' 61 0.
+    add_num_range 'I' 'BT' 1  10.                        "#EC NUMBER_OK
+    add_num_range 'I' 'BT' 21 30.                        "#EC NUMBER_OK
+    add_num_range 'I' 'BT' 41 50.                        "#EC NUMBER_OK
+    add_num_range 'I' 'GE' 61 0.                         "#EC NUMBER_OK
 
     SELECT * INTO TABLE cs_opt-t002_tab
     FROM t002.

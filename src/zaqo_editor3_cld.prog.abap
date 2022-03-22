@@ -44,8 +44,7 @@ DATA:
 
 TYPES:
   ts_db_key  TYPE zcl_aqo_helper=>ts_db_key,
-  ts_command TYPE zcl_aqo_helper=>ts_command,
-  tt_db_key  TYPE STANDARD TABLE OF ts_db_key WITH DEFAULT KEY.
+  ts_command TYPE zcl_aqo_helper=>ts_command.
 
 CLASS lcl_tree          DEFINITION DEFERRED.
 CLASS lcl_user_prefs    DEFINITION DEFERRED.
@@ -105,7 +104,8 @@ CLASS lcl_editor DEFINITION FINAL
       do_open
         IMPORTING
           is_db_key      TYPE ts_db_key
-          iv_true_editor TYPE abap_bool DEFAULT abap_true,
+          iv_true_editor TYPE abap_bool DEFAULT abap_true
+          iv_check_decl  TYPE abap_bool DEFAULT abap_true,
 
       show_all
         IMPORTING
@@ -134,9 +134,7 @@ CLASS lcl_editor DEFINITION FINAL
       add_one_field
         IMPORTING
           is_field_value TYPE zcl_aqo_helper=>ts_field_value
-          ir_data        TYPE REF TO data OPTIONAL
-        RAISING
-          zcx_aqo_exception,
+          ir_data        TYPE REF TO data OPTIONAL,
 
       is_editable
         IMPORTING
@@ -154,7 +152,12 @@ CLASS lcl_editor DEFINITION FINAL
       get_title
         IMPORTING
                   iv_add_opt_info TYPE abap_bool OPTIONAL
-        RETURNING VALUE(rv_title) TYPE string.
+        RETURNING VALUE(rv_title) TYPE string,
+
+      do_export,
+      do_import
+        IMPORTING
+          is_db_key TYPE ts_db_key.
 
     EVENTS:
       app_event
@@ -173,9 +176,6 @@ CLASS lcl_editor DEFINITION FINAL
 
       _set_flags,
 
-      _get_general_info
-        RETURNING VALUE(rs_info) TYPE zsaqo3_general_info,
-
       _fill_fields,
 
       _find_f4_tables,
@@ -191,7 +191,17 @@ CLASS lcl_editor DEFINITION FINAL
         RETURNING VALUE(rv_ok) TYPE abap_bool,
 
       _calculate_hash
-        RETURNING VALUE(rv_hash) LIKE mv_initial_hash.
+        RETURNING VALUE(rv_hash) LIKE mv_initial_hash,
+
+      _check_declaration
+        IMPORTING
+          is_db_key TYPE ts_db_key,
+
+      _is_file_name_ok
+        IMPORTING
+          io_file TYPE REF TO zcl_eui_file
+        RAISING
+          zcx_eui_exception.
 ENDCLASS.
 
 *&---------------------------------------------------------------------*

@@ -174,19 +174,19 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>027</MSGNR>
-     <TEXT>Declared in editor only:&amp;1&amp;2&amp;3&amp;4</TEXT>
+     <TEXT>---</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>028</MSGNR>
-     <TEXT>&amp;1&amp;2 declaration changed. Delete in editor or use IV_REPAIR = &apos;X&apos; flag!</TEXT>
+     <TEXT>&amp;1 declaration changed. Delete in editor or use IV_REPAIR = &apos;X&apos; flag!</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZAQO_MESSAGE</ARBGB>
      <MSGNR>029</MSGNR>
-     <TEXT>IV_REPAIR = &apos;X&apos; slows down execution!</TEXT>
+     <TEXT>---</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>

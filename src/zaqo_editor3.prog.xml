@@ -1101,6 +1101,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>BAC</KEY>
+     <ENTRY>BDS Assignment saving is canceled</ENTRY>
+     <LENGTH>66</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>CAT</KEY>
      <ENTRY>DDIC or Catalog</ENTRY>
      <LENGTH>17</LENGTH>
@@ -1329,6 +1335,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>SKD</KEY>
+     <ENTRY>Do not check class declarations</ENTRY>
+     <LENGTH>62</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>SOH</KEY>
      <ENTRY>Show online help on startup</ENTRY>
      <LENGTH>37</LENGTH>
@@ -1406,6 +1418,18 @@
      <LENGTH>15</LENGTH>
     </item>
     <item>
+     <ID>I</ID>
+     <KEY>WFE</KEY>
+     <ENTRY>Wrong file extension</ENTRY>
+     <LENGTH>40</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>WOF</KEY>
+     <ENTRY>Wrong option file</ENTRY>
+     <LENGTH>27</LENGTH>
+    </item>
+    <item>
      <ID>R</ID>
      <ENTRY>Options editor</ENTRY>
      <LENGTH>14</LENGTH>
@@ -1438,6 +1462,12 @@
        <KEY>ANF</KEY>
        <ENTRY>Добавить новое поле</ENTRY>
        <LENGTH>19</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>BAC</KEY>
+       <ENTRY>Сохранение BDS отменено</ENTRY>
+       <LENGTH>66</LENGTH>
       </item>
       <item>
        <ID>I</ID>
@@ -1669,6 +1699,12 @@
       </item>
       <item>
        <ID>I</ID>
+       <KEY>SKD</KEY>
+       <ENTRY>Не проверять объявления классов</ENTRY>
+       <LENGTH>62</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
        <KEY>SOH</KEY>
        <ENTRY>Показать справку при запуске</ENTRY>
        <LENGTH>37</LENGTH>
@@ -1744,6 +1780,18 @@
        <KEY>VOP</KEY>
        <ENTRY>Режим просмотра</ENTRY>
        <LENGTH>15</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>WFE</KEY>
+       <ENTRY>Неверное расширение файла</ENTRY>
+       <LENGTH>40</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>WOF</KEY>
+       <ENTRY>Неправильный файл настройки</ENTRY>
+       <LENGTH>27</LENGTH>
       </item>
       <item>
        <ID>R</ID>

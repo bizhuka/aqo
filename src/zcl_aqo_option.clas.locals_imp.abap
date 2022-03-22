@@ -3,122 +3,126 @@
 *"* declarations
 
 CLASS lcl_helper IMPLEMENTATION.
-  METHOD compare_2_fields.
-    DATA:
-      lt_old      TYPE zcl_eui_type=>tt_field_desc,
-      lv_old_ok   TYPE abap_bool,
-      lt_new      TYPE zcl_eui_type=>tt_field_desc,
-      lv_new_ok   TYPE abap_bool,
-      lv_changed  LIKE cv_changed,
-      ls_old      TYPE REF TO zcl_eui_type=>ts_field_desc,
-      ls_new      TYPE REF TO zcl_eui_type=>ts_field_desc,
-      lv_subfield TYPE abap_attrname.
+  METHOD create.
+    CREATE OBJECT eo_opt.
+    CLEAR es_last_call.
 
-    DEFINE raise_error.
-      " Add sub field
-      IF lv_subfield IS NOT INITIAL.
-       CONCATENATE '-' lv_subfield INTO lv_subfield.
-      ENDIF.
+    DATA lt_callstack TYPE abap_callstack.
+    " Where-Used List
+    CALL FUNCTION 'SYSTEM_CALLSTACK'
+      EXPORTING
+        max_level = 3
+      IMPORTING
+        callstack = lt_callstack.
+    READ TABLE lt_callstack INDEX 3 INTO es_last_call.
+    " Use package of calling include?
+    IF sy-subrc = 0 AND cs_db_key-package_id IS INITIAL AND es_last_call-mainprogram <> zcl_aqo_helper=>mc_prog-editor.
+      cs_db_key-package_id = get_default_package(
+           is_stack    = es_last_call
+           iv_is_class = iv_is_class ).
+    ENDIF.
 
-      MESSAGE s028(zaqo_message) WITH cs_old->name lv_subfield.
+    " Load data
+    zcl_aqo_helper=>get_by_key( EXPORTING is_db_key  = cs_db_key
+                                CHANGING  cs_db_item = eo_opt->ms_db_item ).
+  ENDMETHOD.
+
+  METHOD get_default_package.
+    DATA lv_object   TYPE tadir-object.
+    DATA lv_obj_name TYPE tadir-obj_name.
+
+    IF iv_is_class = abap_true.
+      SPLIT is_stack-mainprogram(30) AT '=' INTO lv_obj_name lv_object.
+      lv_object   = 'CLAS'.
+    ELSE.
+      lv_obj_name = is_stack-mainprogram.
+      lv_object   = 'PROG'.
+    ENDIF.
+
+    SELECT SINGLE devclass INTO rv_package
+    FROM tadir
+    WHERE pgmid    = 'R3TR'
+      AND object   = lv_object
+      AND obj_name = lv_obj_name.
+
+    CHECK sy-subrc <> 0.
+    zcx_aqo_exception=>raise_sys_error( iv_message = 'Cannot detect default package'(cdd) ).
+  ENDMETHOD.
+
+  METHOD check_package_exist.
+    " Check for new packages
+    DATA lv_devclass TYPE tdevc-devclass.
+    SELECT SINGLE devclass INTO lv_devclass
+    FROM tdevc
+    WHERE devclass = iv_package_id.
+
+    " Oops
+    IF lv_devclass IS INITIAL.
+      MESSAGE s020(zaqo_message) WITH iv_package_id INTO sy-msgli.
       zcx_aqo_exception=>raise_sys_error( ).
-      CLEAR lv_subfield.
-    END-OF-DEFINITION.
+    ENDIF.
+  ENDMETHOD.
 
-    " ERROR - Parameter has now become Table or Range ?
-    IF is_new-sys_type <> cs_old->sys_type OR
-       is_new-ui_type  <> cs_old->ui_type.
-      raise_error.
+  METHOD get_class_fields.
+    DATA lo_class TYPE REF TO cl_abap_classdescr.
+    lo_class ?= cl_abap_classdescr=>describe_by_object_ref( io_data ).
+
+    DATA lv_name TYPE string.
+    lv_name = lo_class->get_relative_name( ).
+
+    " Check class
+    DATA lt_friend TYPE abap_frndtypes_tab.
+    lt_friend = lo_class->get_friend_types( ).
+
+    READ TABLE lt_friend TRANSPORTING NO FIELDS
+     WITH KEY table_line->absolute_name = '\CLASS=ZCL_AQO_OPTION'.
+    IF sy-subrc <> 0.
+      MESSAGE s014(zaqo_message) WITH lv_name INTO sy-msgli.
+      zcx_aqo_exception=>raise_sys_error( ).
     ENDIF.
 
-    " Check sub fields
-    IF cs_old->sub_fdesc IS NOT INITIAL.
-      zcl_eui_conv=>from_json(
-       EXPORTING
-         iv_json = cs_old->sub_fdesc
-       IMPORTING
-         ex_data = lt_old
-         ev_ok   = lv_old_ok ).
+    " name type_kind length decimals
+    DATA lv_is_stat TYPE abap_bool.
+    lv_is_stat = abap_undefined.
 
-      zcl_eui_conv=>from_json(
-       EXPORTING
-         iv_json = is_new-sub_fdesc
-       IMPORTING
-         ex_data = lt_new
-         ev_ok   = lv_new_ok ).
+    DATA ls_attr TYPE REF TO abap_attrdescr.
+    LOOP AT lo_class->attributes REFERENCE INTO ls_attr
+       WHERE visibility   = cl_abap_objectdescr=>public
+         AND is_read_only = abap_true " <--- Mark as READ-ONLY attributes
+         AND is_constant  = abap_false
+         AND is_virtual   = abap_false
 
-      " Json format error
-      IF lv_old_ok <> abap_true OR lv_new_ok <> abap_true.
-        raise_error.
+         " initialize CLASS-DATA or DATA (but not both!)
+         " AND is_class     = abap_false
+
+         " super class & child class can have different options! (in that case use only STATIC attributes)
+         " Example 1 - IO_DATA = NEW ZCL_SUPER( ), 2 - IO_DATA = NEW ZCL_CHILD( )
+         " Or use IR_DATA = ... instead of IO_DATA
+         AND is_inherited = abap_false.
+
+      " Check instance or static
+      IF lv_is_stat <> abap_undefined AND lv_is_stat <> ls_attr->is_class.
+        MESSAGE s014(zaqo_message) WITH ls_attr->name INTO sy-msgli.
+        zcx_aqo_exception=>raise_sys_error( ).
       ENDIF.
+      lv_is_stat = ls_attr->is_class.
 
-      LOOP AT lt_old REFERENCE INTO ls_old.
-        " Field deleted
-        READ TABLE lt_new REFERENCE INTO ls_new
-         WITH TABLE KEY name = ls_old->name.
-        IF sy-subrc <> 0.
-          IF iv_repair = abap_true.
-            DELETE lt_old WHERE name = ls_old->name.
-            lv_changed = abap_true.
-          ELSE.
-            lv_subfield = ls_old->name.
-            raise_error.
-          ENDIF.
+      " And add to list
+      INSERT ls_attr->name INTO TABLE rt_declared_field.
+    ENDLOOP.
+  ENDMETHOD.
 
-          CONTINUE.
-        ENDIF.
+  METHOD get_struc_fields.
+    DATA lo_struc TYPE REF TO cl_abap_structdescr.
+    lo_struc ?= cl_abap_structdescr=>describe_by_data_ref( ir_data ).
 
-        " Recursive check
-        compare_2_fields(
-         EXPORTING
-           is_new     = ls_new->*
-           iv_repair  = iv_repair
-           cs_old     = ls_old
-         CHANGING
-           cv_changed = lv_changed ).
-      ENDLOOP.
-
-      LOOP AT lt_new REFERENCE INTO ls_new.
-        READ TABLE lt_old REFERENCE INTO ls_old
-         WITH TABLE KEY name = ls_new->name.
-        CHECK sy-subrc <> 0.
-
-        IF iv_repair = abap_true.
-          INSERT ls_new->* INTO TABLE lt_old.
-          lv_changed = abap_true.
-        ELSE.
-          lv_subfield = ls_new->name.
-          raise_error.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
-
-    " Repair option (pass as 'IV_REPAIR = abap_true')
-    IF cs_old->length      <> is_new-length      OR
-       cs_old->decimals    <> is_new-decimals    OR
-       " cs_old->rollname    <> is_new-rollname    OR
-       cs_old->table_kind  <> is_new-table_kind  OR
-       cs_old->unique      <> is_new-unique      OR
-       cs_old->key[]       <> is_new-key[]       OR
-       cs_old->key_defkind <> is_new-key_defkind OR
-       lv_changed         = abap_true.
-
-      IF iv_repair <> abap_true.
-        raise_error.
-      ELSE.
-        cv_changed         = abap_true.
-        " Copy new elementary declarations
-        cs_old->length      = is_new-length.
-        cs_old->decimals    = is_new-decimals.
-        " cs_old->rollname    = is_new-rollname.
-
-        " Copy new table declarations
-        cs_old->table_kind  = is_new-table_kind.
-        cs_old->unique      = is_new-unique.
-        cs_old->key         = is_new-key.
-        cs_old->key_defkind = is_new-key_defkind.
-        cs_old->sub_fdesc   = zcl_eui_conv=>to_json( lt_old ).
-      ENDIF.
-    ENDIF.
+    " name type_kind length decimals
+    DATA ls_comp TYPE REF TO abap_compdescr.
+    LOOP AT lo_struc->components REFERENCE INTO ls_comp.
+      " And add to list
+      DATA lv_field_name TYPE abap_attrname.
+      lv_field_name = ls_comp->name.
+      INSERT lv_field_name INTO TABLE rt_declared_field.
+    ENDLOOP.
   ENDMETHOD.
 ENDCLASS.

@@ -31,8 +31,6 @@ CLASS ZCL_AQO_TESTER IMPLEMENTATION.
 
 
 METHOD constructor.
-  DATA:
-   lo_error TYPE REF TO zcx_aqo_exception.
   FIELD-SYMBOLS:
     <ls_bukrs>  LIKE LINE OF bukrs_range.
 
@@ -48,22 +46,14 @@ METHOD constructor.
   SELECT * INTO TABLE me->t002_tab
   FROM t002.
 
-  " Read new values
-  TRY.
-      zcl_aqo_option=>create(
-        iv_package_id = '$TMP'                " Package    "#EC NOTEXT
-        iv_option_id  = 'Class options'(op1)  " Any text < 30 symbols
-        " Public read-only attributes is options!
-        " CLASS-DATA or DATA (but not both)
-        io_data       = me
-        " iv_repair     = abap_true
-      ).
-    CATCH zcx_aqo_exception INTO lo_error.
-      MESSAGE lo_error TYPE 'S' DISPLAY LIKE 'E'.
-      RETURN.
-  ENDTRY.
+  zcl_aqo_option=>create(
+    iv_option_id  = 'CL_OPTION'(op1)
+    " Public read-only attributes is options!
+    " CLASS-DATA or DATA (but not both)
+    io_data       = me
+  ).
 
-  MESSAGE 'Edit attributes in tr. ZAQO_BSP_EDITOR, ZAQO_EDITOR or ZAQO_EDITOR_OLD'(edt) TYPE 'S'.
+*  MESSAGE 'Edit attributes in tr. ZAQO_EDITOR_OLD'(edt) TYPE 'S'.
 ENDMETHOD.
 
 

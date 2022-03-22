@@ -5,15 +5,32 @@
 CLASS lcl_helper DEFINITION FINAL.
   PUBLIC SECTION.
     CLASS-METHODS:
-      compare_2_fields
+      create
         IMPORTING
-          is_new     TYPE zcl_eui_type=>ts_field_desc
-          iv_repair  TYPE abap_bool
-          cs_old     TYPE REF TO zcl_eui_type=>ts_field_desc
+          iv_is_class  TYPE abap_bool
+        EXPORTING
+          es_last_call TYPE abap_callstack_line
+          eo_opt       TYPE REF TO zcl_aqo_option
         CHANGING
-          cv_changed TYPE abap_bool
-        RAISING
-          zcx_aqo_exception.
+          cs_db_key    TYPE zcl_aqo_helper=>ts_db_key,
+
+      check_package_exist
+        IMPORTING
+          iv_package_id TYPE tadir-devclass,
+
+      get_class_fields
+        IMPORTING io_data                  TYPE REF TO object
+        RETURNING VALUE(rt_declared_field) TYPE zcl_aqo_helper=>abap_attrname_tab,
+
+      get_struc_fields
+        IMPORTING ir_data                  TYPE REF TO data
+        RETURNING VALUE(rt_declared_field) TYPE zcl_aqo_helper=>abap_attrname_tab,
+
+      get_default_package
+        IMPORTING
+                  is_stack          TYPE abap_callstack_line
+                  iv_is_class       TYPE abap_bool
+        RETURNING VALUE(rv_package) TYPE tadir-devclass.
 ENDCLASS.
 
 CLASS zcl_aqo_option DEFINITION LOCAL FRIENDS lcl_helper.

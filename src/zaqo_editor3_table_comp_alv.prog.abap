@@ -19,11 +19,11 @@ CLASS lcl_table_comp_alv DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eu
     TYPES:
       BEGIN OF ts_sub_fld_desc,
         icon    TYPE icon_d.
-            INCLUDE TYPE zcl_eui_type=>ts_field_desc AS field_desc.
-    TYPES:
-      catalog TYPE icon_d,
-    END OF ts_sub_fld_desc,
-    tt_sub_fld_desc TYPE STANDARD TABLE OF ts_sub_fld_desc WITH DEFAULT KEY.
+        INCLUDE TYPE zcl_eui_type=>ts_field_desc AS field_desc.
+      TYPES:
+        catalog TYPE icon_d,
+      END OF ts_sub_fld_desc,
+      tt_sub_fld_desc TYPE STANDARD TABLE OF ts_sub_fld_desc WITH DEFAULT KEY.
 
     DATA:
       mr_field_desc   TYPE REF TO zcl_eui_type=>ts_field_desc,
@@ -108,7 +108,7 @@ CLASS lcl_table_comp_alv IMPLEMENTATION.
     LOOP AT go_editor->mt_f4_tables TRANSPORTING NO FIELDS WHERE int_value <> mr_field_desc->name.
       add_fcat_field 'F4_TABLE' ''.
       lr_catalog->edit       = mv_editable.
-      lr_catalog->drdn_hndl  = 154.
+      lr_catalog->drdn_hndl  = 154.                      "#EC NUMBER_OK
       lr_catalog->drdn_alias = abap_true.
       EXIT.
     ENDLOOP.
