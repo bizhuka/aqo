@@ -224,7 +224,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
         CREATE OBJECT lo_table_alv
           EXPORTING
             ir_fld_value = ir_fld_value.
-        CHECK lo_table_alv->show( ) = 'OK'.
+
+        CHECK lo_table_alv->show( iv_skip_alv_check = abap_true ) = 'OK'.
         lv_ok = abap_true.
 
       WHEN zcl_eui_type=>mc_ui_type-string.

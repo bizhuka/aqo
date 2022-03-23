@@ -157,7 +157,11 @@ CLASS lcl_editor DEFINITION FINAL
       do_export,
       do_import
         IMPORTING
-          is_db_key TYPE ts_db_key.
+          is_db_key TYPE ts_db_key,
+
+      skip_message
+        IMPORTING
+          io_msg_manager TYPE REF TO zcl_eui_msg_manager.
 
     EVENTS:
       app_event

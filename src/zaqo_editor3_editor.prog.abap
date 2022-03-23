@@ -673,6 +673,8 @@ CLASS lcl_editor IMPLEMENTATION.
        iv_rollname  = ls_fld_value->rollname
        iv_command   = 'FOR_PBO' ).
     ENDLOOP.
+
+    go_editor->skip_message( mo_screen ).
   ENDMETHOD.
 
   METHOD _is_saved.
@@ -818,6 +820,13 @@ CLASS lcl_editor IMPLEMENTATION.
         CREATE OBJECT lo_opt TYPE (lv_class).
       CATCH cx_root.
     ENDTRY.
+  ENDMETHOD.
+
+  METHOD skip_message.
+    " TODO prefs
+    io_msg_manager->skip_message( iv_msgid = '00'
+                                  iv_msgno = '002'
+                                  iv_msgty = 'E' ).
   ENDMETHOD.
 
 ENDCLASS.

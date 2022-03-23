@@ -7,6 +7,7 @@ CLASS lcl_tab DEFINITION ABSTRACT.
     METHODS:
       " For ALV tables based on TS_FLD_VALUE
       show
+        IMPORTING iv_skip_alv_check   TYPE abap_bool OPTIONAL
         RETURNING VALUE(rv_close_cmd) TYPE syucomm,
 
       " For general ALV in tabs
@@ -14,9 +15,9 @@ CLASS lcl_tab DEFINITION ABSTRACT.
 
   PROTECTED SECTION.
     DATA:
+      mo_alv    TYPE REF TO zcl_eui_alv,
       ms_db_key TYPE ts_db_key,
-      mr_table  TYPE REF TO data,
-      mo_alv    TYPE REF TO zcl_eui_alv.
+      mr_table  TYPE REF TO data.
 
     METHODS:
       _fill_table,
@@ -83,6 +84,10 @@ CLASS lcl_tab IMPLEMENTATION.
     mo_alv->set_status( _get_status( ) ).
 
     mo_alv->popup( iv_row_end = 28 ).                    "#EC NUMBER_OK
+
+    IF iv_skip_alv_check = abap_true.
+      go_editor->skip_message( mo_alv ).
+    ENDIF.
 
     rv_close_cmd = mo_alv->show( ).
   ENDMETHOD.
