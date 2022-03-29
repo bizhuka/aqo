@@ -519,7 +519,7 @@ METHOD is_in_editor.
 
   " If also check old UI
   IF iv_any = abap_true AND
-    ( lv_tcode = 'ZAQO_VIEWER_OLD' OR lv_tcode = 'ZAQO_EDITOR_OLD' ).
+    ( lv_tcode = 'ZAQO_VIEWER_OLD' OR lv_tcode = 'ZAQO_EDITOR_OLD' OR lv_tcode = 'ZAQO' ).
     rv_ok = abap_true.
   ENDIF.
 ENDMETHOD.
