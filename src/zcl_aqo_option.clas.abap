@@ -167,9 +167,15 @@ ENDMETHOD.
 
 METHOD create.
   DATA lv_is_class TYPE abap_bool.
-  IF io_data IS SUPPLIED.
+  DO 1 TIMES.
+    CHECK io_data IS BOUND.
+
+    DATA lo_class TYPE REF TO cl_abap_objectdescr.
+    lo_class ?= cl_abap_objectdescr=>describe_by_object_ref( io_data ).
+
+    CHECK lo_class->is_ddic_type( ) = abap_true.
     lv_is_class = abap_true.
-  ENDIF.
+  ENDDO.
 
   DATA ls_db_key    TYPE zcl_aqo_helper=>ts_db_key.
   ls_db_key-package_id = iv_package_id.
