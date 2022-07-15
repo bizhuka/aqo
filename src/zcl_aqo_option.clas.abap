@@ -173,7 +173,7 @@ METHOD create.
     DATA lo_class TYPE REF TO cl_abap_objectdescr.
     lo_class ?= cl_abap_objectdescr=>describe_by_object_ref( io_data ).
 
-    CHECK lo_class->is_ddic_type( ) = abap_true.
+    CHECK lo_class->absolute_name cp '\CLASS*'.
     lv_is_class = abap_true.
   ENDDO.
 
