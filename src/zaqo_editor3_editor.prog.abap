@@ -362,6 +362,7 @@ CLASS lcl_editor IMPLEMENTATION.
   METHOD _find_f4_tables.
     DATA ls_field_value TYPE REF TO zcl_aqo_helper=>ts_field_value.
 
+    CLEAR mt_f4_tables[].
     LOOP AT mo_option->mt_field_value REFERENCE INTO ls_field_value
                                       WHERE ui_type     = zcl_eui_type=>mc_ui_type-table
                                         AND ( table_kind  = cl_abap_tabledescr=>tablekind_sorted

@@ -36,6 +36,7 @@ METHOD constructor.
 
   " Default values! For simple types use initilazation in declaration itself
 
+**********************************************************************
   " Optional initialization
   APPEND INITIAL LINE TO me->bukrs_range ASSIGNING <ls_bukrs>.
   <ls_bukrs>-sign   = 'I'.
@@ -45,13 +46,11 @@ METHOD constructor.
 
   SELECT * INTO TABLE me->t002_tab
   FROM t002.
+**********************************************************************
 
-  zcl_aqo_option=>create(
-    iv_option_id  = 'CL_OPTION'(op1)
-    " Public read-only attributes is options!
-    " CLASS-DATA or DATA (but not both)
-    io_data       = me
-  ).
+ " Public read-only attributes is options!
+ " CLASS-DATA or DATA (but not both)
+  zcl_aqo_option=>create( me ).
 
 *  MESSAGE 'Edit attributes in tr. ZAQO_EDITOR_OLD'(edt) TYPE 'S'.
 ENDMETHOD.

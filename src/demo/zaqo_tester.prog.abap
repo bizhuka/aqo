@@ -14,16 +14,17 @@ TYPES:
   END OF ts_email,
 
   BEGIN OF ts_alt_land,
-    land1    TYPE t005t-land1,
-    landx50  TYPE t005t-landx50,
+    land1      TYPE t005t-land1,
+    landx50    TYPE t005t-landx50,
     " Check dropdown
-    bdc_mode TYPE ettcd_mode,
+    bdc_mode   TYPE ettcd_mode,
     " Table in table
-    emails   TYPE HASHED TABLE OF ts_email WITH UNIQUE KEY email,
+    emails     TYPE HASHED TABLE OF ts_email WITH UNIQUE KEY email,
     " Range in table
-    bukrs    TYPE RANGE OF bukrs,
+    bukrs      TYPE RANGE OF bukrs,
+    _dom_range TYPE RANGE OF ettcd_mode,
     " and string
-    memo     TYPE string,
+    memo       TYPE string,
     " !!! Uncomment for testing purpose
     " natio    TYPE t005t-natio,
   END OF ts_alt_land,
@@ -86,7 +87,9 @@ CLASS lcl_main IMPLEMENTATION.
 
     " Read new values
     zcl_aqo_option=>create(
-      ir_data       = lv_ref " REF #( ms_opt )
+      iv_package_id = '$TMP'        " Optional
+      iv_option_id  = 'STRUCT_OPT'  " Optional
+      ir_data       = lv_ref        " REF #( ms_opt )  Optional preferred parameter IO_DATA
     ).
 
     " Also initilize class option

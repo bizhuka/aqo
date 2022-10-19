@@ -15,6 +15,7 @@ public section.
       !IV_OPTION_ID type CSEQUENCE default ZCL_AQO_HELPER=>MC_PROG-DEFAULT_ID
       !IR_DATA type ref to DATA optional
       !IO_DATA type ref to OBJECT optional
+    preferred parameter IO_DATA
     returning
       value(RO_OPT) type ref to ZCL_AQO_OPTION .
   methods GET_FIELD_VALUE
