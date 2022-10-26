@@ -30,8 +30,6 @@ protected section.
   data MT_FIELD_VALUE type ZCL_AQO_HELPER=>TT_FIELD_VALUE .
 
   methods DELETE
-    importing
-      !IV_TASK type CSEQUENCE optional
     returning
       value(RV_INFO) type STRING .
   methods LOCK
@@ -46,8 +44,6 @@ protected section.
     returning
       value(RV_INFO) type STRING .
   methods TRANSPORT
-    importing
-      !IV_TASK type CSEQUENCE optional
     returning
       value(RV_INFO) type STRING .
   methods ADD_HISTORY_VALUE
@@ -259,7 +255,7 @@ METHOD delete.
 
   " Put to request
   IF ms_db_item-package_id NP '$*'.
-    rv_info = transport( iv_task ).
+    rv_info = transport( ).
     " TODO delete UI5 version
     CHECK sy-msgid = 'ZAQO_MESSAGE' AND sy-msgno = 023.  "#EC NUMBER_OK
   ENDIF.
@@ -422,7 +418,7 @@ METHOD transport.
 
   " Already supplied by UI5 interface ?
   DATA lv_task TYPE e070-trkorr.
-  lv_task = iv_task.
+*  lv_task = iv_task.
 
   zcl_aqo_helper=>find_request( EXPORTING iv_table_name = 'ZTAQO_OPTION'
                                           iv_key1       = ms_db_item-package_id
