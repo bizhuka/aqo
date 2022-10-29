@@ -266,21 +266,24 @@ CLASS lcl_attachment IMPLEMENTATION.
       es_oaor_last,
       et_oaor_file.
 
+    DATA lv_ok TYPE bds_locl-classname.
+    SELECT SINGLE classname INTO lv_ok
+    FROM bds_locl
+    WHERE classname EQ ms_db_key-package_id
+      AND classtype EQ mc-oaor_other.
+    CHECK lv_ok IS NOT INITIAL.
+
     " Subfolder in OAOR (and classname = package_id)
     lv_key = ms_db_key-option_id.
 
     " Finding the right documents
     cl_bds_document_set=>get_info(
-     EXPORTING
-      classname           = ms_db_key-package_id
-      classtype           = mc-oaor_other
-      object_key          = lv_key
-     IMPORTING
-      extended_components = lt_sbdst_components2
-     CHANGING
-      signature           = lt_sbdst_signature
-     EXCEPTIONS
-      OTHERS              = 7 ).
+     EXPORTING  classname           = ms_db_key-package_id
+                classtype           = mc-oaor_other
+                object_key          = lv_key
+     IMPORTING  extended_components = lt_sbdst_components2
+     CHANGING   signature           = lt_sbdst_signature
+     EXCEPTIONS OTHERS              = 7 ).
     CHECK sy-subrc = 0.
 
     " lt_sbdst_signature structure is complex
