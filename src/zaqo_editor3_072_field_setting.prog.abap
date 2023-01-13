@@ -16,9 +16,7 @@ CLASS lcl_field_setting DEFINITION INHERITING FROM lcl_tab FINAL FRIENDS zcl_eui
       _on_hotspot_click REDEFINITION,
       _on_user_command  REDEFINITION,
       _on_app_event     REDEFINITION,
-      _on_data_changed  FOR EVENT data_changed OF cl_gui_alv_grid "#EC CALLED
-        IMPORTING
-          er_data_changed,
+      _on_data_changed  REDEFINITION,
 
       _check_data
         CHANGING
@@ -342,6 +340,8 @@ CLASS lcl_field_setting IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _on_data_changed.
+    super->_on_data_changed( sender          = sender
+                             er_data_changed = er_data_changed ).
     " Call checks manually. For sync with 'Edit data' tab only
     CHECK er_data_changed IS NOT INITIAL.
     go_editor->sync_screen_ui( iv_message = '' ).

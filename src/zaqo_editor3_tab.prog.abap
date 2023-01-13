@@ -59,6 +59,11 @@ CLASS lcl_tab DEFINITION ABSTRACT.
           sender
           e_ucomm,
 
+      _on_data_changed FOR EVENT data_changed OF cl_gui_alv_grid "#EC CALLED
+        IMPORTING
+          sender
+          er_data_changed,
+
       _create_container
         RETURNING VALUE(ro_container) TYPE REF TO cl_gui_custom_container,
 
@@ -164,6 +169,9 @@ CLASS lcl_tab IMPLEMENTATION.
     CLEAR e_object->mt_toolbar[].
     CHECK e_interactive <> abap_true.
     e_object->mt_toolbar = _get_toolbar( ).
+  ENDMETHOD.
+
+  METHOD _on_data_changed.                                  "#EC NEEDED
   ENDMETHOD.
 
   METHOD _fill_table.                                       "#EC NEEDED
