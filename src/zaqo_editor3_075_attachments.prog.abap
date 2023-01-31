@@ -354,15 +354,15 @@ CLASS lcl_attachment IMPLEMENTATION.
       ls_oaor_file->package_id = ms_db_key-package_id.
       ls_oaor_file->option_id	 = ms_db_key-option_id.
 
-      " Create at
-      ls_oaor_file->created_at           = ls_oaor_file->created_at + sy-tzone.
-      ls_oaor_file->created_at_date      = ls_oaor_file->created_at(8).
-      ls_oaor_file->created_at_time      = ls_oaor_file->created_at+8(6).
+      DATA lv_timestamp TYPE tzntstmps.
+      DEFINE conv_date_time.
+        lv_timestamp = ls_oaor_file->&1.
+        CONVERT TIME STAMP lv_timestamp TIME ZONE sy-zonlo
+          INTO DATE ls_oaor_file->&1_date TIME ls_oaor_file->&1_time.
+      END-OF-DEFINITION.
 
-      " Changed at
-      ls_oaor_file->last_changed_at      = ls_oaor_file->last_changed_at + sy-tzone.
-      ls_oaor_file->last_changed_at_date = ls_oaor_file->last_changed_at(8).
-      ls_oaor_file->last_changed_at_time = ls_oaor_file->last_changed_at+8(6).
+      conv_date_time: created_at,
+                      last_changed_at.
     ENDLOOP.
 
     " Get last version for 1 file
