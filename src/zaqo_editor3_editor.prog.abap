@@ -665,8 +665,15 @@ CLASS lcl_editor IMPLEMENTATION.
         lv_input = '1'.
       ENDIF.
 
+      DATA lv_scr_name TYPE string.
+      lv_scr_name = ls_fld_value->name.
+
+      IF ls_fld_value->ui_type = zcl_eui_type=>mc_ui_type-range.
+        CONCATENATE '*' lv_scr_name '*' INTO lv_scr_name.
+      ENDIF.
+
       mo_screen->customize(
-       name         = ls_fld_value->name
+       name         = lv_scr_name
        input        = lv_input
        "required    = TODO ?
        iv_label     = ls_fld_value->label
