@@ -38,25 +38,21 @@
        <PARAMETER>SHLP_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Table of elementary search helps</STEXT>
-       <INDEX> 001</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>RECORD_TAB</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Hit list</STEXT>
-       <INDEX> 002</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>SHLP</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Single (current) search help</STEXT>
-       <INDEX> 003</INDEX>
       </RSFDO>
       <RSFDO>
        <PARAMETER>CALLCONTROL</PARAMETER>
        <KIND>P</KIND>
        <STEXT>Control of the F4 process</STEXT>
-       <INDEX> 004</INDEX>
       </RSFDO>
      </DOCUMENTATION>
     </item>

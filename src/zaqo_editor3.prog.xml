@@ -62,7 +62,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-PACKAGE_ID</NAME>
-       <TEXT>Package________</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>015</LENGTH>
@@ -79,7 +78,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-PACKAGE_ID</NAME>
-       <TEXT>______________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>022</COLUMN>
        <LENGTH>030</LENGTH>
@@ -88,7 +86,6 @@
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
        <PARAM_ID>DVC</PARAM_ID>
-       <FOREIGNKEY>X</FOREIGNKEY>
        <OUTPUT_FLD>X</OUTPUT_FLD>
        <REQU_ENTRY>N</REQU_ENTRY>
       </RPY_DYFATC>
@@ -97,7 +94,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-OPTION_ID</NAME>
-       <TEXT>Option_ID___________</TEXT>
        <LINE>002</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>020</LENGTH>
@@ -114,7 +110,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-OPTION_ID</NAME>
-       <TEXT>______________________________</TEXT>
        <LINE>002</LINE>
        <COLUMN>022</COLUMN>
        <LENGTH>030</LENGTH>
@@ -123,7 +118,6 @@
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
        <UP_LOWER>X</UP_LOWER>
-       <FOREIGNKEY>X</FOREIGNKEY>
        <OUTPUT_FLD>X</OUTPUT_FLD>
        <REQU_ENTRY>N</REQU_ENTRY>
       </RPY_DYFATC>
@@ -254,50 +248,35 @@
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pbo_070.</LINE>
+       <LINE>  MODULE pbo_070.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>CALL SUBSCREEN tabs_area</LINE>
+       <LINE>  CALL SUBSCREEN tabs_area</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>INCLUDING g_tabs-prog g_tabs-subscreen.</LINE>
+       <LINE>    INCLUDING g_tabs-prog g_tabs-subscreen.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
       <RPY_DYFLOW>
        <LINE>PROCESS AFTER INPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pai_exit AT EXIT-COMMAND.</LINE>
+       <LINE>  MODULE pai_exit AT EXIT-COMMAND.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>CALL SUBSCREEN tabs_area.</LINE>
+       <LINE>  CALL SUBSCREEN tabs_area.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pai_070.</LINE>
+       <LINE>  MODULE pai_070.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
       <RPY_DYFLOW>
        <LINE>PROCESS ON VALUE-REQUEST.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>FIELD zsaqo3_general_info-package_id MODULE f4_free_search.</LINE>
+       <LINE>  FIELD zsaqo3_general_info-package_id MODULE f4_free_search.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
-     <SPACES>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>2</item>
-      <item>4</item>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>2</item>
-      <item>2</item>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-     </SPACES>
     </item>
     <item>
      <HEADER>
@@ -348,7 +327,7 @@
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pbo_071.</LINE>
+       <LINE>  MODULE pbo_071.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
       <RPY_DYFLOW>
@@ -358,14 +337,6 @@
        <LINE>*  MODULE pai_071.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
-     <SPACES>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>0</item>
-      <item>0</item>
-      <item>0</item>
-     </SPACES>
     </item>
     <item>
      <HEADER>
@@ -416,7 +387,7 @@
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pbo_072.</LINE>
+       <LINE>  MODULE pbo_072.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
       <RPY_DYFLOW>
@@ -426,14 +397,6 @@
        <LINE>*  MODULE pai_072.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
-     <SPACES>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>0</item>
-      <item>0</item>
-      <item>0</item>
-     </SPACES>
     </item>
     <item>
      <HEADER>
@@ -484,7 +447,7 @@
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pbo_073.</LINE>
+       <LINE>  MODULE pbo_073.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
       <RPY_DYFLOW>
@@ -494,14 +457,6 @@
        <LINE>*  MODULE pai_073.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
-     <SPACES>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>0</item>
-      <item>0</item>
-      <item>0</item>
-     </SPACES>
     </item>
     <item>
      <HEADER>
@@ -552,7 +507,7 @@
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pbo_074.</LINE>
+       <LINE>  MODULE pbo_074.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
       <RPY_DYFLOW>
@@ -562,14 +517,6 @@
        <LINE>*  MODULE pai_074.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
-     <SPACES>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>0</item>
-      <item>0</item>
-      <item>0</item>
-     </SPACES>
     </item>
     <item>
      <HEADER>
@@ -620,7 +567,7 @@
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pbo_075.</LINE>
+       <LINE>  MODULE pbo_075.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
       <RPY_DYFLOW>
@@ -630,14 +577,6 @@
        <LINE>*  MODULE pai_075.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
-     <SPACES>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>0</item>
-      <item>0</item>
-      <item>0</item>
-     </SPACES>
     </item>
     <item>
      <HEADER>
@@ -662,7 +601,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-CREATED_DATE</NAME>
-       <TEXT>Created_date________</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>020</LENGTH>
@@ -679,7 +617,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-CREATED_DATE</NAME>
-       <TEXT>__________</TEXT>
        <LINE>001</LINE>
        <COLUMN>022</COLUMN>
        <LENGTH>010</LENGTH>
@@ -687,7 +624,6 @@
        <HEIGHT>001</HEIGHT>
        <FORMAT>DATS</FORMAT>
        <FROM_DICT>X</FROM_DICT>
-       <FOREIGNKEY>X</FOREIGNKEY>
        <OUTPUT_FLD>X</OUTPUT_FLD>
        <REQU_ENTRY>N</REQU_ENTRY>
       </RPY_DYFATC>
@@ -696,7 +632,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-CREATED_NAME_TXT</NAME>
-       <TEXT>Full_Name______</TEXT>
        <LINE>002</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>015</LENGTH>
@@ -723,7 +658,6 @@
        <FROM_DICT>X</FROM_DICT>
        <MODIFIC>X</MODIFIC>
        <UP_LOWER>X</UP_LOWER>
-       <FOREIGNKEY>X</FOREIGNKEY>
        <OUTPUT_FLD>X</OUTPUT_FLD>
        <REQU_ENTRY>N</REQU_ENTRY>
       </RPY_DYFATC>
@@ -732,7 +666,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-MENU_MODE</NAME>
-       <TEXT>Menu_mode___________</TEXT>
        <LINE>003</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>020</LENGTH>
@@ -762,7 +695,6 @@
        <FORMAT>NUMC</FORMAT>
        <FROM_DICT>X</FROM_DICT>
        <MODIFIC>X</MODIFIC>
-       <FOREIGNKEY>X</FOREIGNKEY>
        <INPUT_FLD>X</INPUT_FLD>
        <OUTPUT_FLD>X</OUTPUT_FLD>
        <POSS_ENTRY>1</POSS_ENTRY>
@@ -773,7 +705,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-PREV_VALUE_CNT</NAME>
-       <TEXT>Prev_values_count___</TEXT>
        <LINE>004</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>020</LENGTH>
@@ -790,7 +721,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-PREV_VALUE_CNT</NAME>
-       <TEXT>_________V</TEXT>
        <LINE>004</LINE>
        <COLUMN>022</COLUMN>
        <LENGTH>010</LENGTH>
@@ -799,7 +729,6 @@
        <GROUP1>MOD</GROUP1>
        <FORMAT>INT4</FORMAT>
        <FROM_DICT>X</FROM_DICT>
-       <FOREIGNKEY>X</FOREIGNKEY>
        <INPUT_FLD>X</INPUT_FLD>
        <OUTPUT_FLD>X</OUTPUT_FLD>
        <DICT_I_SGN>X</DICT_I_SGN>
@@ -809,7 +738,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>ZSAQO3_GENERAL_INFO-DESCRIPTION</NAME>
-       <TEXT>Short_text__________</TEXT>
        <LINE>005</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>020</LENGTH>
@@ -837,7 +765,6 @@
        <FROM_DICT>X</FROM_DICT>
        <MODIFIC>X</MODIFIC>
        <UP_LOWER>X</UP_LOWER>
-       <FOREIGNKEY>X</FOREIGNKEY>
        <INPUT_FLD>X</INPUT_FLD>
        <OUTPUT_FLD>X</OUTPUT_FLD>
       </RPY_DYFATC>
@@ -859,44 +786,31 @@
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pbo_076.</LINE>
+       <LINE>  MODULE pbo_076.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
       <RPY_DYFLOW>
        <LINE>PROCESS AFTER INPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>CHAIN.</LINE>
+       <LINE>  CHAIN.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>FIELD: zsaqo3_general_info-prev_value_cnt,</LINE>
+       <LINE>    FIELD: zsaqo3_general_info-prev_value_cnt,</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>zsaqo3_general_info-menu_mode,</LINE>
+       <LINE>           zsaqo3_general_info-menu_mode,</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>zsaqo3_general_info-description.</LINE>
+       <LINE>           zsaqo3_general_info-description.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>MODULE pai_076.</LINE>
+       <LINE>    MODULE pai_076.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
-       <LINE>ENDCHAIN.</LINE>
+       <LINE>  ENDCHAIN.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
-     <SPACES>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>0</item>
-      <item>0</item>
-      <item>2</item>
-      <item>4</item>
-      <item>11</item>
-      <item>11</item>
-      <item>4</item>
-      <item>2</item>
-     </SPACES>
     </item>
    </DYNPROS>
    <CUA>

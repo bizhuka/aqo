@@ -1,0 +1,15 @@
+{
+  "formatVersion": "1",
+  "header": {
+    "description": "Additional functional extension",
+    "originalLanguage": "en"
+  },
+  "descriptions": {
+    "methods": [
+      {
+        "name": "BEFORE_OPTION_SAVE",
+        "description": "Check an option before saving (Optional)"
+      }
+    ]
+  }
+}

@@ -193,45 +193,225 @@
      <LENGTH>28</LENGTH>
     </item>
    </TPOOL>
+   <I18N_TPOOL>
+    <item>
+     <LANGUAGE>R</LANGUAGE>
+     <TEXTPOOL>
+      <item>
+       <ID>I</ID>
+       <KEY>AAT</KEY>
+       <ENTRY>Добавить приложение</ENTRY>
+       <LENGTH>21</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>ATT</KEY>
+       <ENTRY>Прикрепить</ENTRY>
+       <LENGTH>13</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CDD</KEY>
+       <ENTRY>Не удается определить пакет по умолчанию</ENTRY>
+       <LENGTH>58</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CNF</KEY>
+       <ENTRY>Подтверждение</ENTRY>
+       <LENGTH>15</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CRT</KEY>
+       <ENTRY>Новый</ENTRY>
+       <LENGTH>7</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>CRV</KEY>
+       <ENTRY>Невозможно прочитать значение</ENTRY>
+       <LENGTH>42</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DAT</KEY>
+       <ENTRY>Удалить приложение</ENTRY>
+       <LENGTH>19</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DCH</KEY>
+       <ENTRY># Объявление изменено</ENTRY>
+       <LENGTH>48</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DEF</KEY>
+       <ENTRY>Удаление файла необратимо. Продолжить?</ENTRY>
+       <LENGTH>42</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DEL</KEY>
+       <ENTRY>Удалить</ENTRY>
+       <LENGTH>9</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DIN</KEY>
+       <ENTRY>+ Добавлено</ENTRY>
+       <LENGTH>20</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DIO</KEY>
+       <ENTRY>Объявлено только в редакторе:</ENTRY>
+       <LENGTH>48</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DLD</KEY>
+       <ENTRY>- Удалено</ENTRY>
+       <LENGTH>19</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EDT</KEY>
+       <ENTRY>Редактировать</ENTRY>
+       <LENGTH>15</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EDU</KEY>
+       <ENTRY>Ошибка при обновлении!</ENTRY>
+       <LENGTH>24</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EOD</KEY>
+       <ENTRY>Введите описание настройки</ENTRY>
+       <LENGTH>26</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>EXP</KEY>
+       <ENTRY>Экспорт</ENTRY>
+       <LENGTH>9</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>IMP</KEY>
+       <ENTRY>Импортировать</ENTRY>
+       <LENGTH>15</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>IRR</KEY>
+       <ENTRY>Операция необратимая. Продолжить?</ENTRY>
+       <LENGTH>35</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>MS1</KEY>
+       <ENTRY>Настройка сохранена. Скопируйте или экспортируйте ее в систему DEV!</ENTRY>
+       <LENGTH>69</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>MS2</KEY>
+       <ENTRY>Не нужно переносить временные настройки</ENTRY>
+       <LENGTH>40</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NCL</KEY>
+       <ENTRY>Предыдущий вызов не найден</ENTRY>
+       <LENGTH>29</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NFI</KEY>
+       <ENTRY>Информация о новом файле</ENTRY>
+       <LENGTH>26</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SAT</KEY>
+       <ENTRY>Показать приложения</ENTRY>
+       <LENGTH>19</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SAV</KEY>
+       <ENTRY>Сохранить</ENTRY>
+       <LENGTH>11</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>SOV</KEY>
+       <ENTRY>Сохранить значения настройки</ENTRY>
+       <LENGTH>31</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>TRN</KEY>
+       <ENTRY>Транспорт</ENTRY>
+       <LENGTH>11</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>UPD</KEY>
+       <ENTRY>Данные обновлены</ENTRY>
+       <LENGTH>18</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>VIW</KEY>
+       <ENTRY>Вид</ENTRY>
+       <LENGTH>6</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>WUL</KEY>
+       <ENTRY>Журнал использования</ENTRY>
+       <LENGTH>28</LENGTH>
+      </item>
+     </TEXTPOOL>
+    </item>
+   </I18N_TPOOL>
    <DESCRIPTIONS>
     <SEOCOMPOTX>
-     <CLSNAME>ZCL_AQO_OPTION</CLSNAME>
      <CMPNAME>CREATE</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Factory method</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
-     <CLSNAME>ZCL_AQO_OPTION</CLSNAME>
      <CMPNAME>DELETE</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Delete option</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
-     <CLSNAME>ZCL_AQO_OPTION</CLSNAME>
      <CMPNAME>GET_FIELD_VALUE</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Get data as reference</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
-     <CLSNAME>ZCL_AQO_OPTION</CLSNAME>
      <CMPNAME>LOCK</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Lock option</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
-     <CLSNAME>ZCL_AQO_OPTION</CLSNAME>
      <CMPNAME>MS_DB_ITEM</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Main table of options</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
-     <CLSNAME>ZCL_AQO_OPTION</CLSNAME>
      <CMPNAME>SAVE</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Save data to cluster</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
-     <CLSNAME>ZCL_AQO_OPTION</CLSNAME>
      <CMPNAME>TRANSPORT</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Put in transport request</DESCRIPT>
