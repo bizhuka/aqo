@@ -116,6 +116,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>FIN</KEY>
+     <ENTRY>The IS_FILTER is not a structure</ENTRY>
+     <LENGTH>64</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>IMP</KEY>
      <ENTRY>Import</ENTRY>
      <LENGTH>15</LENGTH>
@@ -146,9 +152,21 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>NET</KEY>
+     <ENTRY>is not elemnetary type</ENTRY>
+     <LENGTH>44</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>NFI</KEY>
      <ENTRY>New file info</ENTRY>
      <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>PIN</KEY>
+     <ENTRY>Package is not found for</ENTRY>
+     <LENGTH>48</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -392,6 +410,11 @@
      <DESCRIPT>Delete option</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
+     <CMPNAME>FIND_BADI</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Find all interface implementations by filter</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
      <CMPNAME>GET_FIELD_VALUE</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Get data as reference</DESCRIPT>
@@ -417,6 +440,20 @@
      <DESCRIPT>Put in transport request</DESCRIPT>
     </SEOCOMPOTX>
    </DESCRIPTIONS>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>FIND_BADI</CMPNAME>
+     <SCONAME>IS_FILTER</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Plane structure</DESCRIPT>
+    </SEOSUBCOTX>
+    <SEOSUBCOTX>
+     <CMPNAME>FIND_BADI</CMPNAME>
+     <SCONAME>IV_INTERFACE</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Interface Name</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
 </abapGit>

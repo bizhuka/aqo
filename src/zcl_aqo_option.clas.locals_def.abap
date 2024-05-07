@@ -31,6 +31,22 @@ CLASS lcl_helper DEFINITION FINAL.
                   is_stack          TYPE abap_callstack_line
                   iv_is_class       TYPE abap_bool
         RETURNING VALUE(rv_package) TYPE tadir-devclass.
+
+**********************************************************************
+**********************************************************************
+    TYPES:
+      BEGIN OF ts_badi_cache,
+        class_name TYPE zsaqo_f4-badi_class_impl,
+        class_ref  TYPE REF TO data,
+      END OF ts_badi_cache.
+
+    CLASS-DATA:
+      mt_badi_cache TYPE HASHED TABLE OF ts_badi_cache WITH UNIQUE KEY class_name.
+    DATA:
+      mt_badi_class_impl TYPE HASHED TABLE OF zsaqo_f4-badi_class_impl WITH UNIQUE KEY table_line.
+    METHODS:
+      add_badi_class IMPORTING is_line TYPE any
+                     CHANGING  ct_badi TYPE STANDARD TABLE.
 ENDCLASS.
 
 CLASS zcl_aqo_option DEFINITION LOCAL FRIENDS lcl_helper.

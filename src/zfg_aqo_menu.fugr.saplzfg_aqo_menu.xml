@@ -16,6 +16,18 @@
    <TPOOL>
     <item>
      <ID>I</ID>
+     <KEY>AQO</KEY>
+     <ENTRY>Please use ZAQO transaction</ENTRY>
+     <LENGTH>54</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>NCD</KEY>
+     <ENTRY>No class discrption in</ENTRY>
+     <LENGTH>44</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>NEW</KEY>
      <ENTRY>Press to create new option</ENTRY>
      <LENGTH>52</LENGTH>

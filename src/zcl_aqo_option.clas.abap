@@ -9,6 +9,12 @@ public section.
 
   data MS_DB_ITEM type ZTAQO_OPTION read-only .
 
+  constants: begin of mc_badi,
+               class_field  TYPE char30 VALUE 'BADI_CLASS_IMPL',
+               class_active TYPE char30 VALUE 'BADI_CLASS_ACTIVE',
+               table        TYPE char30 VALUE 'BADI_TABLE_VALS',
+             end of mc_badi.
+
   class-methods CREATE
     importing
       !IV_PACKAGE_ID type CSEQUENCE optional
@@ -18,6 +24,12 @@ public section.
     preferred parameter IO_DATA
     returning
       value(RO_OPT) type ref to ZCL_AQO_OPTION .
+  class-methods FIND_BADI
+    importing
+      !IV_INTERFACE type SEOCLSNAME
+      !IS_FILTER type ANY optional
+    exporting
+      !ET_BADI type STANDARD TABLE .
   methods GET_FIELD_VALUE
     importing
       !IV_NAME type CSEQUENCE
@@ -69,6 +81,11 @@ private section.
 
   data MT_CHANGE type TT_CHANGE .
 
+  class-methods _CREATE_BADI_FILTER
+    importing
+      !IS_FILTER type ANY optional
+    returning
+      value(RR_FILTER) type ref to DATA .
   methods _GET_ABAP_VALUE
     importing
       !IR_DATA type ref to DATA
@@ -970,5 +987,155 @@ METHOD _set_db_defaults.
     WHERE bname = sy-uname " ##WARN_OK  backward compatibility
     .
   ENDIF.
+ENDMETHOD.
+
+
+METHOD find_badi.
+  DATA:
+    lv_package TYPE tadir-devclass,
+    lv_error   TYPE string,
+    lr_filter  TYPE REF TO data,
+    lo_struc   TYPE REF TO cl_abap_structdescr,
+    lo_helper  TYPE REF TO lcl_helper.
+  FIELD-SYMBOLS:
+    <ls_filter>       TYPE any,
+    <lt_filter_table> TYPE STANDARD TABLE,
+    <ls_line>         TYPE any,
+    <ls_component>    LIKE LINE OF lo_struc->components,
+    <lv_field>        TYPE any,
+    <lt_field_vals>   TYPE STANDARD TABLE,
+    <lv_active>       TYPE os_boolean.
+
+  lv_package = zcl_aqo_helper=>get_interface_package( iv_interface ).
+  IF lv_package IS INITIAL.
+    CONCATENATE 'Package is not found for'(pin) iv_interface INTO lv_error SEPARATED BY space.
+    zcx_aqo_exception=>raise_sys_error( iv_message = lv_error ).
+  ENDIF.
+
+  IF is_filter IS NOT SUPPLIED.
+    lr_filter = _create_badi_filter(  ).
+  ELSE.
+    lr_filter = _create_badi_filter( is_filter ).
+    lo_struc ?= cl_abap_structdescr=>describe_by_data( is_filter ).
+  ENDIF.
+  ASSIGN lr_filter->* TO <ls_filter>.
+  ASSIGN COMPONENT mc_badi-table OF STRUCTURE <ls_filter> TO <lt_filter_table>.
+
+  " Read filter
+  zcl_aqo_option=>create(
+    iv_package_id = lv_package
+    iv_option_id  = iv_interface
+    ir_data       = lr_filter ).
+
+  CREATE OBJECT lo_helper.
+  LOOP AT <lt_filter_table> ASSIGNING <ls_line>.
+    ASSIGN COMPONENT zcl_aqo_option=>mc_badi-class_active OF STRUCTURE <ls_line> TO <lv_active>.
+    CHECK <lv_active> = abap_true.
+
+    " Add without any condition
+    IF is_filter IS NOT SUPPLIED.
+      lo_helper->add_badi_class( EXPORTING is_line = <ls_line>
+                                 CHANGING  ct_badi = et_badi ).
+      CONTINUE.
+    ENDIF.
+
+    LOOP AT lo_struc->components ASSIGNING <ls_component>.
+      " Ok by filter?
+      ASSIGN COMPONENT <ls_component>-name OF STRUCTURE: is_filter TO <lv_field>,
+                                                         <ls_line> TO <lt_field_vals>.
+      CHECK <lv_field> IN <lt_field_vals>[].
+
+      lo_helper->add_badi_class( EXPORTING is_line = <ls_line>
+                                 CHANGING  ct_badi = et_badi ).
+    ENDLOOP.
+  ENDLOOP.
+ENDMETHOD.
+
+
+METHOD _create_badi_filter.
+  DATA:
+    lv_error            TYPE string,
+    lo_struc            TYPE REF TO cl_abap_structdescr,
+    lo_line             TYPE REF TO cl_abap_structdescr,
+    lo_elem             TYPE REF TO cl_abap_elemdescr,
+    lv_active_dummy     TYPE os_boolean,
+    lt_dummy            TYPE RANGE OF zsaqo_f4-badi_class_impl,
+    ls_dummy            LIKE LINE OF lt_dummy,
+    ls_component        TYPE cl_abap_structdescr=>component,
+    lt_component_range  TYPE cl_abap_structdescr=>component_table,
+    lt_component_filter TYPE cl_abap_structdescr=>component_table.
+  FIELD-SYMBOLS:
+    <ls_component> LIKE LINE OF lo_struc->components,
+    <lv_field>     TYPE any.
+
+  " Stucture RANGE of ...
+  lo_struc ?= cl_abap_structdescr=>describe_by_data( ls_dummy ).
+  LOOP AT lo_struc->components ASSIGNING <ls_component>.
+    ASSIGN COMPONENT <ls_component>-name OF STRUCTURE ls_dummy TO <lv_field>.
+    lo_elem ?= cl_abap_elemdescr=>describe_by_data( <lv_field> ).
+
+    ls_component-name = <ls_component>-name.
+    ls_component-type = lo_elem.
+    APPEND ls_component TO lt_component_range.
+  ENDLOOP.
+
+  " The first field. class is active
+  ls_component-name = mc_badi-class_active.
+  ls_component-type ?= cl_abap_elemdescr=>describe_by_data( lv_active_dummy ).
+  APPEND ls_component TO lt_component_filter.
+
+  IF is_filter IS SUPPLIED.
+    TRY.
+        lo_struc ?= cl_abap_structdescr=>describe_by_data( is_filter ).
+      CATCH cx_sy_move_cast_error.
+        zcx_aqo_exception=>raise_sys_error( iv_message = 'The IS_FILTER is not a structure'(fin) ).
+    ENDTRY.
+
+    LOOP AT lo_struc->components ASSIGNING <ls_component>.
+      ASSIGN COMPONENT <ls_component>-name OF STRUCTURE is_filter TO <lv_field>.
+
+      TRY.
+          lo_elem ?= cl_abap_elemdescr=>describe_by_data( <lv_field> ).
+        CATCH cx_sy_move_cast_error.
+          CONCATENATE <ls_component>-name 'is not elemnetary type'(net) INTO lv_error SEPARATED BY space.
+          zcx_aqo_exception=>raise_sys_error( iv_message = lv_error ).
+      ENDTRY.
+
+      DELETE lt_component_range INDEX 3. " prev LOW
+      DELETE lt_component_range INDEX 3. " prev HIGH
+
+      ls_component-name = 'LOW'.
+      ls_component-type = lo_elem.
+      APPEND ls_component TO lt_component_range.
+
+      ls_component-name = 'HIGH'.
+      ls_component-type = lo_elem.
+      APPEND ls_component TO lt_component_range.
+
+      " Create structure ofr Range OF ...
+      lo_line  = cl_abap_structdescr=>create( lt_component_range ).
+
+      " Result type
+      ls_component-name = <ls_component>-name.
+      ls_component-type = cl_abap_tabledescr=>create( p_line_type = lo_line ).
+      APPEND ls_component TO lt_component_filter.
+    ENDLOOP.
+  ENDIF.
+
+  " The last field is classes
+  ls_component-name = mc_badi-class_field.
+  ls_component-type ?= cl_abap_elemdescr=>describe_by_data( ls_dummy-low ).
+  APPEND ls_component TO lt_component_filter.
+  lo_line = cl_abap_structdescr=>create( lt_component_filter ).
+
+  " Create final result structure
+  CLEAR lt_component_filter.
+  ls_component-name = mc_badi-table.
+  ls_component-type ?= cl_abap_tabledescr=>create( p_line_type = lo_line ).
+  APPEND ls_component TO lt_component_filter.
+  lo_line = cl_abap_structdescr=>create( lt_component_filter ).
+
+  " Structure with 1 field (table of implementations)
+  CREATE DATA rr_filter TYPE HANDLE lo_line.
 ENDMETHOD.
 ENDCLASS.

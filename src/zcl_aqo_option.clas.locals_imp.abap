@@ -11,15 +11,18 @@ CLASS lcl_helper IMPLEMENTATION.
     " Where-Used List
     CALL FUNCTION 'SYSTEM_CALLSTACK'
       EXPORTING
-        max_level = 3
+        max_level = 4
       IMPORTING
         callstack = lt_callstack.
-    READ TABLE lt_callstack INDEX 3 INTO es_last_call.
+    LOOP AT lt_callstack INTO es_last_call FROM 3 WHERE mainprogram <> 'ZCL_AQO_OPTION================CP'.
+      EXIT.
+    ENDLOOP.
+
     " Use package of calling include?
     IF sy-subrc = 0 AND cs_db_key-package_id IS INITIAL AND es_last_call-mainprogram <> zcl_aqo_helper=>mc_prog-editor.
       cs_db_key-package_id = get_default_package(
-           is_stack    = es_last_call
-           iv_is_class = iv_is_class ).
+        is_stack    = es_last_call
+        iv_is_class = iv_is_class ).
     ENDIF.
 
     " Load data
@@ -124,5 +127,39 @@ CLASS lcl_helper IMPLEMENTATION.
       lv_field_name = ls_comp->name.
       INSERT lv_field_name INTO TABLE rt_declared_field.
     ENDLOOP.
+  ENDMETHOD.
+
+**********************************************************************
+**********************************************************************
+  METHOD add_badi_class.
+    DATA:
+      ls_badi_cache        LIKE LINE OF mt_badi_cache.
+    FIELD-SYMBOLS:
+      <lv_badi_class_impl> TYPE zsaqo_f4-badi_class_impl,
+      <lv_badi>            TYPE any,
+      <lv_badi_prev>       TYPE any,
+      <ls_badi_cache>      LIKE LINE OF mt_badi_cache.
+
+    " 1st time in table? if there are duplicates in the option
+    ASSIGN COMPONENT zcl_aqo_option=>mc_badi-class_field OF STRUCTURE is_line TO <lv_badi_class_impl>.
+    INSERT <lv_badi_class_impl> INTO TABLE mt_badi_class_impl.
+    CHECK sy-subrc = 0
+      AND <lv_badi_class_impl> IS NOT INITIAL.
+
+    " Create an instance or use existing?
+    APPEND INITIAL LINE TO ct_badi ASSIGNING <lv_badi>.
+
+    " Check already created
+    READ TABLE mt_badi_cache ASSIGNING <ls_badi_cache>
+     WITH TABLE KEY class_name = <lv_badi_class_impl>.
+    IF sy-subrc = 0.
+      ASSIGN <ls_badi_cache>-class_ref->* TO <lv_badi_prev>.
+      <lv_badi> = <lv_badi_prev>.
+    ELSE.
+      ls_badi_cache-class_name = <lv_badi_class_impl>.
+      CREATE OBJECT <lv_badi> TYPE (<lv_badi_class_impl>).
+      GET REFERENCE OF <lv_badi> INTO ls_badi_cache-class_ref.
+      INSERT ls_badi_cache INTO TABLE mt_badi_cache.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.

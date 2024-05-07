@@ -58,6 +58,14 @@
      <DESCRIPT>AQO constructor calls</DESCRIPT>
     </SEOCOMPOTX>
    </DESCRIPTIONS>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>GET_INTERFACE_PACKAGE</CMPNAME>
+     <SCONAME>RV_PACKAGE</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Package</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
 </abapGit>

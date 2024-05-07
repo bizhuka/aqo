@@ -484,7 +484,12 @@ CLASS lcl_tree IMPLEMENTATION.
 
   METHOD _add_option_node.
     DATA ls_layout TYPE lvc_s_layn.
-    ls_layout-n_image = icon_change_text.
+
+    IF zcl_aqo_helper=>get_interface_package( is_db_key-option_id ) IS INITIAL.
+      ls_layout-n_image = icon_change_text.
+    ELSE.
+      ls_layout-n_image = icon_interface.
+    ENDIF.
 
     _add_node(
       i_node_text    = is_db_key-package_id

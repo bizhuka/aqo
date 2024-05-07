@@ -154,6 +154,11 @@ public section.
       !IS_DB_KEY type TS_DB_KEY
     changing
       !CS_DB_ITEM type ANY .
+  class-methods GET_INTERFACE_PACKAGE
+    importing
+      !IV_INTERFACE type CSEQUENCE
+    returning
+      value(RV_PACKAGE) type TADIR-DEVCLASS .
 protected section.
 private section.
 
@@ -404,13 +409,29 @@ ENDMETHOD.
 
 
 METHOD get_usage.
+  DATA:
+    lv_package      TYPE tadir-devclass,
+    lv_usage_name   TYPE wbcrossgt-name,
+    lv_text1        TYPE string,
+    lv_param2       TYPE string.
   CHECK is_db_key IS NOT INITIAL.
+
+  lv_package = zcl_aqo_helper=>get_interface_package( is_db_key-option_id ).
+  IF lv_package IS INITIAL.
+    lv_usage_name   = 'ZCL_AQO_OPTION\ME:CREATE'.
+    lv_text1        = 'ZCL_AQO_OPTION=>CREATE'.
+    lv_param2       = 'IV_OPTION_ID'.
+  ELSE.
+    lv_usage_name   = 'ZCL_AQO_OPTION\ME:FIND_BADI'.
+    lv_text1        = 'ZCL_AQO_OPTION=>FIND_BADI'.
+    lv_param2       = 'IV_INTERFACE'.
+  ENDIF.
 
   " Index for Global Types - Where-Used List Workbench
   SELECT * INTO CORRESPONDING FIELDS OF TABLE rt_usage
   FROM wbcrossgt
   WHERE otype = 'ME'
-    AND name  = 'ZCL_AQO_OPTION\ME:CREATE'.
+    AND name  = lv_usage_name.
 
   DATA ls_usage TYPE REF TO ts_usage.
   LOOP AT rt_usage REFERENCE INTO ls_usage.
@@ -419,26 +440,31 @@ METHOD get_usage.
       EXPORTING
         iv_include = ls_usage->include.
 
-    lo_scanner->get_position( EXPORTING iv_text1 = `ZCL_AQO_OPTION=>CREATE`
+    lo_scanner->get_position( EXPORTING iv_text1 = lv_text1
                               IMPORTING ev_line  = ls_usage->line ).
     CHECK ls_usage->line > 0.
 
     DATA lv_count TYPE i.
-    lo_scanner->get_position( EXPORTING iv_text1 = 'IV_PACKAGE_ID'
-                                        iv_text2 = is_db_key-package_id
-                                        iv_from  = ls_usage->line
-                              IMPORTING ev_count = lv_count ).
-    CASE lv_count.
-      WHEN 2.
-        ls_usage->package_id = is_db_key-package_id.
-      WHEN 0.
-        ls_usage->package_id = lo_scanner->get_package( ).
-      WHEN OTHERS.
-        CLEAR ls_usage->package_id.
-    ENDCASE.
-    CHECK ls_usage->package_id IS NOT INITIAL.
 
-    lo_scanner->get_position( EXPORTING iv_text1 = 'IV_OPTION_ID'
+    IF lv_package IS NOT INITIAL.
+      ls_usage->package_id = lv_package.
+    ELSE.
+      lo_scanner->get_position( EXPORTING iv_text1 = 'IV_PACKAGE_ID'
+                                          iv_text2 = is_db_key-package_id
+                                          iv_from  = ls_usage->line
+                                IMPORTING ev_count = lv_count ).
+      CASE lv_count.
+        WHEN 2.
+          ls_usage->package_id = is_db_key-package_id.
+        WHEN 0.
+          ls_usage->package_id = lo_scanner->get_package( ).
+        WHEN OTHERS.
+          CLEAR ls_usage->package_id.
+      ENDCASE.
+      CHECK ls_usage->package_id IS NOT INITIAL.
+    ENDIF.
+
+    lo_scanner->get_position( EXPORTING iv_text1 = lv_param2
                                         iv_text2 = is_db_key-option_id
                                         iv_from  = ls_usage->line
                               IMPORTING ev_count = lv_count ).
@@ -600,5 +626,14 @@ METHOD put_2_request.
   IF ev_request IS INITIAL.
     ev_request = cv_task.
   ENDIF.
+ENDMETHOD.
+
+
+METHOD get_interface_package.
+  SELECT SINGLE devclass INTO rv_package
+  FROM tadir
+  WHERE pgmid    = 'R3TR'
+    AND object   = 'INTF'
+    AND obj_name = iv_interface.
 ENDMETHOD.
 ENDCLASS.
