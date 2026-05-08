@@ -254,6 +254,12 @@
      <MSGNR>040</MSGNR>
      <TEXT>Fields &apos;&amp;1&apos; were skipped!</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZAQO_MESSAGE</ARBGB>
+     <MSGNR>041</MSGNR>
+     <TEXT>Multiple initialization of option &amp;1-&amp;2 during one session is prohibited</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

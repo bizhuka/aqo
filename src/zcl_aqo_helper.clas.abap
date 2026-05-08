@@ -190,7 +190,10 @@ METHOD add_menu.
   READ TABLE mt_menu_sh TRANSPORTING NO FIELDS
    WITH KEY package_id = is_db_opt-package_id
             option_id  = is_db_opt-option_id.
-  CHECK sy-subrc <> 0.
+  IF sy-subrc = 0.
+    MESSAGE s041(zaqo_message) WITH is_db_opt-package_id is_db_opt-option_id DISPLAY LIKE 'E'.
+    zcx_aqo_exception=>raise_sys_error( ).
+  ENDIF.
 
   DATA ls_menu_sh LIKE LINE OF mt_menu_sh.
   MOVE-CORRESPONDING is_db_opt TO ls_menu_sh.
