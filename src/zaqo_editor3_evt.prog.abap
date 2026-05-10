@@ -36,7 +36,7 @@ FORM pai_exit.
   zcl_aqo_helper=>exchange_command( is_command = ls_command ).
 ENDFORM.
 
-FORM start_editor USING is_db_opt TYPE zsaqo_option. "#EC CALLED  External call in GOS menu
+FORM start_editor USING is_db_opt TYPE zsaqo_option. "#EC CALLED  External call in GOS menu, use program ZAQO_CALL instead
   DATA ls_db_key TYPE ts_db_key.
   MOVE-CORRESPONDING is_db_opt TO ls_db_key.
 
